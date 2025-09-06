@@ -3,7 +3,7 @@
 
 [![npm version](https://img.shields.io/npm/v/@eternalcodestudio/primeng-table.svg)](https://www.npmjs.com/package/@eternalcodestudio/primeng-table)
 [![npm downloads](https://img.shields.io/npm/dm/@eternalcodestudio/primeng-table.svg)](https://www.npmjs.com/package/@eternalcodestudio/primeng-table)
-# ECS PrimeNG table
+# ECS PrimeNG Table
 A solution created by Alex Ibrahim Ojea that enhances the PrimeNG table with advanced filters and extended functionality, delegating all query and filtering logic to the database engine. The frontend is built with Angular 20 and PrimeNG 20 components, while the backend is a .NET 8 (ASP.NET) API connected to Microsoft SQL Server, easily adaptable to other databases. This approach prevents server and frontend overload by handling filtering and paging dynamically in the database, and includes features such as column visibility, column filters, custom views, and more.
 
 
@@ -41,6 +41,7 @@ To run this project, you will need:
 
 
 
+---
 ## 2 Setup the environment to try the demo
 
 
@@ -165,6 +166,13 @@ npm install
 
 This command will download all required dependencies for the frontend project. Once it has finished executing and if everything went OK, ensure your API is running correctly, then execute the following command in the terminal:
 ```sh
+ng build ecs-primeng-table
+```
+This command will use **ng-packagr** to build a local package in the `dist` folder, based on the contents of `projects\ecs-primeng-table` (the reusable table component).  
+
+Once the package has been successfully built, you can start the web application by running the following command in the terminal:
+
+```sh
 ng serve -o
 ```
 > [!TIP]  
@@ -176,92 +184,384 @@ If you have reached this step, congratulations! You have successfully set up and
 
 
 
-## 3 How to implement in existing projects
-
-> [!CAUTION]
-> WORK IN PROGRESS. All the information in this section could be outdated.
-
-
-This section describes step by step what you need to implement the PrimeNG Table reusable component. 
-- Database
-  - You just need to execute the script to create the [FormatDateWithCulture function](Database%20scripts/04%20FormatDateWithCulture.txt). Remember to modify the initial part were it indicates the database and schema names in the script.
-- Backend
-  - Open NuGet package manager and make sure you have all these packages:
-    - LinqKit or LinqKit.Core (it has been tested with LinqKit, but LinqKit.Core should also work).
-    - Microsoft.EntityFrameworkCore.SqlServer (If you are using MSSQL as database engine, if not, use the appropiate one depending on your target database engine)
-    - Microsoft.EntityFrameworkCore.Tools (Optional, you only need it if you want to do scafolding)
-    - Swashbuckle.AspNetCore
-    - Swashbuckle.AspNetCore.Annotations (Optional, you only need it if you want a better Swagger documentation)
-    - System.Linq.Dynamic.Core
-  - Import the [PrimeNGDTO.cs](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/DTOs/PrimeNGDTO.cs) file to your solution (it is recommended that you place it inside a folder named "DTOs" or "DTO").
-  - Import the [PrimeNGAttribute.cs](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/Services/PrimeNGAttribute.cs) and [PrimeNGHelper.cs](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/Services/PrimeNGHelper.cs) files to your solution (it is recommended that you place them inside a folder named "Services").
-  - You need to create a file (it is recommended to place it next to your DBContext) that looks like the file [primengTableReusableComponentContextExtension.cs](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/DBContext/primengTableReusableComponentContextExtension.cs). This exposes the database function FormatDateWithCulture to make it available in your solution. The name should be something like YourDBContextExtension (basically the same name as your DB context file and just addind an "Extension" at the end). This is done to avoid EF during the scafold process to delete the file, since it is not a modification done over the original DB context file. Please note that this action has to be done for each database context that you have in your application and care should be taken in thsi case with the namespaces and class names.
-  - From the contoller (or service) that you would like to use call the function to perform the query, you need to include a line similar to the one shown below for being able to pass the database function FormatDateWithCulture (as a MehtodInfo).
-    ```C#
-    private static readonly MethodInfo stringDateFormatMethod = typeof(MyDBFunctions).GetMethod(nameof(MyDBFunctions.FormatDateWithCulture), new[] { typeof(DateTime), typeof(string), typeof(string), typeof(string) })!; // Needed import for being able to perform global search on dates
-    ```
-    Also you will need to include the appropiate "Usings" at the begingin of your file.
-- Frontend
-  - You packages.json needs to have these two packages (the version can be whatever you need to work with for your Angular version):
-    - primeng
-    - primeicons
-  - Follow the setup guide of PrimeNG (you will need to make some changes to the "styles.css" and maybe to the "app.module.ts" and "angular.json").
-  - In the "app.module.ts":
-    - You need all these other additional imports:
-      ```ts
-      // PrimeNG modules (and some of angular/common) that are needed by the reusable table component
-      import { MessageService } from 'primeng/api';
-      import { ToastModule } from 'primeng/toast';
-      import { TableModule } from 'primeng/table';
-      import { InputTextModule } from 'primeng/inputtext';
-      import { ButtonModule } from 'primeng/button';
-      import { MultiSelectModule } from 'primeng/multiselect';
-      import { PaginatorModule } from 'primeng/paginator';
-      import { TagModule } from 'primeng/tag';
-      import { RippleModule } from 'primeng/ripple';
-      import { TooltipModule } from 'primeng/tooltip';
-	  import { InputGroupModule } from 'primeng/inputgroup';
-	  import { CheckboxModule } from 'primeng/checkbox';
-      import { DatePipe, registerLocaleData } from '@angular/common';
-      
-      import es from '@angular/common/locales/es'; // Needed for scenarios were you would like to manage different locales from "en", like "es-ES"
-      registerLocaleData(es);
-      ```
-      The "registerLocaleData", "import es from '@angular/common/locales/es'" and "registerLocaleData(es)" are optional. Its an example to show you how to import locales different from the default en-US used by datepipe.
-    - You will need to modify the "@NgModule" imports to add all the PrimeNG components that are needed by the "PrimeNG Table reusable component":
-      ```ts
-      imports: [
-        BrowserModule, // You should already have this one
-        ...
-        ToastModule,
-        TableModule,
-        InputTextModule,
-        ButtonModule,
-        MultiSelectModule,
-        PaginatorModule,
-        TagModule,
-        RippleModule,
-        TooltipModule,
-		InputGroupModule,
-		CheckboxModule
-      ]
-      ```
-    - In the "@NgModule" providers, you will need to add the following:
-      ```ts
-      providers: [
-        MessageService,
-        DatePipe
-      ]
-      ```
-  - Import the [constants.ts](Frontend/primengtablereusablecomponent/src/constants.ts) to your solution (later on you can modify the code to include its content somewhere else you prefer).
-  - Import to your solution all interface files located in the example project under [Frontend/primengtablereusablecomponent/src/app/interfaces/primeng](Frontend/primengtablereusablecomponent/src/app/interfaces/primeng). You might need to fix the imports depending on were you import them in your solution.
-  - Import to your solution both files that are located in the example project under [Frontend/primengtablereusablecomponent/src/app/services/shared](Frontend/primengtablereusablecomponent/src/app/services/shared). You might need to fix the imports depending on were you import them in your solution. The "shared.service.ts" could be later on modified in your project so that all references that are currently being used from it, use your own service solutions (maybe you are managing in a different way your HTTP requests or your toast messsages).
-  - Import to your solution both files that are located in the example project under [Frontend/primengtablereusablecomponent/src/app/components/primeng-table](Frontend/primengtablereusablecomponent/src/app/components/primeng-table) You might need to fix the imports depending on were you import them in your solution.
-  - In the "app.module.ts", you will need to add the import of the [PrimengTableComponent](Frontend/primengtablereusablecomponent/src/app/components/primeng-table/primeng-table.component.ts) as well as adding it in the "app.module.ts" > "@NgModule" > "declarations".
-
-With all these steps done, you should have succesfully imported all required files and perform all the changes in an existing project that are required for being able to use the "PrimeNG Table reusable component".
+---
+## 3 Integrating into existing projects
+This section provides a step-by-step guide on how to integrate the **ECS PrimeNG Table** into your existing projects.
 
 
+
+### 3.1 Backend requirements
+> [!NOTE]  
+> The **ECS PrimeNG Table** package is built for .NET 8, but it should also work seamlessly with newer .NET versions.
+
+If you are already working on a **.NET 8 project (or higher)**, you will need to install the backend compiled package from NuGet (we recommend downloading the latest version):  
+[ECS.PrimeNGTable on NuGet](https://www.nuget.org/packages/ECS.PrimeNGTable)
+
+In addition, make sure the following required dependencies are installed:
+- **ClosedXML** (>= 0.104.0)
+- **LinqKit** (>= 1.3.0)
+- **Microsoft.EntityFrameworkCore** (>= 8.0.0)
+- **System.Linq.Dynamic.Core** (>= 1.6.0)
+
+> [!TIP]
+> You can always check the latest dependency versions by visiting:  
+`https://www.nuget.org/packages/ECS.PrimeNGTable/<version>#dependencies-body-tab`  
+(Replace `<version>` with the specific package version you are downloading, e.g., `8.0.1`).
+
+With these dependencies in place and the package installed, your backend is ready to use the **ECS PrimeNG Table**.
+
+
+
+### 3.2 Frontend requirements
+
+
+
+### 3.2.1 Installing the package and peer dependencies
+> [!NOTE]  
+> The **ECS PrimeNG Table** package is built for Angular 20 with PrimeNG 20 components. While it may work with newer versions, compatibility is not guaranteed, as PrimeNG frequently introduces breaking changes to its components.
+
+If you are already working on an **Angular 20** project, you can check the frontend compiled package on NPM here:  
+[@eternalcodestudio/primeng-table on NPM](https://www.npmjs.com/package/@eternalcodestudio/primeng-table)
+
+To install the package, open a terminal in the root folder of your project and run the following command (we recommend installing the latest version):
+
+```sh
+npm install @eternalcodestudio/primeng-table
+```
+
+In addition, make sure the following required dependencies are installed in your project:
+- **@angular/common** (>=20.0.0)
+- **@angular/core** (>=20.0.0)
+- **primeng** (>=20.0.0)
+- **primeicons** (>=7.0.0)
+
+> [!CAUTION]  
+> These are **peer dependencies** and are **not installed automatically**. If your project doesn't already include them, you must install them separately using NPM.
+
+
+
+### 3.2.2 Configure Angular locales
+The **ECS PrimeNG Table** component relies on Angular's **DatePipe** to render date cells.  
+To ensure correct formatting, you must import and register the locale(s) you plan to use in your application.
+
+Example for English locale (`en`):
+```ts
+import { DatePipe, registerLocaleData } from '@angular/common';
+import en from '@angular/common/locales/en';
+
+registerLocaleData(en);
+```
+Remeber to include also `DatePipe` in your `providers`.
+
+This step is required before using the table. If the locale is not correctly registered, rendering date cells may fail and prevent the table from displaying properly.  
+
+You can include this configuration at the global level (e.g., `app.module.ts` or `app.config.ts`) or at a more local level, depending on your application structure.
+
+
+
+### 3.2.3 Required services for ECS PrimeNG Table
+The **ECS PrimeNG Table** package defines two abstract services that you need to implement in your project:
+- **ECSPrimengTableHttpService**: handles HTTP requests for the table (GET and POST).
+- **ECSPrimengTableNotificationService**: handles notifications (toasts) for the table.
+
+These services are abstract, meaning the package does not know how you want to handle HTTP requests or notifications in your project. You need to create your own implementations.
+
+
+
+#### Example: HTTP service
+In your project, create a class that extends `ECSPrimengTableHttpService` and implements its abstract methods.  
+
+In this example, the implementation uses the main services provided by `SharedService`.
+```ts
+import { Injectable } from '@angular/core';
+import { HttpHeaders, HttpResponse } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { ECSPrimengTableHttpService } from '@eternalcodestudio/primeng-table';
+import { SharedService } from './shared.service';
+
+@Injectable({ providedIn: 'root' })
+export class HttpService extends ECSPrimengTableHttpService {
+  constructor(private sharedService: SharedService) {
+    super();
+  }
+
+  handleHttpGetRequest<T>(
+    servicePoint: string,
+    responseType: 'json' | 'blob' = 'json'
+  ): Observable<HttpResponse<T>> {
+    return this.sharedService.handleHttpGetRequest(servicePoint, null, true, null, false, responseType);
+  }
+
+  handleHttpPostRequest<T>(
+    servicePoint: string,
+    data: any,
+    httpOptions: HttpHeaders | null = null,
+    responseType: 'json' | 'blob' = 'json'
+  ): Observable<HttpResponse<T>> {
+    return this.sharedService.handleHttpPostRequest(servicePoint, data, httpOptions, true, null, false, responseType);
+  }
+}
+```
+
+
+
+#### Example: Notification service
+Similarly, you need to create a class that extends `ECSPrimengTableNotificationService` and implements its abstract methods.
+
+In this example, the implementation relies on the main services provided by `SharedService`.
+```ts
+import { Injectable } from '@angular/core';
+import { ECSPrimengTableNotificationService } from '@eternalcodestudio/primeng-table';
+import { SharedService } from './shared.service';
+
+@Injectable({ providedIn: 'root' })
+export class NotificationService extends ECSPrimengTableNotificationService {
+  constructor(private sharedService: SharedService) {
+    super();
+  }
+
+  showToast(severity: string, title: string, message: string): void {
+    this.sharedService.showToast(severity, title, message, 5000, false, false, false);
+  }
+
+  clearToasts(): void {
+    this.sharedService.clearToasts();
+  }
+}
+```
+
+
+
+#### Registering the services
+Finally, register your implementations in your dependency injection system (for example, in `app.config.ts`):
+```ts
+import { ECSPrimengTableHttpService, ECSPrimengTableNotificationService } from '@eternalcodestudio/primeng-table';
+export const appConfig: ApplicationConfig = {
+  providers: [
+    ...
+    { provide: ECSPrimengTableNotificationService, useClass: NotificationService },
+    { provide: ECSPrimengTableHttpService, useClass: HttpService },
+    ...
+  ]
+}
+```
+This tells the **ECS PrimeNG Table** package to use your custom services for handling HTTP requests and notifications.
+
+
+
+---
+## 4 Functional overview
+The goal of this section is to provide a **user-level overview** of all the features included in the **ECS PrimeNG Table**. It allows you to quickly understand what the table can offer and how these functionalities can be utilized in your projects. This section provides a clear, at a glance view of everything available without diving into code.
+
+
+
+### 4.1 Planning your table
+Before diving into advanced features, it’s essential to start with the basics and carefully plan your table design. This will ensure that the table fits your users needs and your application’s requirements. Use the following questions as a guide:
+
+**Columns**
+- Which columns do I want to include in the table?
+- Should all columns be visible by default, or will some be hidden initially?
+- Are there columns that must always remain visible and cannot be hidden?
+- What horizontal and vertical alignment should each column have?
+- How should content overflow be handled in each column (e.g., wrap, truncate)?
+- Which columns should allow sorting: all, some, or none?
+- Which columns should allow filtering: all, some, or none?
+- Can users change the position of columns via drag-and-drop?
+- Are any columns going to be frozen (fixed) on the left or right side?
+
+**Rows**
+- Do any rows need conditional formatting based on the values of a specific column?
+- What actions should I allow per row? Are action buttons enabled or disabled based on certain conditions?
+- Can rows be selected (and an action performed on select)?
+- Can users select multiple rows, filter by selected rows, or perform actions on multiple selections (row checkbox selector)?
+
+**Global table features**
+- Are there any table-level actions needed, such as creating records?
+- How will dates be displayed in the table?
+- Will users be able to customize the date format?
+- Will a global filter be available for the table?
+- Should the table support exporting data to Excel?
+- Will users be able to save their table configuration? If so, should it be persistent across sessions or only for the current session?
+
+Don’t worry if some of these concepts are unclear at this point, each feature will be explained individually in detail in the following sections.
+
+
+
+### 4.2 Date formatting
+At first glance, date formatting might seem simple, but it can easily confuse end users if not carefully considered from the start.
+
+The **ECS PrimeNG table** component allows you to control how dates are displayed in each table, letting you customize:
+- **Format**: This defines how the date and time will be displayed to the user.  
+  For example, `"dd-MMM-yyyy HH:mm:ss zzzz"` means:
+  - `dd` → day of the month (01-31).
+  - `MMM` → short name of the month (Jan, Feb, etc.).
+  - `yyyy` → full year (2025).
+  - `HH:mm:ss` → hours, minutes, and seconds in 24-hour format.
+  - `zzzz` → time zone name or offset.
+- **Time zone**: This specifies the time zone that will be used to display the date/time.  
+  For example, `"+00:00"` is UTC (Coordinated Universal Time). Changing this will adjust the displayed time to the desired zone.
+- **Culture**: This determines the language and formatting conventions for the date, such as month names, day names, and the order of day/month/year. Default `"en-US"` uses English (United States) conventions. Using `"es-ES"` would show month and day names in Spanish, for example.
+
+You can configure this customization per table, with several possible approaches:
+- **Static**: Use the default values or hardcode alternative values if they suit your needs.
+- **Server-based**: Use the configuration of the server environment where your application is deployed.
+- **Per-user**: Save each user's preferred configuration, allowing users to choose how dates are displayed in their tables. This requires additional setup but provides maximum flexibility.
+
+> [!NOTE]
+> While per-table customization is possible, it is recommended to set a **global configuration** for all tables. Individual table settings are mainly useful for specific scenarios, but managing a global configuration is easier and more consistent.
+
+
+
+### 4.3 Column configurations
+The **ECS PrimeNG Table** allows you to define a variety of settings that control how each column behaves when displayed to users and what they are allowed to do with them.
+
+
+
+#### 4.3.1 Data type
+Columns can be configured to define how cell data is displayed and treated. The **ECS PrimeNG Table** supports five main data types, and choosing the appropriate type is important, as it also affects the filtering options available (column filtering is explained in later sections):
+- **Text**: For data that should be treated as plain text.
+- **Numeric**: For numerical values.
+- **Boolean**: For yes/no (true/false) values.
+- **Date**: For date values. The display format is controlled via the date formatting configuration described in previous sections.
+- **List**: A specialized text variant designed for columns containing data separated by `";"`. This type is mainly intended for predefined filters. If not configured, the raw text will simply be displayed (predefined filters are explained in later sections).
+
+> [!NOTE]  
+> All data types support null (empty) values, allowing cells to remain blank if no data is available.
+
+
+
+#### 4.3.2 Visibility
+By default, all columns are visible. However, showing too many columns at once may overwhelm users, so you may want to hide some of them initially. This can be configured in the table setup.
+
+The table includes a built-in **column properties menu** (enabled by default), which allows users to show or hide columns at any time without needing to reload or reconfigure the table. This menu is accessible directly from the table interface and provides a simple checklist of all available columns. (Explained in more detail in later sections.)
+
+You can also restrict visibility changes for specific columns. For example, some columns can be marked as **always visible**, preventing users from hiding them.
+
+Additionally, developers can define **utility columns** that remain hidden from the user interface. These columns (such as row IDs or internal references) are not only invisible to the end user but also excluded from the column properties menu, ensuring they remain hidden while still being available for internal logic or processes.
+
+
+
+
+#### 4.3.3 Horizontal and vertical alignment
+Each column can be configured to control how the data inside its cells is aligned, both horizontally and vertically.
+
+**Horizontal alignment options:**
+- **Left**: Aligns the content to the left side of the cell. Commonly used for text values.
+- **Center**: Centers the content in the cell. Default option.
+- **Right**: Aligns the content to the right side of the cell. Typically used for numeric data.
+
+**Vertical alignment options:**
+- **Top**: Aligns the content to the top of the cell.
+- **Middle**: Centers the content vertically. Default option.
+- **Bottom**: Aligns the content to the bottom of the cell.
+
+By default, columns are set to **center** horizontally and **middle** vertically.
+
+Users can change the alignment of any column using a dedicated column properties menu (explained in later sections). You can restrict this behavior in two ways:
+- **Restrict per column**: Prevent users from changing the horizontal and/or vertical alignment for specific columns.
+- **Disable globally**: Turn off the entire Column Properties menu so users cannot adjust alignment or any other column settings.
+
+
+
+#### 4.3.4 Overflow Behaviour
+When the content of a cell exceeds the available space, the **overflow behaviour** determines how the data is displayed. The available options are:
+
+- **Hidden**: Extra content is clipped and not displayed. This avoids breaking the table layout but may hide part of the information.
+- **Wrap**: The content automatically continues on a new line within the same cell, ensuring all data is visible but potentially increasing the row height.
+
+By default, the overflow behaviour for all columns is set to **Hidden**.
+
+Users can adjust the overflow behaviour of each column through the **column properties menu** (explained in later sections). This feature can be controlled in two ways:
+- **Restrict per column**: Prevent users from changing the overflow behaviour for specific columns.
+- **Disable globally**: Turn off the entire column properties menu so users cannot modify overflow behaviour or any other column settings.
+
+
+
+#### 4.3.5 Modify Column properties menu
+By default, the table includes a **column properties button** located at the top-left corner. This button opens a modal that allows users to customize how columns are displayed and formatted.
+
+This menu can be **disabled globally** if you do not want users to make any modifications to column properties or visibility.
+
+When enabled, clicking the button opens a modal window that provides the following features:
+- **Column list**: Displays all available columns in the table (excluding **utility columns**).
+- **Search bar**: A global search input to filter columns by name. Columns are listed alphabetically (A–Z).
+- **Editable properties** (if not locked for the column):
+  - Visibility (show/hide columns).
+  - Horizontal alignment.
+  - Vertical alignment.
+  - Cell overflow behaviour.
+
+At the bottom-right of the modal, users can either **Cancel** or **Apply** their changes:
+- If visibility changes are applied, the table will **refresh data** and reset filters and sorting.
+- If only formatting changes (alignment or overflow) are applied, the table will **preserve filters and sorting** without refreshing data.
+
+<img width="205" height="132" alt="image" src="https://github.com/user-attachments/assets/dcd3bbf3-585d-4a9a-adb6-490b8b419578" />
+<img width="1232" height="527" alt="image" src="https://github.com/user-attachments/assets/b6831580-ea14-4b33-81f9-587a7563fee6" />
+
+
+
+#### 4.3.6 Resize
+
+
+
+#### 4.3.7 Reorder
+
+
+#### 4.3.8 Frozen
+
+
+
+#### 4.3.9 Descriptions
+
+
+
+
+
+#### 4.3.10 Sorting
+By default, all columns are sortable. You can disable sorting on specific columns if you do not want users to sort them.
+
+**How sorting works:**
+- Click a column header once to sort in **ascending order**.
+- Click the same header a second time to sort in **descending order**.
+- Click a third time to **sort ascending again**.
+
+If a different column is clicked while another column is already sorted, the new column will be sorted in ascending order, and the previous column will have its sorting cleared.
+
+The table supports **multi-column sorting**: users can hold the **Ctrl** key while clicking multiple column headers to sort by several columns simultaneously.
+
+You can also define a **default sorting** for one or more columns when the user has not applied any sorting.
+
+In the **top-left corner of the table**, there is a button to **clear all sorting** applied by the user. This button is enabled only when at least one user-applied sorting is active.
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/9b2cd936-7bd0-4054-9940-fa7dbc53a20f" alt="Clear sorting button">
+</p>
+
+> [!NOTE]
+> If no columns allow sorting, you may hide this button. However, it is **not recommended** to hide it if some columns are sortable, as this could confuse users by preventing them from resetting the sorting.
+
+
+#### 4.3.7 Filtering
+
+
+---
+## 5 Feature-to-Code mapping
+
+
+
+---
+## 6 Technical overview
+
+
+
+---
+## 7 Component reference
+
+
+---
+## 8 Editing ECS PrimeNG table and integrating locally
+
+
+---
 ## 4 "PrimeNG Table reusable component" all features
 The aim of this chapter is to explain all the things that have to be taken into account and what different functionalities are included (and how to implement them).
 
