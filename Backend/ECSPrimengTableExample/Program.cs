@@ -1,4 +1,7 @@
 using Data.PrimengTableReusableComponent;
+using ECSPrimengTableExample.Interfaces;
+using ECSPrimengTableExample.Repository;
+using ECSPrimengTableExample.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
@@ -25,6 +28,10 @@ builder.Services.AddDbContext<primengTableReusableComponentContext>(
         options.UseSqlServer(builder.Configuration.GetConnectionString("DB_primengtablereusablecomponent"));
     }
 );
+#endregion
+#region INJECT SERVICES
+builder.Services.AddScoped<ITestService, TestService>();
+builder.Services.AddScoped<ITestRepository, TestRepository>();
 #endregion
 builder.Services.AddCors();
 WebApplication app = builder.Build();

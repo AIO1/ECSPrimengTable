@@ -4,5 +4,6 @@
         public static readonly string DateFormat = "dd-MMM-yyyy HH:mm:ss zzzz";
         public static readonly string DateTimezone = "+00:00";
         public static readonly string DateCulture = "en-US";
+        public static readonly byte MaxViews = 10;
     }
 }

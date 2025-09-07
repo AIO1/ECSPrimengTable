@@ -1,6 +1,6 @@
 # ECS PrimeNG table
 
-This NuGet package contains ECS PrimeNG table.  
+This NPM package contains ECS PrimeNG table.  
 For full documentation, usage instructions, examples, and updates, please visit the official GitHub repository:
 [https://github.com/AIO1/ECSPrimengTable](https://github.com/AIO1/ECSPrimengTable)
 

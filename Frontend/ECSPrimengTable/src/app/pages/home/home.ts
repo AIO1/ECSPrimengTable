@@ -53,11 +53,11 @@ export class Home implements OnInit {
   };
   tableOptions: ITableOptions = createTableOptions({
     isActive: false,
-    urlTableConfiguration: "Main/TestGetCols",
-    urlTableData: "Main/TestGetData",
+    urlTableConfiguration: "Test/GetTableConfiguration",
+    urlTableData: "Test/GetTableData",
     excelReport: {
       ...DEFAULT_TABLE_OPTIONS.excelReport,
-      url: "Main/GenerateExcel"
+      url: "Test/GenerateExcel"
     },
     predefinedFilters: this.predefinedFiltersCollection,
     header: {
@@ -100,17 +100,15 @@ export class Home implements OnInit {
       ...DEFAULT_TABLE_OPTIONS.views,
       saveMode: TableViewSaveMode.DatabaseStorage,
       saveKey: "TEST",
-      urlGet: "Main/GetViews",
-      urlSave: "Main/SaveViews"
+      urlGet: "Test/GetViews",
+      urlSave: "Test/SaveViews"
     }
   });
-
-  /*[computeScrollHeight]="true"*/
   ngOnInit(): void {
     this.getEmploymentStatus(); // Retrieve the possible employment status
   }
   private getEmploymentStatus(){
-    this.sharedService.handleHttpResponse(this.sharedService.handleHttpGetRequest<IEmploymentStatus[]>(`Main/GetEmploymentStatus`)).subscribe({
+    this.sharedService.handleHttpResponse(this.sharedService.handleHttpGetRequest<IEmploymentStatus[]>(`Test/GetEmploymentStatus`)).subscribe({
       next: (responseData: IEmploymentStatus[]) => {
         responseData.forEach((data) => {
           this.employmentStatusPredefinedFilter.push({

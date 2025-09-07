@@ -2,8 +2,6 @@ import { Component, Input } from '@angular/core';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TagModule } from 'primeng/tag';
-import { DataType } from '../../enums';
-import { IColumnMetadata, IPredefinedFilter } from '../../interfaces';
 
 @Component({
   selector: 'ecs-table-predefined-filters',

@@ -10,7 +10,7 @@ namespace ECSPrimengTableExample.DTOs {
         public bool CanBeDeleted { get; set; }
 
         [ColumnAttributes("Username", dataAlignHorizontal: DataAlignHorizontal.Left, canBeHidden: false, columnDescription: "A random username", frozenColumnAlign: FrozenColumnAlign.Left, initialWidth: 400)]
-        public string Username { get; set; } = null!;
+        public string Username { get; set; } = string.Empty;
 
         [ColumnAttributes("Age", dataType: DataType.Numeric, columnDescription: "The age of the user")]
         public byte? Age { get; set; }

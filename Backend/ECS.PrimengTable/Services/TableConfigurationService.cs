@@ -18,12 +18,13 @@ internal static class TableConfigurationService {
     /// Thrown when the <see cref="PrimeNGAttributes"/> attribute is missing for a property.
     /// The exception message includes the name of the property that is missing attributes.
     /// </exception>
-    internal static TableConfigurationModel GetTableConfiguration<T>(int[]? allowedItemsPerPage = null, string? dateFormat = null, string? dateTimezone = null, string? dateCulture = null, byte maxViews = 10, bool convertFieldToLower = true) {
+    internal static TableConfigurationModel GetTableConfiguration<T>(int[]? allowedItemsPerPage = null, string? dateFormat = null, string? dateTimezone = null, string? dateCulture = null, byte? maxViews = null, bool convertFieldToLower = true) {
         allowedItemsPerPage ??= TableConfigurationDefaults.AllowedItemsPerPage;
         dateFormat ??= TableConfigurationDefaults.DateFormat;
         dateTimezone ??= TableConfigurationDefaults.DateTimezone;
         dateCulture ??= TableConfigurationDefaults.DateCulture;
-        List<ColumnMetadataModel> columnsInfo = []; // Prepare the list to be returned
+        maxViews ??= TableConfigurationDefaults.MaxViews;
+        List <ColumnMetadataModel> columnsInfo = []; // Prepare the list to be returned
         PropertyInfo[] properties = typeof(T).GetProperties(); // Get the properties of the provided class
         foreach(var property in properties) { // Loop through each property of the class
             ColumnAttributes? colAtt = property.GetCustomAttribute<ColumnAttributes>(); // Try to get the column attributes for the current property
@@ -68,7 +69,7 @@ internal static class TableConfigurationService {
             DateFormat = dateFormat,
             DateTimezone = dateTimezone,
             DateCulture = dateCulture,
-            MaxViews = maxViews
+            MaxViews = (byte)maxViews
         };
     }
 

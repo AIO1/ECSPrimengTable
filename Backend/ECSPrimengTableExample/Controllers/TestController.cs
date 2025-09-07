@@ -1,39 +1,39 @@
-using Data.PrimengTableReusableComponent;
 using Microsoft.AspNetCore.Mvc;
 using ECSPrimengTableExample.DTOs;
 using Swashbuckle.AspNetCore.Annotations;
-using System.Reflection;
-using Microsoft.EntityFrameworkCore;
-using Models.PrimengTableReusableComponent;
 using System.Globalization;
 using ECS.PrimengTable.Services;
 using ECS.PrimengTable.Models;
+using ECSPrimengTableExample.Interfaces;
 
 namespace ECSPrimengTableExample.Controllers {
     [ApiController]
     [Route("[controller]")]
-    public class MainController(primengTableReusableComponentContext context) : ControllerBase {
-        private readonly primengTableReusableComponentContext _context = context; // Injection of the context
+    public class TestController : ControllerBase {
+        private readonly ITestService _service;
+        public TestController(ITestService service) {
+            _service = service;
+        }
 
-        private static readonly MethodInfo stringDateFormatMethod = typeof(MyDBFunctions).GetMethod(nameof(MyDBFunctions.FormatDateWithCulture), [typeof(DateTime), typeof(string), typeof(string), typeof(string)])!; // Needed import for being able to perform global search on dates
-        #region HttpGet - TestGetCols
+        #region HttpGet - GetTableConfiguration
         [HttpGet("[action]")]
         [Produces("application/json")]
         [SwaggerOperation(
-            "Retrieves all information needed to init the table for Test.",
-            "This API function will get all the table columns data for Test needed, and some additional information like the date format and allowed items per page."
+            "Retrieves all information needed to init the table.",
+            "This API function will get all the table configuration needed."
             )]
         [SwaggerResponse(StatusCodes.Status200OK, "Returned if everything went OK.", typeof(TableConfigurationModel))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Returns an error message if an unexpected error occurs.", typeof(string))]
-        public IActionResult TestGetCols() {
+        public IActionResult GetTableConfiguration() {
             try {
-                return Ok(EcsPrimengTableService.GetTableConfiguration<TestDto>()); // Get all the columns information to be returned
-            } catch(Exception ex) { // Exception Handling: Returns a result with status code 500 (Internal Server Error) and an error message.
+                return Ok(_service.GetTableConfiguration()); // Get all the table configuration information to be returned
+            } catch(Exception ex) { // Exception Handling: Returns a result with status code 500 (Internal Server Error) and an error message
                 return StatusCode(StatusCodes.Status500InternalServerError, $"An unexpected error occurred: {ex.Message}");
             }
         }
         #endregion
-        #region HttpPost - TestGetData
+
+        #region HttpPost - GetTableData
         [HttpPost("[action]")]
         [Consumes("application/json")]
         [Produces("application/json")]
@@ -44,34 +44,18 @@ namespace ECSPrimengTableExample.Controllers {
         [SwaggerResponse(StatusCodes.Status200OK, "Returned if everything went OK.", typeof(TablePagedResponseModel))]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Returned if the items per page is not allowed or no columns have been specified.", typeof(string))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Returns an error message if an unexpected error occurs.", typeof(string))]
-        public IActionResult TestGetData([FromBody] TableQueryRequestModel inputData) {
+        public IActionResult GetTableData([FromBody] TableQueryRequestModel inputData) {
             try {
                 if(!EcsPrimengTableService.ValidateItemsPerPageAndCols(inputData.PageSize, inputData.Columns)) { // Validate the items per page size and columns
                     return BadRequest("Invalid page size or no columns for selection have been specified.");
                 }
-                IQueryable<TestDto> baseQuery = _context.TestTables
-                    .AsNoTracking()
-                    .Include(t => t.EmploymentStatus)
-                    .Select(
-                        u => new TestDto {
-                            RowID = u.Id,
-                            CanBeDeleted = u.CanBeDeleted,
-                            Username = u.Username,
-                            Age = u.Age,
-                            EmploymentStatusName = u.EmploymentStatus != null ? u.EmploymentStatus.StatusName : null,
-                            EmploymentStatusNameList = u.EmploymentStatusList,
-                            Birthdate = u.Birthdate,
-                            PayedTaxes = u.PayedTaxes
-                        }
-                    );
-                List<string> columnsToOrderByDefault = ["Age", "EmploymentStatusName"];
-                List<int> columnsToOrderByOrderDefault = [0, 0];
-                return Ok(EcsPrimengTableService.PerformDynamicQuery(inputData, baseQuery, stringDateFormatMethod, columnsToOrderByDefault, columnsToOrderByOrderDefault));
+                return Ok(_service.GetTableData(inputData));
             } catch(Exception ex) { // Exception Handling: Returns a result with status code 500 (Internal Server Error) and an error message.
                 return StatusCode(StatusCodes.Status500InternalServerError, $"An unexpected error occurred: {ex.Message}");
             }
         }
         #endregion
+
         #region HttpGet - GetEmploymentStatus
         [HttpGet("[action]")]
         [Produces("application/json")]
@@ -83,22 +67,13 @@ namespace ECSPrimengTableExample.Controllers {
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Returns an error message if an unexpected error occurs.", typeof(string))]
         public async Task<IActionResult> GetEmploymentStatus() {
             try {
-                List<EmploymentStatusDto> data = await _context.EmploymentStatusCategories
-                    .AsNoTracking()
-                    .OrderBy(t => t.StatusName)
-                    .Select(t => new EmploymentStatusDto {
-                        ID = t.Id,
-                        StatusName = t.StatusName,
-                        ColorR = t.ColorR,
-                        ColorG = t.ColorG,
-                        ColorB = t.ColorB
-                    }).ToListAsync();
-                return Ok(data);
+                return Ok(await _service.GetEmploymentStatusesCategories());
             } catch(Exception ex) { // Exception Handling: Returns a result with status code 500 (Internal Server Error) and an error message.
                 return StatusCode(StatusCodes.Status500InternalServerError, $"An unexpected error occurred: {ex.Message}");
             }
         }
         #endregion
+
         #region HttpPost - GetViews
         [HttpPost("[action]")]
         [Consumes("application/json")]
@@ -112,15 +87,13 @@ namespace ECSPrimengTableExample.Controllers {
         public async Task<IActionResult> GetViews([FromBody] ViewLoadRequestModel request) {
             try {
                 string username = "User test"; // This username should be retrieved from a token. This is just for example purposes and it has been hardcoded
-                List<ViewDataModel>? views = await EcsPrimengTableService.GetViewsAsync<TableView>(
-                     _context, username, request.TableViewSaveKey
-                 );
-                return Ok(views);
+                return Ok(await _service.GetViews(username, request));
             } catch(Exception ex) { // Exception Handling: Returns a result with status code 500 (Internal Server Error) and an error message.
                 return StatusCode(StatusCodes.Status500InternalServerError, $"An unexpected error occurred: {ex.Message}");
             }
         }
         #endregion
+
         #region HttpPost - SaveViews
         [HttpPost("[action]")]
         [Consumes("application/json")]
@@ -134,15 +107,27 @@ namespace ECSPrimengTableExample.Controllers {
         public async Task<IActionResult> SaveViews([FromBody] ViewSaveRequestModel request) {
             try {
                 string username = "User test"; // This username should be retrieved from a token. This is just for example purposes and it has been hardcoded
-                await EcsPrimengTableService.SaveViewsAsync<TableView>(
-                    _context, username, request.TableViewSaveKey, request.Views
-                );
+                await _service.SaveViews(username, request);
                 return Ok("Views saved OK");
             } catch(Exception ex) { // Exception Handling: Returns a result with status code 500 (Internal Server Error) and an error message.
                 return StatusCode(StatusCodes.Status500InternalServerError, $"An unexpected error occurred: {ex.Message}");
             }
         }
         #endregion
+
+        #region HttpPost - GenerateExcelReport
+        [HttpPost("[action]")]
+        [Consumes("application/json")]
+        [Produces("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")]
+        public IActionResult GenerateExcel([FromBody] ExcelExportRequestModel inputData) {
+            (bool success, byte[]? file, string errorMsg) = _service.GenerateExcelReport(inputData);
+            if(!success) {
+                return StatusCode(StatusCodes.Status500InternalServerError, errorMsg);
+            }
+            return File(file!, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", inputData.Filename);
+        }
+        #endregion
+
         #region HttpGet - TimezoneList
         [HttpGet("[action]")]
         [Produces("application/json")]
@@ -166,32 +151,5 @@ namespace ECSPrimengTableExample.Controllers {
             return Ok(timeZones);
         }
         #endregion
-        [HttpPost("[action]")]
-        [Consumes("application/json")]
-        [Produces("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")]
-        public IActionResult GenerateExcel([FromBody] ExcelExportRequestModel inputData) {
-            IQueryable<TestDto> baseQuery = _context.TestTables
-                   .AsNoTracking()
-                   .Include(t => t.EmploymentStatus)
-                   .Select(
-                       u => new TestDto {
-                           RowID = u.Id,
-                           CanBeDeleted = u.CanBeDeleted,
-                           Username = u.Username,
-                           Age = u.Age,
-                           EmploymentStatusName = u.EmploymentStatus != null ? u.EmploymentStatus.StatusName : null,
-                           EmploymentStatusNameList = u.EmploymentStatusList,
-                           Birthdate = u.Birthdate,
-                           PayedTaxes = u.PayedTaxes
-                       }
-                   );
-            List<string> columnsToOrderByDefault = new List<string> { "Age", "EmploymentStatusName" };
-            List<int> columnsToOrderByOrderDefault = new List<int> { 0, 0 };
-            (bool success, byte[]? file, string errorMsg) = EcsPrimengTableService.GenerateExcelReport(inputData, baseQuery, stringDateFormatMethod, columnsToOrderByDefault, columnsToOrderByOrderDefault);
-            if(!success) {
-                return StatusCode(StatusCodes.Status500InternalServerError, errorMsg);
-            }
-            return File(file!, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", inputData.Filename);
-        }
     }
 }

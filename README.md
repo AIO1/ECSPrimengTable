@@ -21,7 +21,7 @@ Some of the key features included are:
 - Advanced and predefined filters
 - Global search
 - Column resizing, reordering, toggling, and descriptions
-- Customizable cells (alignment, overflow, tooltips, copy on hover, …)
+- Customizable cells (alignment, overflow, tooltips, ...)
 - Conditional row styling
 - Table views for saving configurations
 - And much more!
@@ -189,8 +189,8 @@ If you have reached this step, congratulations! You have successfully set up and
 
 
 ---
-## 3 Integrating into existing projects
-This section provides a step-by-step guide on how to integrate the **ECS PrimeNG Table** into your existing projects.
+## 3 Integrating into a project
+This section provides a step-by-step guide on how to integrate the **ECS PrimeNG Table** into either a new or an existing project.
 
 
 
@@ -220,7 +220,7 @@ With these dependencies in place and the package installed, your backend is read
 
 
 
-### 3.2.1 Installing the package and peer dependencies
+#### 3.2.1 Installing the package and peer dependencies
 > [!NOTE]  
 > The **ECS PrimeNG Table** package is built for Angular 20 with PrimeNG 20 components. While it may work with newer versions, compatibility is not guaranteed, as PrimeNG frequently introduces breaking changes to its components.
 
@@ -244,7 +244,7 @@ In addition, make sure the following required dependencies are installed in your
 
 
 
-### 3.2.2 Configure Angular locales
+#### 3.2.2 Configure Angular locales
 The **ECS PrimeNG Table** component relies on Angular's **DatePipe** to render date cells.  
 To ensure correct formatting, you must import and register the locale(s) you plan to use in your application.
 
@@ -263,7 +263,7 @@ You can include this configuration at the global level (e.g., `app.module.ts` or
 
 
 
-### 3.2.3 Required services for ECS PrimeNG Table
+#### 3.2.3 Required services for ECS PrimeNG Table
 The **ECS PrimeNG Table** package defines two abstract services that you need to implement in your project:
 - **ECSPrimengTableHttpService**: handles HTTP requests for the table (GET and POST).
 - **ECSPrimengTableNotificationService**: handles notifications (toasts) for the table.
@@ -272,7 +272,7 @@ These services are abstract, meaning the package does not know how you want to h
 
 
 
-#### Example: HTTP service
+###### Example: HTTP service
 In your project, create a class that extends `ECSPrimengTableHttpService` and implements its abstract methods.  
 
 In this example, the implementation uses the main services provided by `SharedService`.
@@ -309,7 +309,7 @@ export class HttpService extends ECSPrimengTableHttpService {
 
 
 
-#### Example: Notification service
+###### Example: Notification service
 Similarly, you need to create a class that extends `ECSPrimengTableNotificationService` and implements its abstract methods.
 
 In this example, the implementation relies on the main services provided by `SharedService`.
@@ -336,7 +336,7 @@ export class NotificationService extends ECSPrimengTableNotificationService {
 
 
 
-#### Registering the services
+###### Registering the services
 Finally, register your implementations in your dependency injection system (for example, in `app.config.ts`):
 ```ts
 import { ECSPrimengTableHttpService, ECSPrimengTableNotificationService } from '@eternalcodestudio/primeng-table';
@@ -349,13 +349,13 @@ export const appConfig: ApplicationConfig = {
   ]
 }
 ```
-This tells the **ECS PrimeNG Table** package to use your custom services for handling HTTP requests and notifications.
+This tells the **ECS PrimeNG table** package to use your custom services for handling HTTP requests and notifications.
 
 
 
 ---
 ## 4 Functional overview
-The goal of this section is to provide a **user-level overview** of all the features included in the **ECS PrimeNG Table**. It allows you to quickly understand what the table can offer and how these functionalities can be utilized in your projects. This section provides a clear, at a glance view of everything available without diving into code.
+The goal of this section is to provide a **user-level overview** of all the features included in the **ECS PrimeNG table**. It allows you to quickly understand what the table can offer and how these functionalities can be utilized in your projects. This section provides a clear, at a glance view of everything available without diving into code.
 
 
 
@@ -388,6 +388,10 @@ Before diving into advanced features, it’s essential to start with the basics 
 - Will users be able to save their table configuration? If so, should it be persistent across sessions or only for the current session?
 
 Don’t worry if some of these concepts are unclear at this point, each feature will be explained individually in detail in the following sections.
+
+> [!NOTE]  
+> This solution works only to data that is already persisted in the database.
+> It is **not intended** to handle data currently being edited in memory on the front end and not yet saved to the database.
 
 
 
@@ -467,7 +471,7 @@ Users can change the alignment of any column using a dedicated column properties
 
 
 
-#### 4.3.4 Overflow Behaviour
+#### 4.3.4 Overflow behaviour
 When the content of a cell exceeds the available space, the **overflow behaviour** determines how the data is displayed. The available options are:
 
 - **Hidden**: Extra content is clipped and not displayed. This avoids breaking the table layout but may hide part of the information.
@@ -481,8 +485,11 @@ Users can adjust the overflow behaviour of each column through the **column prop
 
 
 
-#### 4.3.5 Modify Column properties menu
+#### 4.3.5 Column properties menu
 By default, the table includes a **column properties button** located at the top-left corner. This button opens a modal that allows users to customize how columns are displayed and formatted.
+<p align="center">
+    <img width="205" height="132" alt="Modify column properties button" src="https://github.com/user-attachments/assets/dcd3bbf3-585d-4a9a-adb6-490b8b419578"/>
+</p>
 
 This menu can be **disabled globally** if you do not want users to make any modifications to column properties or visibility.
 
@@ -498,9 +505,7 @@ When enabled, clicking the button opens a modal window that provides the followi
 At the bottom-right of the modal, users can either **Cancel** or **Apply** their changes:
 - If visibility changes are applied, the table will **refresh data** and reset filters and sorting.
 - If only formatting changes (alignment or overflow) are applied, the table will **preserve filters and sorting** without refreshing data.
-<p align="center">
-    <img width="205" height="132" alt="Modify column properties button" src="https://github.com/user-attachments/assets/dcd3bbf3-585d-4a9a-adb6-490b8b419578"/>
-</p>
+
 <p align="center">
     <img width="1232" height="527" alt="Modify column properties menu" src="https://github.com/user-attachments/assets/b6831580-ea14-4b33-81f9-587a7563fee6" />
 </p>
@@ -508,23 +513,86 @@ At the bottom-right of the modal, users can either **Cancel** or **Apply** their
 
 
 #### 4.3.6 Resize
+By default, all columns can be resized by the user. This feature can also be disabled for specific columns if desired.
+
+To resize a column, the user must move the cursor to the left edge of the column header. When the resize icon appears (<img width="18" height="18" alt="resize icon" src="https://github.com/user-attachments/assets/3a685f5d-41e4-4771-9b36-32084b6e8c85"/>), the user can press and hold the mouse button, then drag horizontally to adjust the column’s width.
+
+Some important design aspects to take into account:
+- Columns cannot be resized if they are not visible.
+- By design, resized columns will always maintain a minimal width (about 18px).
+- This ensures that users cannot make a column completely disappear by dragging it below this threshold.
+
+<p align="center">
+  <img width="757" height="432" alt="resize example" src="https://github.com/user-attachments/assets/f8cb1b9e-f518-4e65-bc1e-875a6de7afdd"/>
+</p>
+
 
 
 
 #### 4.3.7 Reorder
+The **ECS PrimeNG Table** also includes the ability for users to reorder the columns displayed in the table. This feature can be enabled or disabled per column.
+
+How it works is as follows:
+
+1. The user clicks and holds the **header** of the column they want to move. Important: The click must be on the main header area (not on icons and not on the edges, otherwise it will be detected as a resize action instead).
+2. When the action is done correctly, a **semi-transparent copy** of the column header (a "ghost" header) will appear and follow the mouse pointer.
+3. While holding down the mouse button, the user can drag this ghost header horizontally to the desired location.
+4. To place the column:
+    - The ghost header must be aligned to the **left side** of the column where the user wants to insert it.
+    - When the position is valid, **two arrows** (one above and one below) will appear as indicators.
+5. Once the arrows are visible, releasing the mouse button will reorder the column to the new position.
+
+> [!TIP]
+> As a design suggestion, it is recommended to keep column reordering consistent across the table:
+> - Either disable reordering for all columns, or allow it for all.
+> - If you need to restrict specific columns, it is best to apply this only to **frozen columns**.
+
+<p align="center">
+  <img width="1542" height="649" alt="column reorder example" src="https://github.com/user-attachments/assets/a731ffa5-87e6-414f-b3b3-6cf64d9e9de8"/>
+</p>
+
 
 
 #### 4.3.8 Frozen
+Some columns can be configured as **frozen**, depending on the table design.
+
+Frozen columns are always placed at one of the table edges: either on the **left** side or on the **right** side.
+
+These columns remain **visible at all times**, even when the user scrolls the table horizontally.
+
+<p align="center">
+  <img width="661" height="526" alt="frozen columns example" src="https://github.com/user-attachments/assets/1a38a4b3-e3e7-430b-ad90-189654363aa6"/>
+</p>
 
 
 
 #### 4.3.9 Descriptions
+Columns can include a **description** to provide additional context. When a column has a description, an **information icon** (<img width="18" height="18" alt="info icon" src="https://github.com/user-attachments/assets/3c3d602b-c4b9-4c7c-b3e7-d7906767916d"/>) will appear on the right side of the column header.
+
+If the user hovers the mouse over this icon, a **tooltip** will be displayed showing the column’s description.
+
+This feature is especially useful for columns that may require extra details to help users better understand the data being presented.
+
+<p align="center">
+  <img width="496" height="143" alt="column description example" src="https://github.com/user-attachments/assets/48b98b97-a922-4fec-895f-07ed6b1232b5"/>
+</p>
 
 
 
+#### 4.3.10 Cell tooltip
+By default, each cell in all columns will display a tooltip when the mouse hovers over it, except for columns configured with a boolean data type. The tooltip content will be the same as the cell’s value.
+
+It is also possible to configure the tooltip to display the value from another column (which also works with columns with boolean data type). This can be useful, for example, when a column only shows an icon to indicate whether an upload was successful or not: if the upload failed, hovering the mouse over the icon can show the corresponding error message in the tooltip.
+<p align="center">
+  <img width="461" height="195" alt="image" src="https://github.com/user-attachments/assets/56af01b5-49d6-4968-b381-09f8192d5353" />
+</p>
+
+> [!CAUTION]
+> Keep in mind that when referencing other columns, you can only access data from columns that are currently visible in the table. Therefore, avoid mapping tooltips to columns that users can hide, and instead use utility columns that remain always available.
 
 
-#### 4.3.10 Sorting
+
+#### 4.3.11 Sorting
 By default, all columns are sortable. You can disable sorting on specific columns if you do not want users to sort them.
 
 **How sorting works:**
@@ -540,117 +608,618 @@ You can also define a **default sorting** for one or more columns when the user 
 
 In the **top-left corner of the table**, there is a button to **clear all sorting** applied by the user. This button is enabled only when at least one user-applied sorting is active.
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/9b2cd936-7bd0-4054-9940-fa7dbc53a20f" alt="Clear sorting button">
+  <img width="230" height="140" src="https://github.com/user-attachments/assets/9b2cd936-7bd0-4054-9940-fa7dbc53a20f" alt="Clear sorting button">
 </p>
 
 > [!NOTE]
 > If no columns allow sorting, you may hide this button. However, it is **not recommended** to hide it if some columns are sortable, as this could confuse users by preventing them from resetting the sorting.
 
 
-#### 4.3.7 Filtering
+#### 4.3.12 Filtering
+By default, all columns in the table support **filtering**. This feature can also be disabled for specific columns if required.
+
+**How filtering works:**
+- Each column header includes a **filter icon**.
+- When the user clicks this icon, a filter menu appears.
+- The type of filter shown depends on the column’s **data type** or on a **predefined filter** (**predefined filters** explained in later sections).
+
+At the top of every filter menu (except for boolean types), the user can choose between:
+- **Match all** (default): only records that satisfy *all* rules defined for that column are returned.
+- **Match any**: records that satisfy *at least one* of the rules are returned.
+
+Users can define **up to two rules per column**, except for boolean columns.
+
+The available rules per data type are as follows:
+
+- **Text**
+  - Starts with
+  - Contains
+  - Does not contain
+  - Ends with
+  - Equals
+  - Does not equal
+
+- **Numeric**
+  - Equals
+  - Does not equal
+  - Less than
+  - Less than or equal to
+  - Greater than
+  - Greater than or equal to
+
+- **Boolean**
+  - A simple **true/false selector**
+
+- **Date**
+  - Date is
+  - Date is not
+  - Date is before
+  - Date is after
+ 
+- **List**
+  - If not setup as a predefined filter, it will work as the text filter.
+
+In the **top-left corner of the table**, there is a button to **clear all active filters**. This button is enabled only when at least one filter has been applied by the user.
+
+<p align="center">
+  <img width="224" height="92" alt="Button delete filters" src="https://github.com/user-attachments/assets/757cda01-d30d-40b4-a1c4-0d2d4b2919a7"/>
+</p>
+
+> [!NOTE]
+> If no columns allow filtering, you may hide the "Clear filters" button.  However, if some columns are filterable, it is **recommended to keep this button visible** to avoid confusing users and to provide a quick way to reset filters.
+
+An example for a filter menu for text data type:
+<p align="center">
+  <img width="588" height="296" alt="Filter menu example for text" src="https://github.com/user-attachments/assets/8453051f-80f8-44ca-8e0c-83ddf4bb8353" />
+</p>
+
+
+
+#### 4.3.13 Predefined filters
+> [!CAUTION]
+> Avoid using this feature on columns that can have a large number of different values, as it may cause performance issues.
+> Predefined filters are intended for columns with a limited set of known values.
+
+Predefined filters are a special type of filter where, instead of letting the user input any value, you limit the selection to a **dropdown with known values** for that column.
+
+Additionally, predefined filters allow you to **customize how values are displayed** in a cell. Supported display formats include:
+
+- **Plain text**
+- **Tags**, where you can personalize the tag color.
+- **Icons**, where you can customize the icon color and size. Icons can come from multiple libraries, such as PrimeNG icons, Font Awesome, Material Icons, etc...
+- **Images**, which will be displayed directly in the cell. The table manages image loading and displays a skeleton while downloading. Images can be hosted locally on your server or come from external URLs.
+
+The same formatting applied to the cell will also appear in the dropdown for filtering.
+
+The dropdown includes a **global search bar** and allows the user to select **one or more items** simultaneously (the filter applied is of type "OR").
+
+Predefined filters also have a special use case for columns of type `list`. In this case, all elements in the column are separated by `;`, allowing multiple items of your list to be displayed simultaneously applying the defined format.
+
+> [!TIP]
+> You can combine formats in predefined filters. For example, you could display an **image** and **plain text** together.
+<p align="center">
+  <img width="1052" height="453" alt="Predefined filter example" src="https://github.com/user-attachments/assets/90b15f1a-c1f2-42a9-b853-83583acb26f8" />
+</p>
+
+
+
+### 4.4 Row configurations
+The **ECS PrimeNG Table** allows you to configure various settings that control how each row behaves when displayed to users, as well as the actions associated with them.
+
+
+
+#### 4.4.1 Single select
+The ECS PrimeNG Table allows enabling **single row selection** for rows. When enabled, this feature lets the user select a single row.
+
+You can associate actions when a user selects or unselects a row. Additionally, you can access the currently selected row at any time and perform actions.
+
+Users can also **unselect a previously selected row**. There are two ways to configure this behavior:
+- **CTRL + Click (default):** Hold down the `CTRL` key and click the already selected row to unselect it.
+- **Click only:** Simply click the already selected row to unselect it, without needing to press `CTRL`.
+
+<p align="center">
+  <img width="1899" height="243" alt="Single row select example" src="https://github.com/user-attachments/assets/644c4bd3-512d-4768-9e56-d283e6d05827"/>
+</p>
+
+> [!NOTE]
+> On mobile devices (phones or tablets), the `CTRL` key configuration is ignored. Users can unselect a previously selected row by simply clicking it, as mobile devices do not have a `CTRL` key.
+
+> [!CAUTION]
+> If the default behavior (holding down `CTRL` to unselect) is enabled, repeatedly clicking the same row **without holding `CTRL`** will count as multiple selections.  
+> This can cause unintended behavior if actions are triggered on each selection, so plan your row actions accordingly.
+
+
+
+#### 4.4.2 Checkbox select
+If you need users to **select multiple rows simultaneously**, you can enable the **checkbox select** feature.  
+
+When enabled:  
+- A new column appears in the table for checkboxes.  
+- This column **cannot be hidden** or have its alignment changed via the `column properties menu`.  
+- The column also includes a **filter**, allowing users to filter between **selected** and **unselected** rows.  
+
+You can associate actions when a user selects or unselects a row using the checkbox. Additionally, you can access the currently selected rows at any time and perform actions based on them.  
+
+
+The **checkbox select column** has this additional customizable options:
+- **Header title:** Default is `"Selected"`  
+- **Alignment:** Default is left  
+- **Width:** Default is `150px`  
+- **Frozen column:** Default is `true`  
+- **Resizable by user:** Default is `false`  
+
+<p align="center">
+  <img width="311" height="362" alt="Checkbox row select example" src="https://github.com/user-attachments/assets/0e387896-6569-46f0-96cb-9f9f68536932" />
+</p>
+
+
+
+#### 4.4.3 Dynamic styling
+The ECS PrimeNG Table allows you to **apply dynamic styling to specific rows**, making them visually distinct from other rows or even changing their appearance at runtime.
+
+The most common use case is to **change the text format or background** of a row based on a specific column value.
+
+In the example below:
+- If the column `Employment status list` contains the value `Full-time`, the row will display its text in **bold** and **italic**.
+- If the value `Unemployed` exists in the column `Employment status list`, the row’s **background color** will change to **light red**, the **text color** to **dark red**, and the **font weight** will be **bold**.
+
+<p align="center">
+  <img width="1901" height="558" alt="Dynamic row styling" src="https://github.com/user-attachments/assets/2ef09870-110b-45d6-b4e8-14aef7baad51" />
+</p>
+
+> [!TIP]
+> A row can combine multiple styles simultaneously, applied from different rules.
+
+
+
+### 4.5 Action buttons
+The **ECS PrimeNG table** allows you to define **action buttons** both in the table header and within each row.
+
+The key difference between both of them:
+- **Header action buttons** do not have access to row data.
+- **Row action buttons** can access the data of the row in which they are clicked, allowing you to perform actions on a specific record.
+
+The customizable properties for action buttons are:
+- **Icon:** You can optionally display an icon and customize its **color** and **size**. Icons can come from multiple libraries, such as **PrimeNG icons**, **Font Awesome**, **Material Icons**, etc...
+- **Label:** Text to display on the button.
+- **Color:** The button color.
+- **Tooltip:** The text to be displayed when hovering the button.
+- **Condition:** Allows disabling the button if a specific condition is not met.
+- **Action:** The function or operation to execute when the button is clicked.
+
+An example of a header action button: 
+<p align="center">
+  <img width="158" height="66" alt="Header action buttons" src="https://github.com/user-attachments/assets/be7cbd0a-d148-42d7-8200-98669b8c5532" />
+</p>
+
+When at least one row action button is defined, a new column automatically appears to display the buttons for each row. This column has the following customizable options:**  
+- **Header title:** Default is `"Actions"`  
+- **Alignment:** Default is right  
+- **Width:** Default is `150px`  
+- **Frozen column:** Default is `true`  
+- **Resizable by user:** Default is `false`  
+
+An example of the actions columns with row action buttons:  
+<p align="center">
+  <img width="124" height="124" alt="Row action buttons" src="https://github.com/user-attachments/assets/af65a3f1-2cc7-455e-bf85-059f9e372d24" />
+</p>
+
+
+
+### 4.6 Global filter
+The **global filter** is enabled by default for all columns and appears in the **top-right corner** of the table. It allows users to **search for a keyword across all visible columns** of the table simultaneously.
+
+This feature can be disabled:
+- **Globally**, by hiding the global filter input box.
+- **Per column**, excluding specific columns from global search.
+
+The global filter does **not apply** to columns with a **boolean data type**, since there is no keyword to match.
+
+**How it works:**
+- When a user types a value in the global filter input box, the table:
+  - Returns all rows that contain the keyword in any of the displayed columns.
+  - Highlights the matched text in **yellow**.
+- The keyword can match **any part of the text**.
+- If the global filter input box contains a value, an **"X" icon** appears on the right, allowing the user to clear the filter with a single click.
+
+An example of the global filter:
+<p align="center">
+  <img width="1899" height="560" alt="Global filter example" src="https://github.com/user-attachments/assets/fb6308aa-7d6d-48ab-be4e-31580e595aa9"/>
+</p>
+
+> [!CAUTION]
+> Using the global filter may significantly affect performance, especially in large datasets.  
+> Consider the following best practices to keep it efficient:
+> - **Limit the maximum number of columns that can be visible at the same time**, since the global filter runs across all displayed columns.
+> - **Be cautious with date columns**, as the global filter converters dates to strings and it is more expensive.
+> - **Optimize your backend** for keyword searches (e.g., using proper indexes).
+> - **Limit the total number of records** retrieved at once if performance is a concern.
+
+
+### 4.7 Pagination and record count
+The **ECS PrimeNG table** automatically manages both pagination and record counting for you. This means only the data required for the current page is loaded on the front-end, optimizing performance and minimizing the amount of information transferred.
+
+At the bottom of the table you will find two main areas:
+- **Left side:** shows a message like *"Showing X records of X available"*.
+  - If filters are applied, the *"Showing X"* part reflects only the filtered results.
+  - The *"of X available"* part always displays the total number of records in the dataset, regardless of filters.
+
+- **Right side:** contains the pagination controls.
+  - Users can navigate pages by clicking a page number or using the arrows.
+  - A single arrow moves one page forward or backward.
+  - A double arrow jumps directly to the first or last page.
+
+Additionally, to the right of the pagination, there is a dropdown menu that lets users change how many items are displayed per page. The available options are fully customizable.
+
+An example of the **pagination and record count**:
+<p align="center">
+  <img width="1889" height="225" alt="Pagination and record count example" src="https://github.com/user-attachments/assets/7003a255-2516-4c2a-97c9-6084b4abb861" />
+</p>
+
+> [!CAUTION]
+> Avoid allowing very high numbers of items per page, as this may reduce performance.
+
+
+
+### 4.8 Copy cell content
+This feature is enabled by default and can be configured per table.
+
+It allows users to **press and hold on a cell** to copy its raw content directly to the clipboard.
+
+You can also customize:
+- The duration of the press before the copy action is triggered.  
+- Or disable the feature entirely if it is not needed.
+
+
+
+### 4.9 Dynamic height
+Enabled by default, this feature automatically adjusts the **maximum height** of the table to fit its container.
+
+The vertical scroll bar will appear **inside the table** to navigate records on the current page, while the **header and paginator remain visible** at all times.
+
+
+
+### 4.10 Deferred startup
+By default, when you access a page containing an **ECS PrimeNG table**, the table automatically loads its configuration and data.
+
+This behavior can be deferred if needed. For example, in any of these scenarios:
+- The user must perform an action before retrieving data.
+- Some data needs to be fetched first to populate predefined filters.
+- Any other scenario you might have.
+
+Once ready, the table can be manually updated through external calls.
+
+
+
+### 4.11 Excel report
+With minimal setup, you can allow users to **export table data** through an interactive menu with multiple export options.
+
+If enabled, an **Excel icon** will appear at the top right of the table. Clicking it opens a modal window like this:
+<p align="center">
+  <img width="1359" height="507" alt="Excel report example" src="https://github.com/user-attachments/assets/021010b2-815d-43b7-b09b-5b930af4feb6"/>
+</p>
+
+Users can customize the export with the following options:
+- **Report filename**: Can be prefilled with a name (default: "Report"). You can also prevent users from changing it.
+- **Include timestamp**: By default enabled. Adds the current time in the format `_{year}{month}{day}_{hours}{minutes}{seconds}_UTC` to the filename. Users can disabled it if they want to.
+- **Export columns**: Choose whether to export only visible columns or all columns (default: visible only).
+- **Filters to apply**: Decide whether table filters should apply to the export (default: not applied). If the **Selected rows** option is enabled and not set to "All rows," this option becomes mandatory applying the current filters.
+- **Sorts to apply**: Include table sorting in the export (default: not applied).
+- **Selected rows**: Appears only if the table has the **row checkbox selector** enabled. Users can export selected rows, unselected rows, or all rows regardless of selection.
+
+Once satisfied with the configuration, users can click **Export** to generate the Excel file, which will be automatically downloaded to their device.
+
+
+
+### 4.12 Views
+As seen in previous sections, users have many options to customize how data is displayed in the table.
+
+Sometimes users want to **save all these customizations** so they don’t have to remember or reapply them each time.
+
+The **ECS PrimeNG Table** provides this feature through **"Views"**.
+
+Views are saved **per table key and user**. To enable this, you just need to:
+- Assign a **unique key** to each table that should support views.
+- Choose how views are stored. Available options:
+  - **Session storage**: Views are kept only during the session. Closing the browser tab or browser will remove the views.
+  - **Local storage**: Views are stored locally in the browser. They persist longer but can be lost if the user clears browser data or switches devices.
+  - **Database storage**: The most versatile option. Views are stored in a database, allowing users to keep them permanently and access them across different browsers or devices. Requires additional setup.  
+
+> [!CAUTION]  
+> Table keys must be unique when using views. Otherwise, views from one table could appear in another, causing errors in your application.
+
+If views are enabled, users will see the following menu in the middle of the table header:
+<p align="center">
+  <img width="308" height="51" alt="Views top menu" src="https://github.com/user-attachments/assets/60b0f80e-ccd9-4077-aa1b-574a64e083da" />
+</p>
+
+This menu shows the currently applied view:
+- A text showing "---Select a view---" displays the name of the currently applied view (if a view is being applied).
+- The **replay button** reapplies the last configuration of the selected view.
+- The **eraser button** resets the table to its original state, as if no views were applied.
+
+When the text of the menu is pressed, the following modal is shown:
+<p align="center">
+  <img width="1359" height="455" alt="Views menu" src="https://github.com/user-attachments/assets/d8bf9234-02f3-4c6d-95a8-1558d1df2b69"/>
+</p>
+
+In the modal, users can manage table views and create new ones. For each view, the available options are:
+- **Load on startup**
+- **Apply the view**
+- **Update the view**
+- **Change the view alias**
+- **Delete the view**
+
+Rules and limitations of views:  
+- There can't be two views in the same table with the same alias.  
+- By default, a table can have up to 10 views (configurable if needed).  
+- **Load on startup**: If checked for a view, it will automatically apply the next time the table loads. Only one view can have this enabled at a time.
+
 
 
 ---
 ## 5 Feature-to-Code mapping
+The purpose of this section is to provide a table that maps the features described earlier to their corresponding technical implementation. Use the table below as a reference to perform this mapping:
+
+<div align="center">
+
+| Scope | Functional feature | Technical implementation |
+|-|-|-|
+| Table | [4.1 Planning your table](#41-planning-your-table) | [6.1 Understanding the basics](#61-understanding-the-basics) |
+| Table | [4.2 Date formatting](#42-date-formatting) | [6.2 Configuring date formats](#62-configuring-date-formats) |
+| Columns | [4.3.1 Data type](#431-data-type) | [6.3.1 Choosing the appropriate data type](#631-choosing-the-appropriate-data-type) |
+| Columns | [4.3.2 Visibility](#432-visibility) | [6.3.2 Configuring visibility and order](#632-configuring-visibility-and-order) |
+| Columns | [4.3.3 Horizontal and vertical alignment](#433-horizontal-and-vertical-alignment) | [6.3.3 Horizontal and vertical alignment](#633-horizontal-and-vertical-alignment) |
+| Columns | [4.3.4 Overflow behaviour](#434-overflow-behaviour) | [6.3.4 Overflow behaviour](#634-overflow-behaviour) |
+| Columns | [4.3.5 Column properties menu](#435-column-properties-menu) | [6.3.5 Column properties menu](#635-column-properties-menu) |
+| Columns | [4.3.6 Resize](#436-resize) | [6.3.6 Resize](#636-resize) |
+| Columns | [4.3.7 Reorder](#437-reorder) | [6.3.7 Reorder](#637-reorder) |
+| Columns | [4.3.8 Frozen](#438-frozen) | [6.3.8 Frozen](#638-frozen) |
+| Columns | [4.3.9 Descriptions](#439-descriptions) | [6.3.9 Descriptions](#639-descriptions) |
+| Columns | [4.3.10 Cell tooltip](#4310-cell-tooltip) | [6.3.10 Cell tooltip](#6310-cell-tooltip) |
+| Columns | [4.3.11 Sorting](#4311-sorting) | [6.3.11 Sorting](#6311-sorting) |
+| Columns | [4.3.12 Filtering](#4312-filtering) | [6.3.12 Filtering](#6312-filtering) |
+| Columns | [4.3.13 Predefined filters](#4313-predefined-filters) | [6.3.13 Predefined filters](#6313-predefined-filters) |
+| Rows | [4.4.1 Single select](#441-single-select) | [6.4.1 Single select](#641-single-select) |
+| Rows | [4.4.2 Checkbox select](#442-checkbox-select) | [6.4.2 Checkbox select](#642-checkbox-select) |
+| Rows | [4.4.3 Dynamic styling](#443-dynamic-styling) | [6.4.3 Dynamic styling](#643-dynamic-styling) |
+| Table | [4.5 Action buttons](#45-action-buttons) | [6.5 Setting up row an header action buttons](#65-setting-up-row-an-header-action-buttons) |
+| Table | [4.6 Global filter](#46-global-filter) | [6.6 Configuring the global filter](#66-configuring-the-global-filter) |
+| Table | [4.7 Pagination and record count](#47-pagination-and-record-count) | [6.7 Pagination properties](#67-pagination-properties) |
+| Table | [4.8 Copy cell content](#48-copy-cell-content) | [6.8 Copy cell content](#68-copy-cell-content) |
+| Table | [4.9 Dynamic height](#49-dynamic-height) | [6.9 Dynamic height](#69-dynamic-height) |
+| Table | [4.10 Deferred startup](#410-deferred-startup) | [6.10 Deferred startup](#610-deferred-startup) |
+| Excel report | [4.11 Excel report](#411-excel-report) | [6.11 Configuring Excel reports](#611-configuring-excel-reports) |
+| Views | [4.12 Views](#412-views) | [6.12 Setting up views](#612-setting-up-views) |
+
+</div>
 
 
 
 ---
 ## 6 Technical overview
+The goal of this section is to provide a technical overview of the **ECS PrimeNG table**. It dives into the configuration options and implementation details, giving developers a clear understanding of how the table works under the hood. This section helps you grasp the mechanics, and integrate the table efficiently into your projects.
 
 
 
----
-## 7 Component reference
+### Recommended architecture
+When building endpoints that involve business logic, data access, or complex operations, it is recommended to follow a layered architecture to promote **separation of concerns**, **testability**, and **maintainability**.  
+
+A typical structure (and the one used in the example project) could look like this:
+```
+Controller
+└─> IService (Interface)
+    └─> Service (Implementation)
+        └─> IRepository (Interface)
+            └─> Repository (Implementation, Data Access)
+```
+
+**Explanation of each layer:**
+- **Controller**:  
+  - Handles HTTP requests from the front-end.
+  - Validates input parameters.
+  - Calls the corresponding service interface method.
+
+- **IService (Interface)**:  
+  - Defines the contract for your service.
+  - Ensures consistency and makes it easier to mock or replace the service in unit tests.
+
+- **Service (Implementation)**:  
+  - Implements the business logic.
+  - Receives requests from the controller and transforms them into repository queries.
+  - Handles additional logic such as mapping DTOs, filtering, sorting, and pagination.
+
+- **IRepository (Interface)**:  
+  - Defines the contract for data access operations.  
+  - Provides abstraction over the underlying data source (e.g., EF Core, external APIs).  
+  - Makes it easier to mock or swap implementations in unit tests.  
+  
+- **Repository**:  
+  - Directly interacts with the database or other data sources.
+  - Executes queries and returns raw data.
+  - Keeps data access logic separated from business logic for maintainability.
+
+> [!TIP]  
+> This layered approach ensures **separation of concerns**, **testability**, and **scalability**.  
+> The `Controller` only orchestrates requests, the `Service` handles business rules, and the `Repository` deals with raw data.
+> Separating layers into different projects is optional but recommended for larger applications.  
+> This structure promotes **clean architecture** and makes it easier to scale or replace parts independently.
 
 
----
-## 8 Editing ECS PrimeNG table and integrating locally
 
+### 6.1 Understanding the basics
+For every **ECS PrimeNG table** you want to use, even when displaying simple data without additional features like custom buttons or specific data types (e.g., date, list), the following minimum setup is required:
 
----
-## 4 "PrimeNG Table reusable component" all features
-The aim of this chapter is to explain all the things that have to be taken into account and what different functionalities are included (and how to implement them).
+- **Backend:**
+  - **DTO:** A Data Transfer Object decorated with a special attribute that specifies the parameters used to configure the table columns.
+  - **Endpoints:** Two endpoints are required. One provides the table configuration, and the other retrieves paginated data while applying all sorting and filtering rules.
 
+- **Frontend:**
+  - **Component:** Import the `ECSPrimengTable` in the component that will display the table.
+  - **Template:** Use the `<ecs-primeng-table>` element in the component's HTML and configure the minimal required properties.
 
-### 4.1 Starting with a simple table
-Assuming you have already done all the needed setup steps in your project and you already have your mapped models that you wish to work with ready, each time you want to add a new table to your application you should do the following things in order:
-1. Create a DTO / Projection of the final data that must be shown in the table. For example if you want to show 3 columns that are strings, you should have a DTO with 3 strings and an additional property that will act as the row ID. The previously DTO / Projection needs to have every of its elements decorated with the "PrimeNGAttribute", which is used to define the type of data of the column and how you want the column to behave in the front-end.
-2. Create an endpoint in your API that will be used later on in the front-end to retrieve all the columns information (and the date mask).
-3. Create an endpoint in the API that will be used by the table in the front-end to request the data.
-4. In your desired component's HTML, add the table and define the needed properties. Additionally, in the TypeScript part of your component you might need to define additional things depending on what you want to show in the table and what features you wish to use.
+In this section, we will focus on creating a table that displays simple data without row actions or other advanced features.
 
-We will cover in this section all these steps.
+#### 6.1.1 Backend
+##### 6.1.1.1 Setting up the DTO
+First, you always need a DTO that represents the full table, including all possible columns, both internal-use columns and the columns displayed to the user (columns that are always visible or optionally hideable).  
 
+Your DTO must include a `RowID` of type `Guid` with this exact name, as many of the table's advanced features rely on it (e.g., the row selector). The values in this column should be unique.
 
-#### 4.1.1 Creating a basic DTO / Projection
-As mentioned before, lets assume we want to have 3 columns. One of type string, another one of type numeric and a third one of type bool. Our DTO / Projection will look something like this:
+Here is an example DTO with a `RowID` and three basic data types: text, numeric, and boolean:
 ```C#
 public class TestDto {
-	[PrimeNGAttribute(sendColumnAttributes: false)]
+	[ColumnAttributes(sendColumnAttributes: false)]
 	public Guid RowID { get; set; }
 
-	[PrimeNGAttribute("Username")]
-	public string Username { get; set; } = null!;
+	[ColumnAttributes("Username")]
+	public string Username { get; set; } = string.Empty;
 
-	[PrimeNGAttribute("Money", dataType: EnumDataType.Numeric)]
+	[ColumnAttributes("Money", dataType: DataType.Numeric)]
 	public decimal Money { get; set; }
 
-	[PrimeNGAttribute("Has a house", dataType: EnumDataType.Boolean)]
+	[ColumnAttributes("Has a house", dataType: DataType.Boolean)]
 	public bool House { get; set; }
 }
 ```
+From the above DTO, we have the basics for a table with three visible columns and a fourth column (`RowID`) that is hidden from end-users but available in the front-end fo us.
 
-Every DTO / Projection should contain the "RowID" property (must use this exact name), specially if you want to perform actions with the rows.
+Some important points about this example DTO:
+- Every property intended as a column has a `ColumnAttributes` decorator. This signals to **ECS PrimeNG table** that it should include this property as a column. Properties without this decorator are ignored and will not appear in the table.
+- The `RowID` column has `sendColumnAttributes` set to `false`, ensuring its data is always available in the front-end while remaining hidden in the table. Users cannot toggle its visibility. This option can be applied to any column you want to keep hidden from users but accessible in the front-end.
+- The first parameter of `ColumnAttributes` specifies the column name displayed in the front-end. In this example, the visible columns will be `"Username"`, `"Money"`, and `"Has a house"`.
+- It is important to correctly handle nullable and non-nullable properties to ensure proper mapping. For instance, if `"Username"` cannot be null in your dataset, declare it as `string` and initialize it with `string.Empty`. If it can be null, use `string?` without assigning a default value.
+- By default, columns are treated as `Text`. To use other data types, specify the `dataType` parameter in `ColumnAttributes`.
+- The order of the properties in the class determines their left-to-right order in the final table on the front-end. Exceptions are frozen columns: those set to the left appear before all other columns, and those set to the right appear at the end of the table.
 
-As it can be seen from the "TestDto" class, each property must use the "PrimeNGAttribute" decorator. This decorator ensures that when using the function that builds all the column data that is needed in the front-end, it includes all the relevant information to work properly.
+> [!NOTE]
+> The possible data types are:
+> - **Text**: For string values.
+> - **Numeric**: For numbers like `int`, `long`, `decimal`, etc.
+> - **Boolean**: For `bool` values.
+> - **Date**: For `DateTime` values. Additional customization options are explained in later chapters.
+> - **List**: A specialized `Text` type used with `predefined filters` to represent data separated by `;`, including tags, icons, images, or text.
 
-"RowID" has the "sendColumnAttributes" set to false, since this will make sure that the RowID contents is not shown in the table, but is available in the front-end to retireve its data to perform actions.
+> [!IMPORTANT]
+> Always include a `RowID` property in your class with a `ColumnAttributes` decorator and `sendColumnAttributes` set to `false`. This column is required by the table for rendering performance and for advanced features. Ensure that the values in this column are **unique**.
 
-"Username" has only a string declared that matches the first argument of the "PrimeNGAttribute", which is the column name. This is the name that will be displayed in the column header. There is no need to declare what data type is, since by default the data type that will be used is "Text".
-
-"Money", apart from the column header title, needs to have its data type explicitly declared, since it will be different than "Text".
-
-"House", has its column header title and data type declared in the "PrimeNGAttribute" decorator.
-
-> [!IMPORTANT]  
-> There are four types of data types handled by the table that affect the filters that are shown to the user. The four data types are:
-> - **Text**: Used to handle strings.
-> - **Numeric**: For numbers like longs, decimals, ints...
-> - **Boolean**: For bool type values.
-> - **Date**: For datetime data types. This data type can have some additional customization which is explained in later chaptets.
-
-> [!IMPORTANT]  
-> The order in which you include your columns in the DTO is important, since they will be place in order from left to right in the table the first time the table loads. This order could be overriden by frozen columns (explained in further sections of this guide).
-
-> [!NOTE]  
-> Including the property "RowID" is optional. It is only needed if you are going to perform actions with your rows or if you are going to use the row selection feature.
-
-> [!WARNING]  
-> Please, make sure that every element in the DTO / Projection has a PrimeNGAttribute, or the column fetching endpoint won't work properly!
+> [!TIP]
+> All properties intended to be table columns should have a `ColumnAttributes` decorator. This tells **ECS PrimeNG table** to include them as columns. Properties without this decorator are ignored and will not appear in the table.
 
 > [!CAUTION]
-> Manage your ID of each row in a property that must be exactly named "RowID". This is specially important if you are also going to use the row selection feature.
-
-> [!CAUTION]
-> Do not include a property in your DTO / Projection named "Selector", specially if you will be using the row selection feature in a table, as this can cause issues since this is the virtual column name that is used behind the scenes to manage this scenario.
+> Avoid adding a property named `Selector` in your class, especially if you plan to use the row selection feature. This name is reserved as a virtual column used internally by the table, and using it can cause conflicts.
 
 
-#### 4.1.2 Creating the column data endpoint
-This endpoint in your controller will be used to fetch all the columns information that is used by the table. To do so, you just need to create and endpoint that calls "GetColumnsInfo" from the "PrimeNGHelper" and provide the DTO / Projection that you creted in previous steps, and the function will do the rest for you. From the [MainController.cs](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/Controllers/MainController.cs) in the example project, and endpoint to fetch all the column data needed would look like this:
+
+##### 6.1.1.2 Setting up the endpoints
+###### Creating the table configuration endpoint
+The first required endpoint is the **table configuration endpoint**, which provides the **minimum configuration** needed for the table to work.  
+
+Together with the data endpoint, it forms the **core setup** required to get the table running. Additional endpoints and logic can be added later as needed.
+
+This endpoint should return a `TableConfigurationModel`, which can obtained by calling in your service:
 ```c#
-[HttpGet("[action]")]
-public IActionResult TestGetCols() {
-    try {
-        return Ok(PrimeNGHelper.GetColumnsInfo<TestDto>()); // Get all the columns information to be returned
-    } catch(Exception ex) { // Exception Handling: Returns a result with status code 500 (Internal Server Error) and an error message.
-        return StatusCode(StatusCodes.Status500InternalServerError, $"An unexpected error occurred: {ex.Message}");
+EcsPrimengTableService.GetTableConfiguration<T>()
+```
+
+Where `T` is your DTO class.
+
+The `GetTableConfiguration` method automatically inspects the `ColumnAttributes` defined in the DTO (`T`) and builds a `TableConfigurationModel` containing:
+
+- **Column definitions**: Metadata about each column (name, type, visibility, order, frozen state, etc.).
+- **Allowed items per page**: The pagination options available for the table.
+- **Date format**: The default format for displaying date values.
+- **Timezone**: The timezone used for date/time rendering.
+- **Culture**: The culture used for numeric and date formatting.
+- **Max allowed views**: The maximum number of views a user can save.
+
+By default, the following values are applied if no overrides are provided:
+```c#
+internal class TableConfigurationDefaults {
+    public static readonly int[] AllowedItemsPerPage = [10, 25, 50];
+    public static readonly string DateFormat = "dd-MMM-yyyy HH:mm:ss zzzz";
+    public static readonly string DateTimezone = "+00:00";
+    public static readonly string DateCulture = "en-US";
+    public static readonly byte MaxViews = 10;
+}
+```
+
+**_Example_**
+
+Below is a minimal working example showing how to implement the **table configuration endpoint** and its corresponding service assuming that you use the `TableConfigurationDefaults`. There is no need for the repository since there is no data access needed in this endpoint.
+
+The **table configuration** endpoint in your controller might look like this:
+```c#
+[ApiController]
+[Route("[controller]")]
+public class TestController : ControllerBase {
+    private readonly ITestService _service;
+
+    public TestController(ITestService service) {
+        _service = service;
+    }
+
+    [HttpGet("[action]")]
+    public IActionResult GetTableConfiguration() {
+        try {
+            return Ok(_service.GetTableConfiguration()); // Delegates the configuration retrieval to the service
+        } catch (Exception ex) {
+            return StatusCode(StatusCodes.Status500InternalServerError, 
+                $"An unexpected error occurred: {ex.Message}");
+        }
     }
 }
 ```
 
+The `GetTableConfiguration` from your `service` might look like this (minimal service definition):
+```c#
+using ECSPrimengTable.Services;
+using ECSPrimengTableExample.DTOs;
+using ECSPrimengTableExample.Interfaces;
 
-#### 4.1.3 Creating the table data endpoint
+namespace ECSPrimengTableExample.Services {
+    public class TestService : ITestService {
+
+        public TableConfigurationModel GetTableConfiguration() {
+            return EcsPrimengTableService.GetTableConfiguration<TestDto>();
+        }
+    }
+}
+```
+
+> [!TIP]
+> Replace `TestDto` with the DTO used for your table. The service will automatically read its column definitions and build the configuration accordingly.
+
+
+
+###### Creating the table data endpoint
+The second required endpoint is the **table data endpoint**, which provides the **minimum data needed** to populate the table.
+
+This endpoint, together with the table configuration endpoint, forms the **core setup** required for the table to function. It handles data retrieval, filtering, sorting, and pagination, ensuring that the table displays the correct rows based on user interaction and query parameters. Additional endpoints or business logic can be added later as needed.
+
+
+
+
+
+```c#
+using ECSPrimengTable.Services;
+using ECSPrimengTableExample.DTOs;
+using ECSPrimengTableExample.Interfaces;
+
+namespace ECSPrimengTableExample.Services {
+    public class TestService : ITestService {
+        private readonly ITestRepository _repo;
+
+        public TestService(ITestRepository repository) {
+            _repo = repository;
+        }
+
+        public TableConfigurationModel GetTableConfiguration() {
+            return EcsPrimengTableService.GetTableConfiguration<TestDto>();
+        }
+    }
+}
+```
 Another endpoint that must be created in the API is the one responsible of building the query dynamically and then retrieving just the needed data from the database. An example on how to do this can be found in [MainController.cs](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/Controllers/MainController.cs) in the example project under the endpoint "TestGetData". This is how it looks:
 ```c#
 public IActionResult TestGetData([FromBody] PrimeNGPostRequest inputData) {
@@ -716,6 +1285,129 @@ When the PrimeNGPostReturn is retrieved by the table component in the frontend, 
 
 > [!TIP]
 > It is strongly recommended that the IQueryable has the "AsNoTracking" declaration, since we don't want to track the entity for any modified data and this gives a slight performance boost. 
+
+
+#### 6.1.2 Frontend
+
+
+
+### 6.2 Configuring date formats
+
+
+
+### 6.3 Columns
+
+
+
+#### 6.3.1 Choosing the appropriate data type
+
+
+
+#### 6.3.2 Configuring visibility and order
+
+
+
+#### 6.3.3 Horizontal and vertical alignment
+
+
+
+#### 6.3.4 Overflow behaviour
+
+
+
+#### 6.3.5 Column properties menu
+
+
+
+#### 6.3.6 Resize
+
+
+
+#### 6.3.7 Reorder
+
+
+
+#### 6.3.8 Frozen
+
+
+
+#### 6.3.9 Descriptions
+
+
+
+#### 6.3.10 Cell tooltip
+
+
+
+#### 6.3.11 Sorting
+
+
+
+#### 6.3.12 Filtering
+
+
+
+#### 6.3.13 Predefined filters
+
+
+
+### 6.4 Rows
+
+
+
+#### 6.4.1 Single select
+
+
+
+#### 6.4.2 Checkbox select
+
+
+
+#### 6.4.3 Dynamic styling
+
+
+
+### 6.5 Setting up row an header action buttons
+
+
+
+### 6.6 Configuring the global filter
+
+
+
+### 6.7 Pagination properties
+
+
+
+### 6.8 Copy cell content
+
+
+
+### 6.9 Dynamic height
+
+
+
+### 6.10 Deferred startup
+
+
+
+### 6.11 Configuring Excel reports
+
+
+
+### 6.12 Setting up views
+
+
+---
+## 7 Component reference
+
+
+---
+## 8 Editing ECS PrimeNG table and integrating locally
+
+
+---
+
 
 
 #### 4.1.4 Implementing a new table in the frontend
