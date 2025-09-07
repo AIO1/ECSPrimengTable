@@ -60,7 +60,7 @@ namespace ECS.PrimengTable.Models {
         /// </summary>
         public bool CanBeFiltered { get; set; }
 
-        public string FilterPredifinedValuesName { get; set; } = null!;
+        public string FilterPredefinedValuesName { get; set; } = null!;
 
         /// <summary>
         /// Gets or sets a value indicating whether the column can be globally filtered.

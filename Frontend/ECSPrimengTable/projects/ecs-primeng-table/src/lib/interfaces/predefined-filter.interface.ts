@@ -1,4 +1,4 @@
-export interface IPredifinedFilter {
+export interface IPredefinedFilter {
     /** 
      * The value of the PrimeNG icon.
      */

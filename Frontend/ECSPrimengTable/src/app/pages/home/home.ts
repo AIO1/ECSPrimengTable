@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { ITableButton, ECSPrimengTable, IPredifinedFilter, TableViewSaveMode, ITableOptions, DEFAULT_TABLE_OPTIONS, createTableOptions } from 'ecs-primeng-table';
+import { ITableButton, ECSPrimengTable, IPredefinedFilter, TableViewSaveMode, ITableOptions, DEFAULT_TABLE_OPTIONS, createTableOptions } from 'ecs-primeng-table';
 import { SharedService } from '../../core/services/shared.service';
 import { IEmploymentStatus } from './employment-status.interface';
 
@@ -47,9 +47,9 @@ export class Home implements OnInit {
     }
   ];
 
-  employmentStatusPredifinedFilter: IPredifinedFilter[] = []; // Contains the data for the possible employment statuses
-  predefinedFiltersCollection: { [key: string]: IPredifinedFilter[] } = {
-    'employmentStatusPredifinedFilter': this.employmentStatusPredifinedFilter
+  employmentStatusPredefinedFilter: IPredefinedFilter[] = []; // Contains the data for the possible employment statuses
+  predefinedFiltersCollection: { [key: string]: IPredefinedFilter[] } = {
+    'employmentStatusPredefinedFilter': this.employmentStatusPredefinedFilter
   };
   tableOptions: ITableOptions = createTableOptions({
     isActive: false,
@@ -113,7 +113,7 @@ export class Home implements OnInit {
     this.sharedService.handleHttpResponse(this.sharedService.handleHttpGetRequest<IEmploymentStatus[]>(`Main/GetEmploymentStatus`)).subscribe({
       next: (responseData: IEmploymentStatus[]) => {
         responseData.forEach((data) => {
-          this.employmentStatusPredifinedFilter.push({
+          this.employmentStatusPredefinedFilter.push({
             value: data.statusName,
             name: data.statusName,
             displayTag: true,

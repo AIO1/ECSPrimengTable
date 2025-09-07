@@ -1,5 +1,5 @@
 @if (value !== null) {
-  @if (col.filterPredifinedValuesName && col.filterPredifinedValuesName.length > 0) {
+  @if (col.filterPredefinedValuesName && col.filterPredefinedValuesName.length > 0) {
     <div [ngStyle]="{
             'justify-content': getDataAlignHorizontalAsText(col.dataAlignHorizontal),
             'align-items': getDataAlignVerticalAsText(col.dataAlignVertical)
@@ -14,7 +14,7 @@
                 [tooltipDisabled]="!col.dataTooltipShow"
                 [showDelay]="700"
                 tooltipPosition="top">
-                <ecs-table-predifined-filters [option]="option" [col]="col"/>
+                <ecs-table-predefined-filters [option]="option" [col]="col"/>
             </div>
           }
         }
@@ -27,7 +27,7 @@
             [tooltipDisabled]="!col.dataTooltipShow"
             [showDelay]="700"
             tooltipPosition="top">
-            <ecs-table-predifined-filters [option]="option" [col]="col"/>
+            <ecs-table-predefined-filters [option]="option" [col]="col"/>
           </div>
         }
       }

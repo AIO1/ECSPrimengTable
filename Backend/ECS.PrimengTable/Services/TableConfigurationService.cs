@@ -51,7 +51,7 @@ internal static class TableConfigurationService {
                 CanBeReordered = colAtt.CanBeReordered,
                 CanBeSorted = colAtt.CanBeSorted,
                 CanBeFiltered = colAtt.CanBeFiltered,
-                FilterPredifinedValuesName = colAtt.FilterPredifinedValuesName,
+                FilterPredefinedValuesName = colAtt.FilterPredefinedValuesName,
                 CanBeGlobalFiltered = colAtt.CanBeGlobalFiltered,
                 ColumnDescription = colAtt.ColumnDescription,
                 DataTooltipShow = colAtt.DataTooltipShow,

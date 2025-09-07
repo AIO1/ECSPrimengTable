@@ -15,10 +15,10 @@ namespace ECSPrimengTableExample.DTOs {
         [ColumnAttributes("Age", dataType: DataType.Numeric, columnDescription: "The age of the user")]
         public byte? Age { get; set; }
 
-        [ColumnAttributes("Employment status", filterPredifinedValuesName: "employmentStatusPredifinedFilter", columnDescription: "A predifined filter that shows the employment status of the user")]
+        [ColumnAttributes("Employment status", filterPredefinedValuesName: "employmentStatusPredefinedFilter", columnDescription: "A predefined filter that shows the employment status of the user")]
         public string? EmploymentStatusName { get; set; }
 
-        [ColumnAttributes("Employment status list", dataType: DataType.List, dataAlignHorizontal: DataAlignHorizontal.Left, filterPredifinedValuesName: "employmentStatusPredifinedFilter", columnDescription: "A list of employment statuses separated by ; in the database")]
+        [ColumnAttributes("Employment status list", dataType: DataType.List, dataAlignHorizontal: DataAlignHorizontal.Left, filterPredefinedValuesName: "employmentStatusPredefinedFilter", columnDescription: "A list of employment statuses separated by ; in the database")]
         public string? EmploymentStatusNameList { get; set; }
 
         [ColumnAttributes("Birthdate", dataType: DataType.Date, dataAlignHorizontal: DataAlignHorizontal.Left, startHidden: true, columnDescription: "When was the user born")]

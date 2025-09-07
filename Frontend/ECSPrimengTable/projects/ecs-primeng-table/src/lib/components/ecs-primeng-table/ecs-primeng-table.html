@@ -167,7 +167,7 @@
                                     <p-sortIcon [field]="col.field"></p-sortIcon>
                                 }
                                 @if(col.canBeFiltered){
-                                    @if (!col.filterPredifinedValuesName || col.filterPredifinedValuesName.length === 0) {
+                                    @if (!col.filterPredefinedValuesName || col.filterPredefinedValuesName.length === 0) {
                                         <p-columnFilter [type]="getDataTypeAsText(col.dataType)" [field]="col.field" display="menu" [showButtons]="false"/>
                                     } @else {
                                         <p-columnFilter
@@ -176,14 +176,14 @@
                                             [showOperator]="false" [showAddButton]="false" [showClearButton]="false" [showApplyButton]="false">
                                             <ng-template #filter>
                                                 <p-multiSelect
-                                                    [style]="{ minWidth: '400px' }" [(ngModel)]="predifinedFiltersSelectedValuesCollection[col.filterPredifinedValuesName]"
-                                                    [options]="getPredifinedFilterValues(col.filterPredifinedValuesName)" placeholder="Any value"
-                                                    (onChange)="onPredifinedFilterChange(col.field, $event.value)" optionLabel="name">
+                                                    [style]="{ minWidth: '400px' }" [(ngModel)]="predefinedFiltersSelectedValuesCollection[col.filterPredefinedValuesName]"
+                                                    [options]="getPredefinedFilterValues(col.filterPredefinedValuesName)" placeholder="Any value"
+                                                    (onChange)="onPredefinedFilterChange(col.field, $event.value)" optionLabel="name">
                                                         <ng-template #selectedItems>
-                                                        @if (predifinedFiltersSelectedValuesCollection[col.filterPredifinedValuesName].length > 0) {
+                                                        @if (predefinedFiltersSelectedValuesCollection[col.filterPredefinedValuesName].length > 0) {
                                                             <div style="display: flex; align-items: center; gap: 0.5rem;">
                                                                 <div>
-                                                                    {{predifinedFiltersSelectedValuesText(col.filterPredifinedValuesName)}}
+                                                                    {{predefinedFiltersSelectedValuesText(col.filterPredefinedValuesName)}}
                                                                 </div>
                                                             </div>
                                                         } @else {
@@ -192,7 +192,7 @@
                                                         </ng-template>
                                                         <ng-template let-option pTemplate="item">
                                                             <div style="display: inline-block; vertical-align: middle;">
-                                                                <ecs-table-predifined-filters [option]="option" [col]="col"/>
+                                                                <ecs-table-predefined-filters [option]="option" [col]="col"/>
                                                             </div>
                                                         </ng-template>
                                                 </p-multiSelect>
@@ -231,7 +231,7 @@
                         [alignFrozen]="getFrozenColumnAlignAsText(col.frozenColumnAlign)" [style.text-align]="getDataAlignHorizontalAsText(col.dataAlignHorizontal)" [style.vertical-align]="getDataAlignVerticalAsText(col.dataAlignVertical)">
                         <ecs-table-cell [col]="col" [rowData]="rowData" [globalSearchText]="globalSearchText" 
                             [dateFormat]="dateFormat" [dateTimezone]="dateTimezone" [dateCulture]="dateCulture"
-                            [predifinedFiltersCollection]="tableOptions.predefinedFilters"/>
+                            [predefinedFiltersCollection]="tableOptions.predefinedFilters"/>
                     </td>
                 }
                 @if (tableOptions.rows.checkboxSelector.enabled && tableOptions.rows.checkboxSelector.alignmentRight) {

@@ -15,7 +15,7 @@ namespace ECS.PrimengTable.Attributes {
         public bool CanBeReordered { get; }
         public bool CanBeSorted { get; }
         public bool CanBeFiltered { get; }
-        public string FilterPredifinedValuesName { get; }
+        public string FilterPredefinedValuesName { get; }
         public bool CanBeGlobalFiltered { get; }
         public bool SendColumnAttributes { get; }
         public string ColumnDescription { get; }
@@ -41,7 +41,7 @@ namespace ECS.PrimengTable.Attributes {
         /// <param name="canBeReordered">If <c>true</c>, the column can be reordered.</param>
         /// <param name="canBeSorted">If <c>true</c>, the column can be sorted.</param>
         /// <param name="canBeFiltered">If <c>true</c>, the column can be filtered.</param>
-        /// <param name="filterPredifinedValuesName">The name used on typescript to store the list of allowed values in the dropdown.</param>
+        /// <param name="filterPredefinedValuesName">The name used on typescript to store the list of allowed values in the dropdown.</param>
         /// <param name="canBeGlobalFiltered">If <c>true</c>, the data can be globally filtered.</param>
         /// <param name="sendColumnAttributes">If <c>true</c>, the column attirbutes will be sent. If <c>false</c> column attributes won't be sent and has to be explicitly declared in PerformDynamicQuery to be sent</param>
         /// <param name="columnDescription">If informed, the column will have an additional icon with a description.</param>
@@ -64,7 +64,7 @@ namespace ECS.PrimengTable.Attributes {
             bool canBeReordered = true,
             bool canBeSorted = true,
             bool canBeFiltered = true,
-            string filterPredifinedValuesName = "",
+            string filterPredefinedValuesName = "",
             bool canBeGlobalFiltered = true,
             bool sendColumnAttributes = true,
             string columnDescription = "",
@@ -87,7 +87,7 @@ namespace ECS.PrimengTable.Attributes {
             CanBeReordered = canBeReordered && frozenColumnAlign == FrozenColumnAlign.Noone;
             CanBeSorted = canBeSorted;
             CanBeFiltered = canBeFiltered;
-            FilterPredifinedValuesName = filterPredifinedValuesName;
+            FilterPredefinedValuesName = filterPredefinedValuesName;
             CanBeGlobalFiltered = canBeGlobalFiltered && canBeFiltered && dataType != DataType.Boolean;
             SendColumnAttributes = sendColumnAttributes;
             ColumnDescription = columnDescription;

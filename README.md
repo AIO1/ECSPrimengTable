@@ -27,7 +27,9 @@ Some of the key features included are:
 - And much more!
 
 This is an example of the final solution:
-<img width="1899" height="978" alt="image" src="https://github.com/user-attachments/assets/d7bc4183-6895-4166-afa7-a2cd64d2abdd" />
+<p align="center">
+    <img width="1899" height="978" alt="Example table" src="https://github.com/user-attachments/assets/d7bc4183-6895-4166-afa7-a2cd64d2abdd" />
+</p>
 
 
 
@@ -63,7 +65,9 @@ After executing all scripts successfully, you should have:
 - One function (`FormatDateWithCulture`).
 
 The following image shows the ER diagram of all the tables:
-<img width="1132" height="526" alt="image" src="https://github.com/user-attachments/assets/63762420-6204-4b10-8486-987ec8ca95eb" />
+<p align="center">
+    <img width="1132" height="526" alt="ER diagram of example project" src="https://github.com/user-attachments/assets/63762420-6204-4b10-8486-987ec8ca95eb" />
+</p>
 
 
 
@@ -494,9 +498,12 @@ When enabled, clicking the button opens a modal window that provides the followi
 At the bottom-right of the modal, users can either **Cancel** or **Apply** their changes:
 - If visibility changes are applied, the table will **refresh data** and reset filters and sorting.
 - If only formatting changes (alignment or overflow) are applied, the table will **preserve filters and sorting** without refreshing data.
-
-<img width="205" height="132" alt="image" src="https://github.com/user-attachments/assets/dcd3bbf3-585d-4a9a-adb6-490b8b419578" />
-<img width="1232" height="527" alt="image" src="https://github.com/user-attachments/assets/b6831580-ea14-4b33-81f9-587a7563fee6" />
+<p align="center">
+    <img width="205" height="132" alt="Modify column properties button" src="https://github.com/user-attachments/assets/dcd3bbf3-585d-4a9a-adb6-490b8b419578"/>
+</p>
+<p align="center">
+    <img width="1232" height="527" alt="Modify column properties menu" src="https://github.com/user-attachments/assets/b6831580-ea14-4b33-81f9-587a7563fee6" />
+</p>
 
 
 

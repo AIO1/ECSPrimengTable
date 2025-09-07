@@ -13,7 +13,7 @@ export interface IColumnMetadata {
     canBeReordered: boolean;
     canBeSorted: boolean;
     canBeFiltered: boolean;
-    filterPredifinedValuesName: string;
+    filterPredefinedValuesName: string;
     canBeGlobalFiltered: boolean;
     columnDescription: string;
     dataTooltipShow: boolean;

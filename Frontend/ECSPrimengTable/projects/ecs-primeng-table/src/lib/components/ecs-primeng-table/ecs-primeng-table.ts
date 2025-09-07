@@ -18,11 +18,11 @@ import { ButtonGroupModule } from 'primeng/buttongroup';
 
 import { ECSPrimengTableService } from './ecs-primeng-table.service';
 import { CellOverflowBehaviour, DataAlignHorizontal, DataAlignVertical, DataType, FrozenColumnAlign, TableViewSaveMode } from '../../enums';
-import { IColumnMetadata, IPredifinedFilter, ITableConfiguration, ITablePagedResponse, ITableQueryRequest, IExcelExportRequest, ITableView, ITableViewData, ITableOptions, DEFAULT_TABLE_OPTIONS } from '../../interfaces';
+import { IColumnMetadata, IPredefinedFilter, ITableConfiguration, ITablePagedResponse, ITableQueryRequest, IExcelExportRequest, ITableView, ITableViewData, ITableOptions, DEFAULT_TABLE_OPTIONS } from '../../interfaces';
 import { dataAlignHorizontalAsText, dataAlignVerticalAsText, dataTypeAsText, frozenColumnAlignAsText } from '../../utils';
 import { ECSPrimengTableNotificationService } from '../../services';
 import { TableCell } from '../table-cell/table-cell';
-import { TablePredifinedFilters } from '../table-predifined-filters/table-predifined-filters';
+import { TablePredefinedFilters } from '../table-predefined-filters/table-predefined-filters';
 import { TableButton } from '../table-button/table-button';
 import { ColumnSelector } from "../column-selector/column-selector";
 import { ExportExcel } from '../export-excel/export-excel';
@@ -44,7 +44,7 @@ import { ViewsManagement } from "../views-management/views-management";
     CheckboxModule,
     PaginatorModule,
     TableCell,
-    TablePredifinedFilters,
+    TablePredefinedFilters,
     TableButton,
     ColumnSelector,
     ExportExcel,
@@ -114,7 +114,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
   filteredColumnData: any[] = []; 
   private initialColumnWidths: any;
   private initialTableWidth: any;
-  predifinedFiltersSelectedValuesCollection: { [key: string]: any[] } = {}; // Contains a collection of the predifined column filters selection (possible values come from 'predifinedFiltersCollection')
+  predefinedFiltersSelectedValuesCollection: { [key: string]: any[] } = {}; // Contains a collection of the predefined column filters selection (possible values come from 'predefinedFiltersCollection')
   private copyCellDataTimer: any; // A timer that handles the amount of time left to copy the cell data to the clipboard
   tableLazyLoadEventInformation: TableLazyLoadEvent = {}; // Data of the last lazy load event of the table
   private initialConfigurationFetched: boolean = false;
@@ -551,7 +551,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
     let hasToClear = this.hasToClearFilters(dt, this.globalSearchText, force);
     if(hasToClear){
       if(!onlyGlobalFilter){
-        this.predifinedFiltersSelectedValuesCollection = {};
+        this.predefinedFiltersSelectedValuesCollection = {};
         for (const key in dt.filters) {
           if (dt.filters.hasOwnProperty(key)) {
             const filters = dt.filters[key];
@@ -630,7 +630,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
     return this.tableService.getColumnStyle(col, headerCols);
   }
 
-  getPredifinedFilterValues(columnKeyName: string): IPredifinedFilter[] {
+  getPredefinedFilterValues(columnKeyName: string): IPredefinedFilter[] {
     return this.tableOptions.predefinedFilters[columnKeyName] || []; // Return the predefined filter values or an empty array if the option name does not exist
   }
 
@@ -646,9 +646,9 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
    * Updates the filters of a PrimeNG data table based on predefined filter changes.
    *
    * @param {string} filterName - The name of the filter to be updated.
-   * @param {IPrimengPredifinedFilter[]} selectedValues - An array of selected predefined filter values.
+   * @param {IPrimengPredefinedFilter[]} selectedValues - An array of selected predefined filter values.
    */
-  onPredifinedFilterChange(filterName: string, selectedValues: IPredifinedFilter[]): void {
+  onPredefinedFilterChange(filterName: string, selectedValues: IPredefinedFilter[]): void {
     const filters = { ...this.dt.filters }; // Create a shallow copy of the current filters to avoid mutating the original filters directly
     if (Array.isArray(filters[filterName])) { // Check if the filter for the given filterName is an array
         (filters[filterName] as FilterMetadata[]).forEach(criteria => { // If it is an array, iterate over each filter criteria
@@ -671,10 +671,10 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
    * @param {string} columnKeyName - The key name of the column for which to retrieve the number of selected values.
    * @returns {string} A string indicating the number of selected values for the specified column.
    */
-  predifinedFiltersSelectedValuesText(columnKeyName: string): string {
+  predefinedFiltersSelectedValuesText(columnKeyName: string): string {
     let numbItemsSelected = 0; // Initialize the count of selected items to zero
-    if (this.predifinedFiltersSelectedValuesCollection[columnKeyName]) { // Check if there are selected values for the specified column key
-        numbItemsSelected = this.predifinedFiltersSelectedValuesCollection[columnKeyName].length; // Get the number of selected items
+    if (this.predefinedFiltersSelectedValuesCollection[columnKeyName]) { // Check if there are selected values for the specified column key
+        numbItemsSelected = this.predefinedFiltersSelectedValuesCollection[columnKeyName].length; // Get the number of selected items
     }
     return `${numbItemsSelected} items selected`; // Return the number of selected items concatenated with the predefined text
   }
@@ -692,8 +692,8 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
    * @returns {any} The matching predefined filter value if found, otherwise null.
    */
   getPredfinedFilterMatch(colMetadata: IColumnMetadata, value: any): any {
-    if (colMetadata.filterPredifinedValuesName && colMetadata.filterPredifinedValuesName.length > 0) { // Check if the column uses predefined filter values
-        const options = this.getPredifinedFilterValues(colMetadata.filterPredifinedValuesName); // Get the predefined filter values based on the name
+    if (colMetadata.filterPredefinedValuesName && colMetadata.filterPredefinedValuesName.length > 0) { // Check if the column uses predefined filter values
+        const options = this.getPredefinedFilterValues(colMetadata.filterPredefinedValuesName); // Get the predefined filter values based on the name
         return options.find(option => option.value === value); // Return the matching option if found
     }
     return null; // Return null if the column does not use predefined filter values

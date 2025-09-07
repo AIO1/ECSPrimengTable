@@ -3,15 +3,15 @@ import { DataAlignHorizontal, DataAlignVertical, DataType } from '../../enums';
 import { CommonModule, DatePipe } from '@angular/common';
 import { TooltipModule } from 'primeng/tooltip';
 import { dataAlignHorizontalAsText, dataAlignVerticalAsText, highlightText } from '../../utils';
-import { IColumnMetadata, IPredifinedFilter } from '../../interfaces';
+import { IColumnMetadata, IPredefinedFilter } from '../../interfaces';
 import { SafeHtml } from '@angular/platform-browser';
-import { TablePredifinedFilters } from "../table-predifined-filters/table-predifined-filters";
+import { TablePredefinedFilters } from "../table-predefined-filters/table-predefined-filters";
 @Component({
   selector: 'ecs-table-cell',
   imports: [
     CommonModule,
     TooltipModule,
-    TablePredifinedFilters
+    TablePredefinedFilters
 ],
   standalone: true,
   templateUrl: './table-cell.html'
@@ -23,7 +23,7 @@ export class TableCell {
   @Input() col: any;
   @Input() rowData: any;
   @Input() globalSearchText: string | null = null;
-  @Input() predifinedFiltersCollection: { [key: string]: IPredifinedFilter[] } = {}; // Contains a collection of the values that need to be shown for predifined column filters
+  @Input() predefinedFiltersCollection: { [key: string]: IPredefinedFilter[] } = {}; // Contains a collection of the values that need to be shown for predefined column filters
   @Input() dateFormat: string = "dd-MMM-yyyy HH:mm:ss zzzz";
   @Input() dateTimezone: string = "+00:00";
   @Input() dateCulture: string = "en-US";
@@ -81,8 +81,8 @@ export class TableCell {
     if(colMetadata.dataType == DataType.List){
       return value;
     }
-    if(colMetadata.filterPredifinedValuesName && colMetadata.filterPredifinedValuesName.length > 0){
-      const options = this.getPredifinedFilterValues(colMetadata.filterPredifinedValuesName);
+    if(colMetadata.filterPredefinedValuesName && colMetadata.filterPredefinedValuesName.length > 0){
+      const options = this.getPredefinedFilterValues(colMetadata.filterPredefinedValuesName);
       return options.find(x => x.value == value)?.name
     }
     return null;
@@ -97,14 +97,14 @@ export class TableCell {
    * @returns {any} The matching predefined filter value if found, otherwise null.
    */
   getPredfinedFilterMatch(colMetadata: IColumnMetadata, value: any): any {
-    if (colMetadata.filterPredifinedValuesName && colMetadata.filterPredifinedValuesName.length > 0) { // Check if the column uses predefined filter values
-        const options = this.getPredifinedFilterValues(colMetadata.filterPredifinedValuesName); // Get the predefined filter values based on the name
+    if (colMetadata.filterPredefinedValuesName && colMetadata.filterPredefinedValuesName.length > 0) { // Check if the column uses predefined filter values
+        const options = this.getPredefinedFilterValues(colMetadata.filterPredefinedValuesName); // Get the predefined filter values based on the name
         return options.find(option => option.value === value); // Return the matching option if found
     }
     return null; // Return null if the column does not use predefined filter values
   }
-  getPredifinedFilterValues(columnKeyName: string): IPredifinedFilter[] {
-    return this.predifinedFiltersCollection[columnKeyName] || []; // Return the predefined filter values or an empty array if the option name does not exist
+  getPredefinedFilterValues(columnKeyName: string): IPredefinedFilter[] {
+    return this.predefinedFiltersCollection[columnKeyName] || []; // Return the predefined filter values or an empty array if the option name does not exist
   }
 
     highlightText(cellValue: any, colMetadata: IColumnMetadata, globalSearchText: string | null): SafeHtml {

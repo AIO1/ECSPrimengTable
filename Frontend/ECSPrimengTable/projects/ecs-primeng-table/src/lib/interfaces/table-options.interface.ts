@@ -1,5 +1,5 @@
 import { TableViewSaveMode } from "../enums";
-import { IColumnMetadata, IPredifinedFilter, ITableButton } from "../interfaces";
+import { IColumnMetadata, IPredefinedFilter, ITableButton } from "../interfaces";
 
 /** Configuration options for ECS Primeng table */
 export interface ITableOptions {
@@ -162,7 +162,7 @@ export interface ITableOptions {
         maxLength: number;
     };
 
-    predefinedFilters: { [key: string]: IPredifinedFilter[] }
+    predefinedFilters: { [key: string]: IPredefinedFilter[] }
 
     /**
      * Configurations related to saved table views.
