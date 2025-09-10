@@ -24,20 +24,7 @@ namespace ECSPrimengTableExample.Services {
         }
 
         public TablePagedResponseModel GetTableData(TableQueryRequestModel inputData) {
-            var baseQuery = _repo.GetTableData()
-                .Select(
-                       u => new TestDto {
-                           RowID = u.Id,
-                           CanBeDeleted = u.CanBeDeleted,
-                           Username = u.Username,
-                           Age = u.Age,
-                           EmploymentStatusName = u.EmploymentStatus != null ? u.EmploymentStatus.StatusName : null,
-                           EmploymentStatusNameList = u.EmploymentStatusList,
-                           Birthdate = u.Birthdate,
-                           PayedTaxes = u.PayedTaxes
-                       }
-                   );
-            return EcsPrimengTableService.PerformDynamicQuery(inputData, baseQuery, stringDateFormatMethod, columnsToOrderByDefault, columnsToOrderByOrderDefault);
+            return EcsPrimengTableService.PerformDynamicQuery(inputData, GetBaseQuery(), stringDateFormatMethod, columnsToOrderByDefault, columnsToOrderByOrderDefault);
         }
 
         public async Task<List<EmploymentStatusDto>> GetEmploymentStatusesCategories() {
@@ -60,20 +47,21 @@ namespace ECSPrimengTableExample.Services {
         }
 
         public (bool success, byte[]? file, string errorMsg) GenerateExcelReport(ExcelExportRequestModel inputData) {
-            var baseQuery = _repo.GetTableData()
-                .Select(
-                       u => new TestDto {
-                           RowID = u.Id,
-                           CanBeDeleted = u.CanBeDeleted,
-                           Username = u.Username,
-                           Age = u.Age,
-                           EmploymentStatusName = u.EmploymentStatus != null ? u.EmploymentStatus.StatusName : null,
-                           EmploymentStatusNameList = u.EmploymentStatusList,
-                           Birthdate = u.Birthdate,
-                           PayedTaxes = u.PayedTaxes
-                       }
-                   );
-            return EcsPrimengTableService.GenerateExcelReport(inputData, baseQuery, stringDateFormatMethod, columnsToOrderByDefault, columnsToOrderByOrderDefault);
+            return EcsPrimengTableService.GenerateExcelReport(inputData, GetBaseQuery(), stringDateFormatMethod, columnsToOrderByDefault, columnsToOrderByOrderDefault);
+        }
+
+        private IQueryable<TestDto> GetBaseQuery() {
+            return _repo.GetTableData()
+                .Select(u => new TestDto {
+                    RowID = u.Id,
+                    CanBeDeleted = u.CanBeDeleted,
+                    Username = u.Username,
+                    Age = u.Age,
+                    EmploymentStatusName = u.EmploymentStatus != null ? u.EmploymentStatus.StatusName : null,
+                    EmploymentStatusNameList = u.EmploymentStatusList,
+                    Birthdate = u.Birthdate,
+                    PayedTaxes = u.PayedTaxes
+                });
         }
     }
 }
