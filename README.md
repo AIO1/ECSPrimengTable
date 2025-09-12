@@ -1113,13 +1113,13 @@ Some important points about this example DTO:
 
 ##### 6.1.1.2 Setting up the endpoints
 ###### Creating the table configuration endpoint
-The first required endpoint is the **table configuration endpoint**, which provides the **minimum configuration** needed for the table to work.  
+The first required endpoint is the **table configuration endpoint**, which provides the **minimum configuration** needed for the table to work. This endpoint should be a `GET` method.
 
 Together with the data endpoint, it forms the **core setup** required to get the table running. Additional endpoints and logic can be added later as needed.
 
-This endpoint should return a `TableConfigurationModel`, which can obtained by calling in your service:
+This endpoint should return a `TableConfigurationModel`, which can be obtained by calling in your service:
 ```c#
-EcsPrimengTableService.GetTableConfiguration<T>()
+EcsPrimengTableService.GetTableConfiguration<T>();
 ```
 
 Where `T` is your DTO class.
@@ -1193,14 +1193,79 @@ namespace ECSPrimengTableExample.Services {
 
 
 ###### Creating the table data endpoint
-The second required endpoint is the **table data endpoint**, which provides the **minimum data needed** to populate the table.
+The second required endpoint is the **table data endpoint**, which provides the **minimum data needed** to populate the table. This endpoint should be a `POST` method.
 
 This endpoint, together with the table configuration endpoint, forms the **core setup** required for the table to function. It handles data retrieval, filtering, sorting, and pagination, ensuring that the table displays the correct rows based on user interaction and query parameters. Additional endpoints or business logic can be added later as needed.
 
+This endpoint should return a `TablePagedResponseModel`, which can be obtained by calling in your service:
+```c#
+EcsPrimengTableService.PerformDynamicQuery(inputData, baseQuery);
+```
 
+Where:
+- `inputData` is a `TableQueryRequestModel` sent by the **ECS PrimeNG table** in the request body.
+- `baseQuery` is an `IQueryable` built on a DTO class decorated with `ColumnAttributes`.  
+  This must be the **same DTO** used in the table configuration endpoint (example from previous section).
 
+The `PerformDynamicQuery` method executes a sequence of operations (detailed below) and returns a `TablePagedResponseModel` containing:
+- **Current page**: The page number where the user is currently located.
+- **Total records**: The total number of records *after* filters are applied.
+- **Unfiltered total records**: The total number of records *before* any filters are applied. 
+- **Data**: The actual page content, represented as dynamic data.
 
+The `EcsPrimengTableService.PerformDynamicQuery()` method performs the following steps in order:
+1. **Sorting**: Applies the sorting rules defined in the `TableQueryRequestModel`:  
+   - If rules are provided, they are applied.
+   - If no rules are provided and a `defaultSortColumnName` is specified, that default sort will be applied.
+   - If neither is provided, no sorting is performed.
+2. **Count before filtering**: Delegates a `COUNT` operation to the database engine to determine the total number of records *before* filters are applied.
+3. **Global filter**: If specified in the `TableQueryRequestModel`, applies the global filter to all eligible columns.
+4. **Column filters**: Applies all per-column filter rules from the `TableQueryRequestModel`, by adding them to the `IQueryable`.
+5. **Count after filtering**: Delegates a `COUNT` operation to the database engine to determine the total number of records *after* filters are applied.
+6. **Pagination check**: Calculates the total number of pages based on items per page and filters. If the current page exceeds the available page count (e.g., user was on page 100 but filters reduce the dataset to 7 pages), the current page is adjusted to the last available page and the frontend then handles moving the user accordingly.
+7. **Dynamic select**: Projects only the required columns by adding a `SELECT` to the `IQueryable`.
+   - The query is then materialized using `ToDynamicList()`, delegating execution to the database.
+   - The result is a list containing only the requested columns, including apart from the requested, those that have the `sendColumnAttributes` set to `false`.
+8. **Return result**: Finally, returns a `TablePagedResponseModel` with the processed data to the frontend.
 
+> [!IMPORTANT]
+> Some important aspects to allways consider are as follows:
+> - **Validation**: Always validate the page size and requested columns before calling `PerformDynamicQuery`, using `ValidateItemsPerPageAndCols`.
+> - **Performance**: Ensure that the `IQueryable` uses `AsNoTracking()` since no entity tracking is needed. This also improves performance.
+> - **Reusability**: Define a private method in the service that builds the base `IQueryable`. This allows reusing the same query for both the **table data endpoint** and features like **Excel export**, ensuring data consistency.
+
+**_Example_**
+
+Below is a simplified setup showing how to implement the **table data endpoint**, its service, and repository.
+
+The **table data** endpoint in your controller might look like this:
+```c#
+[ApiController]
+[Route("[controller]")]
+public class TestController : ControllerBase {
+    private readonly ITestService _service;
+
+    public TestController(ITestService service) {
+        _service = service;
+    }
+
+    [HttpPost("[action]")]
+    public IActionResult GetTableData([FromBody] TableQueryRequestModel inputData) {
+        try {
+            (bool success, TablePagedResponseModel data) = _service.GetTableData(inputData);
+            if(!success) {
+                return BadRequest("Invalid items per page");
+            }
+            return Ok(_service.GetTableData(inputData));
+        } catch (Exception ex) {
+            return StatusCode(StatusCodes.Status500InternalServerError, 
+                $"An unexpected error occurred: {ex.Message}");
+        }
+    }
+}
+```
+
+The `GetTableData` method in your service can be implemented like this (minimal example). It includes a private `GetBaseQuery` method that centralizes the base query logic, allowing you to **reuse it** for features such as **Excel export**, ensuring consistency across endpoints. This service implementation also makes use of a repository to access the underlying data:
 ```c#
 using ECSPrimengTable.Services;
 using ECSPrimengTableExample.DTOs;
@@ -1214,77 +1279,50 @@ namespace ECSPrimengTableExample.Services {
             _repo = repository;
         }
 
-        public TableConfigurationModel GetTableConfiguration() {
-            return EcsPrimengTableService.GetTableConfiguration<TestDto>();
+        public (bool success, TablePagedResponseModel data) GetTableData(TableQueryRequestModel inputData) {
+            if(!EcsPrimengTableService.ValidateItemsPerPageAndCols(inputData.PageSize, inputData.Columns)) { // Validate the items per page size and columns
+                return (false, null!);
+            }
+            return (true,EcsPrimengTableService.PerformDynamicQuery(inputData, GetBaseQuery());
         }
-    }
-}
-```
-Another endpoint that must be created in the API is the one responsible of building the query dynamically and then retrieving just the needed data from the database. An example on how to do this can be found in [MainController.cs](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/Controllers/MainController.cs) in the example project under the endpoint "TestGetData". This is how it looks:
-```c#
-public IActionResult TestGetData([FromBody] PrimeNGPostRequest inputData) {
-    try {
-        if(!PrimeNGHelper.ValidateItemsPerPageSizeAndCols(inputData.PageSize, inputData.Columns)) { // Validate the items per page size and columns
-            return BadRequest("Invalid page size or no columns for selection have been specified.");
-        }
-        IQueryable<TestDto> baseQuery = _context.TestTables
-            .AsNoTracking()
-            .Include(t => t.EmploymentStatus)
-            .Select(
-                u => new TestDto {
+
+        private IQueryable<TestDto> GetBaseQuery() {
+            return _repo.GetTableData()
+                .Select(u => new TestDto {
                     RowID = u.Id,
-                    CanBeDeleted = u.CanBeDeleted,
                     Username = u.Username,
-                    Age = u.Age,
-                    EmploymentStatusName = u.EmploymentStatus != null ? u.EmploymentStatus.StatusName : null,
-                    Birthdate = u.Birthdate,
-                    PayedTaxes = u.PayedTaxes
-                }
-            );
-        List<string> columnsToOrderByDefault = new List<string> { "Age", "EmploymentStatusName" };
-        List<int> columnsToOrderByOrderDefault = new List<int> { 0, 0 };
-        return Ok(PrimeNGHelper.PerformDynamicQuery(inputData, baseQuery, stringDateFormatMethod, columnsToOrderByDefault, columnsToOrderByOrderDefault));
-    } catch(Exception ex) { // Exception Handling: Returns a result with status code 500 (Internal Server Error) and an error message.
-        return StatusCode(StatusCodes.Status500InternalServerError, $"An unexpected error occurred: {ex.Message}");
+                    Money = u.Money,
+                    House = u.House
+                });
+        }
     }
 }
 ```
 
-The strategy is to first check, by calling the function "ValidateItemsPerPageSizeAndCols", that we have been requested and allowed items per page number (the allowed values are defined in the variable "allowedItemsPerPage" under [PrimeNGHelper.cs](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/Services/PrimeNGHelper.cs)) and that at least a column to be retrieved has been requested.
+The repository that your service accesses could look like this:
+```c#
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
-The second part is to build and IQueryable that uses the same type as the DTO / Projection that we used to provide the columns. It is strongly recomended that you keep your base IQueryable as plain as possible, try to avoid delegating joins or any other type of complex operations to Entity Framework. As you can see from the example, the base IQueryable is very plain being the only "complex" operation fetching the string of the "employmentStatusName" from the  "EmploymentStatusCategories" table. If your IQueryable can't be very plain, it might be a good strategy to consider generating a view in the database and map the entity to the view, instead of trying to delegate the relation builder to Entity Framework, since sometimes it could generate complex queries that can't be solved by the Linq query builder.
+namespace ECSPrimengTableExample.Repository {
+    public class TestRepository {
 
-Once you have your base IQueryable ready, the last part is to simply call the "PerformDynamicQuery" passing your base query. The "PerformDynamicQuery" accepts the following arguments:
-- **inputData:** This is the PrimeNGPostRequest object that should have arrrived from the frontend as part of the BODY when calling the endpoint. It contains multiple data related to the filter rules requested, the columns that should be shown...
-- **baseQuery:** The IQueryable that you have prepared before.
-- **stringDateFormatMethod:** The exposed database function "FormatDateWithCulture" that is used if a global filter has been specified and if the columns is of type "date". You should have this function already available for you if you followed the setup steps as "private static readonly MethodInfo stringDateFormatMethod".
-- **defaultSortColumnName:** If no sort order operations have been specified by the user, the specified columns will be used to perform the sort (if it has been specified). The columns must have the same name as it appears in the DTO / Projection (the property name, not the column header name). This is a list of strings.
-- **defaultSortOrder:** The sorting order to be done to the "defaultSortColumnName" if it needs to be applied. If value is 1 it will be ascending, if not it will be descending. This is a list of ints.
+        private readonly primengTableReusableComponentContext _context;
 
-> [!NOTE]  
-> The arguments in "PerformDynamicQuery" of "defaultSortColumnName" and "defaultSortOrder" should both have the same list length.
+        public TestRepository(primengTableReusableComponentContext context) {
+            _context = context;
+        }
 
-The "PerformDynamicQuery" function will do all these steps in order:
+        public IQueryable<TestTable> GetTableData() {
+            return _context.TestTables
+                   .AsNoTracking();
+        }
+    }
+}
+```
 
-1. Perform the sorting. The sorting will apply all the sorting rules specified by the user that are located in the PrimeNGPostRequest object. If no sorting rules have been given, and if a "defaultSortColumnName" has been given, a default sorting will be applied. Otherwise, no sotring will be performed.
-2. Count the total elements that are available before applying the filtering rules by delegating a COUNT operation of all the records to the database engine.
-3. Apply the global filter, if any have been specified in the PrimeNGPostRequest object, to each column that can have the global filter applied. Take into account that the global filter is one of the most costly operations launched to the database engine, since basically it performs a LIKE = '%VALUE_PROVIDED_BY_USER%' to each column. The more columns and data that you have, the slower the query will be. There is an option in the frontend to disable the global filter, which is recommendend when the dataset is very large or there is a large number of columns that could be affected by the global filter.
-4. Apply the filter rules per column. From the PrimeNGPostRequest it will get all the filter rules per column that must be applied (it included the pedifined filter rules). In this step the IQueryable will be added all the additional rules that need to be done to reflect all the filtering operations that the user has requested.
-5. Count the total elements that are available after applying the filtering rules by delegating a COUNT operation of all the records to the database engine with the current built query.
-6. Calculate the number of pages that are available (taking into account the items per page selected and the filtering rules) and determine if the user need to be moved from his current page. For example, if user was in page 100 and suddenly, due to the filters that are applied, only 7 pages are available, the returned current page will be changed to page 7. The frontend will handle this situation and move the user to said page accordingly.
-7. Perform the dynamic select and get the needed elements. In this step, the IQueryable will be added a SELECT statement to just get the columns that we are interested in, and the the IQueryable will be converted to a ToDynamicList, which will basically launch all the query that we have been building in the previous steps to the database. In this step, we would have delegated all operations to the database, and in the backend we will be given a dynamic list with the size of the number of items that must be shown in the current page and with only the selected columns that the user has requested (and the columns which have "sendColumnAttributes" set to false).
-8. The function will end by returning us a PrimeNGPostReturn, which must be returned to the frontend.
+With this setup, your table data endpoint is fully functional and ready to integrate with the ECS PrimeNG table frontend.
 
-The PrimeNGPostReturn object contains:
-- The current page the user should be at.
-- The number of total records that are available before performing the filtering rules.
-- The number of total records that are available after performing the filtering rules.
-- The data that will be sent to the frontend.
-
-When the PrimeNGPostReturn is retrieved by the table component in the frontend, it will do all the necesarry operations to update what is shown to the user in the table.
-
-> [!TIP]
-> It is strongly recommended that the IQueryable has the "AsNoTracking" declaration, since we don't want to track the entity for any modified data and this gives a slight performance boost. 
 
 
 #### 6.1.2 Frontend
@@ -1340,11 +1378,12 @@ When the PrimeNGPostReturn is retrieved by the table component in the frontend, 
 
 
 #### 6.3.11 Sorting
-
+> [!NOTE]  
+> The arguments in "PerformDynamicQuery" of "defaultSortColumnName" and "defaultSortOrder" should both have the same list length.
 
 
 #### 6.3.12 Filtering
-
+Take into account that the global filter is one of the most costly operations launched to the database engine, since basically it performs a LIKE = '%VALUE_PROVIDED_BY_USER%' to each column.
 
 
 #### 6.3.13 Predefined filters

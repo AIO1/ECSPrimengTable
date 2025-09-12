@@ -23,8 +23,11 @@ namespace ECSPrimengTableExample.Services {
             return EcsPrimengTableService.GetTableConfiguration<TestDto>();
         }
 
-        public TablePagedResponseModel GetTableData(TableQueryRequestModel inputData) {
-            return EcsPrimengTableService.PerformDynamicQuery(inputData, GetBaseQuery(), stringDateFormatMethod, columnsToOrderByDefault, columnsToOrderByOrderDefault);
+        public (bool success, TablePagedResponseModel data) GetTableData(TableQueryRequestModel inputData) {
+            if(!EcsPrimengTableService.ValidateItemsPerPageAndCols(inputData.PageSize, inputData.Columns)) { // Validate the items per page size and columns
+                return (false, null!);
+            }
+            return (true,EcsPrimengTableService.PerformDynamicQuery(inputData, GetBaseQuery(), stringDateFormatMethod, columnsToOrderByDefault, columnsToOrderByOrderDefault));
         }
 
         public async Task<List<EmploymentStatusDto>> GetEmploymentStatusesCategories() {

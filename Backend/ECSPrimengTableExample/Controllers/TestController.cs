@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using ECSPrimengTableExample.DTOs;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Globalization;
-using ECS.PrimengTable.Services;
 using ECS.PrimengTable.Models;
 using ECSPrimengTableExample.Interfaces;
 
@@ -46,8 +45,9 @@ namespace ECSPrimengTableExample.Controllers {
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Returns an error message if an unexpected error occurs.", typeof(string))]
         public IActionResult GetTableData([FromBody] TableQueryRequestModel inputData) {
             try {
-                if(!EcsPrimengTableService.ValidateItemsPerPageAndCols(inputData.PageSize, inputData.Columns)) { // Validate the items per page size and columns
-                    return BadRequest("Invalid page size or no columns for selection have been specified.");
+                (bool success, TablePagedResponseModel data) = _service.GetTableData(inputData);
+                if(!success) {
+                    return BadRequest("Invalid items per page");
                 }
                 return Ok(_service.GetTableData(inputData));
             } catch(Exception ex) { // Exception Handling: Returns a result with status code 500 (Internal Server Error) and an error message.
@@ -120,11 +120,15 @@ namespace ECSPrimengTableExample.Controllers {
         [Consumes("application/json")]
         [Produces("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")]
         public IActionResult GenerateExcel([FromBody] ExcelExportRequestModel inputData) {
-            (bool success, byte[]? file, string errorMsg) = _service.GenerateExcelReport(inputData);
-            if(!success) {
-                return StatusCode(StatusCodes.Status500InternalServerError, errorMsg);
+            try {
+                (bool success, byte[]? file, string errorMsg) = _service.GenerateExcelReport(inputData);
+                if(!success) {
+                    return BadRequest(errorMsg);
+                }
+                return File(file!, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", inputData.Filename);
+            } catch(Exception ex) { // Exception Handling: Returns a result with status code 500 (Internal Server Error) and an error message.
+                return StatusCode(StatusCodes.Status500InternalServerError, $"An unexpected error occurred: {ex.Message}");
             }
-            return File(file!, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", inputData.Filename);
         }
         #endregion
 
