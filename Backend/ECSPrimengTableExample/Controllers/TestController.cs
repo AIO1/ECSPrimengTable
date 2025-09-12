@@ -49,7 +49,7 @@ namespace ECSPrimengTableExample.Controllers {
                 if(!success) {
                     return BadRequest("Invalid items per page");
                 }
-                return Ok(_service.GetTableData(inputData));
+                return Ok(data);
             } catch(Exception ex) { // Exception Handling: Returns a result with status code 500 (Internal Server Error) and an error message.
                 return StatusCode(StatusCodes.Status500InternalServerError, $"An unexpected error occurred: {ex.Message}");
             }

@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { ITableButton, ECSPrimengTable, IPredefinedFilter, TableViewSaveMode, ITableOptions, DEFAULT_TABLE_OPTIONS, createTableOptions } from 'ecs-primeng-table';
+import { ITableButton, ECSPrimengTable, IPredefinedFilter, TableViewSaveMode, ITableOptions, createTableOptions } from 'ecs-primeng-table';
 import { SharedService } from '../../core/services/shared.service';
 import { IEmploymentStatus } from './employment-status.interface';
 
@@ -9,8 +9,7 @@ import { IEmploymentStatus } from './employment-status.interface';
     ECSPrimengTable
   ],
   standalone: true,
-  templateUrl: './home.html',
-  styleUrl: './home.scss'
+  templateUrl: './home.html'
 })
 export class Home implements OnInit {
   constructor(private sharedService: SharedService){}
@@ -56,16 +55,13 @@ export class Home implements OnInit {
     urlTableConfiguration: "Test/GetTableConfiguration",
     urlTableData: "Test/GetTableData",
     excelReport: {
-      ...DEFAULT_TABLE_OPTIONS.excelReport,
       url: "Test/GenerateExcel"
     },
     predefinedFilters: this.predefinedFiltersCollection,
     header: {
-      ...DEFAULT_TABLE_OPTIONS.header,
       buttons: this.headerActionButtons
     },
     rows: {
-      ...DEFAULT_TABLE_OPTIONS.rows,
       style: (rowData: any) => {
         const list = rowData?.employmentStatusNameList?.split(';').map((s: string) => s.trim()) || [];
         if (list.includes("Full-time")) {
@@ -82,12 +78,10 @@ export class Home implements OnInit {
         return classes;
       },
       action: {
-        ...DEFAULT_TABLE_OPTIONS.rows.action,
         buttons: this.rowActionButtons,
         width: 110
       },
       checkboxSelector: {
-        ...DEFAULT_TABLE_OPTIONS.rows.checkboxSelector,
         enabled: true,
         width: 125
       },
@@ -97,7 +91,6 @@ export class Home implements OnInit {
       }
     },
     views: {
-      ...DEFAULT_TABLE_OPTIONS.views,
       saveMode: TableViewSaveMode.DatabaseStorage,
       saveKey: "TEST",
       urlGet: "Test/GetViews",

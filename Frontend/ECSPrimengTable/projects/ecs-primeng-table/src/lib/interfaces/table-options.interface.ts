@@ -14,7 +14,7 @@ export interface ITableOptions {
      * 
      * @default true
      */
-    isActive: boolean;
+    isActive?: boolean;
 
     /**
      * Endpoint URL to fetch the table configuration.
@@ -23,11 +23,11 @@ export interface ITableOptions {
      * an `ITableConfiguration` object from the API. This includes data such as column definitions, 
      * the timezone to use, and other settings.
      * 
-     * If set to `null` or if `isActive` is `false`, the table will **not** fetch configuration automatically.
+     * If set to `undefined` or if `isActive` is `false`, the table will **not** fetch configuration automatically.
      * 
-     * @default null
+     * @default undefined
      */
-    urlTableConfiguration: string | null;
+    urlTableConfiguration?: string;
 
     /**
      * Endpoint URL to fetch the table data.
@@ -35,11 +35,11 @@ export interface ITableOptions {
      * This endpoint is called **whenever the user filters, changes pages, or sorts** the table.
      * It is expected to return an `ITablePagedResponse` object containing the paginated data.
      * 
-     * If set to `null` or if `isActive` is `false`, the table will **not** fetch or update data automatically.
+     * If set to `undefined` or if `isActive` is `false`, the table will **not** fetch or update data automatically.
      * 
-     * @default null
+     * @default undefined
      */
-    urlTableData: string | null;
+    urlTableData?: string;
 
     /**
      * The array of data to be displayed in the table.
@@ -48,20 +48,20 @@ export interface ITableOptions {
      * 
      * @default []
      */
-    data: any[];
+    data?: any[];
 
-    header: {
-        buttons: ITableButton[];
-        clearSortsEnabled: boolean;
-        clearSortsIcon: string;
-        clearFiltersEnabled: boolean;
-        clearFiltersIcon: string;
+    header?: {
+        buttons?: ITableButton[];
+        clearSortsEnabled?: boolean;
+        clearSortsIcon?: string;
+        clearFiltersEnabled?: boolean;
+        clearFiltersIcon?: string;
     };
 
     /**
      * Configurations related to the columns of the table.
      */
-    columns: {
+    columns?: {
         /**
          * Enables or disables the column selector feature.
          * 
@@ -75,7 +75,7 @@ export interface ITableOptions {
          * 
          * @default true
          */
-        selectorEnabled: boolean;
+        selectorEnabled?: boolean;
 
         /**
          * The combination of non-selectable columns and user-selected columns 
@@ -83,39 +83,39 @@ export interface ITableOptions {
          * 
          * @default []
          */
-        shown: IColumnMetadata[];
+        shown?: IColumnMetadata[];
     };
 
     /**
      * Configurations related to the rows of the table.
      */
-    rows: {
-        class: (rowData: any) => string | string[] | Set<string> | { [klass: string]: any };
-        style: (rowData: any) => { [klass: string]: any };
-        action: {
-            buttons: ITableButton[];
-            header: string;
-            alignmentRight: boolean;
-            width: number;
-            frozen: boolean;
-            resizable: boolean;
+    rows?: {
+        class?: (rowData: any) => string | string[] | Set<string> | { [klass: string]: any };
+        style?: (rowData: any) => { [klass: string]: any };
+        action?: {
+            buttons?: ITableButton[];
+            header?: string;
+            alignmentRight?: boolean;
+            width?: number;
+            frozen?: boolean;
+            resizable?: boolean;
         };
-        checkboxSelector: {
-            enabled: boolean;
-            header: string;
-            alignmentRight: boolean;
-            width: number;
-            frozen: boolean;
-            resizable: boolean;
+        checkboxSelector?: {
+            enabled?: boolean;
+            header?: string;
+            alignmentRight?: boolean;
+            width?: number;
+            frozen?: boolean;
+            resizable?: boolean;
         };
-        singleSelector: {
-            enabled: boolean;
-            metakey: boolean;
+        singleSelector?: {
+            enabled?: boolean;
+            metakey?: boolean;
         };
     };
 
     /** Configurations related to the vertical scroll of the table. */
-    verticalScroll: {
+    verticalScroll?: {
         /**
          * Automatically adjust the table's height to fit its container.
          * 
@@ -124,7 +124,7 @@ export interface ITableOptions {
          * 
          * @default true
          */
-        fitToContainer: boolean;
+        fitToContainer?: boolean;
 
         /**
          * Fixed vertical height for the table when `fitToContainer` is `false`.
@@ -137,11 +137,11 @@ export interface ITableOptions {
          * 
          * @default 0
          */
-        height: number;
+        height?: number;
     };
 
     /** Configurations related to the global search functionality of the table. */
-    globalSearch: {
+    globalSearch?: {
         /**
          * Enables or disables the global search input.
          * 
@@ -150,7 +150,7 @@ export interface ITableOptions {
          * 
          * @default true
          */
-        enabled: boolean;
+        enabled?: boolean;
 
         /**
          * Maximum number of characters allowed in the global search input.
@@ -159,15 +159,15 @@ export interface ITableOptions {
          * 
          * @default 20
          */
-        maxLength: number;
+        maxLength?: number;
     };
 
-    predefinedFilters: { [key: string]: IPredefinedFilter[] }
+    predefinedFilters?: { [key: string]: IPredefinedFilter[] }
 
     /**
      * Configurations related to saved table views.
      */
-    views: {
+    views?: {
         /**
          * Determines how the table views are saved.
          * 
@@ -181,7 +181,7 @@ export interface ITableOptions {
          * 
          * @default TableViewSaveMode.None
          */
-        saveMode: TableViewSaveMode;
+        saveMode?: TableViewSaveMode;
         
         /**
          * Key used to identify the table when saving and retrieving its views.
@@ -189,11 +189,11 @@ export interface ITableOptions {
          * Each table should have a unique `saveKey` so that its saved views (filters, column order, sorting, etc.)
          * do not conflict with other tables.
          * 
-         * If set to `null`, the table will not save or load any views.
+         * If set to `undefined`, the table will not save or load any views.
          * 
-         * @default null
+         * @default undefined
          */
-        saveKey: string | null;
+        saveKey?: string;
 
         /**
          * Endpoint URL to fetch saved views from the database.
@@ -201,9 +201,9 @@ export interface ITableOptions {
          * Only used if `saveMode` is `TableViewSaveMode.databaseStorage`.
          * The `saveKey` is sent to identify the correct table views.
          * 
-         * @default null
+         * @default undefined
          */
-        urlGet: string | null;
+        urlGet?: string;
 
         /**
          * Endpoint URL to save table views to the database.
@@ -211,15 +211,15 @@ export interface ITableOptions {
          * Only used if `saveMode` is `TableViewSaveMode.databaseStorage`.
          * The `saveKey` is sent to identify the correct table views.
          * 
-         * @default null
+         * @default undefined
          */
-        urlSave: string | null;
+        urlSave?: string;
     };
 
     /**
      * Configurations for exporting the table data to Excel.
      */
-    excelReport: {
+    excelReport?: {
          /**
          * Endpoint URL of the API to perform the Excel export.
          * 
@@ -227,11 +227,11 @@ export interface ITableOptions {
          * specified by the user, such as selected columns, filters, and sort order, to generate
          * the export.
          * 
-         * If set to `null`, Excel export functionality will be disabled.
+         * If set to `undefined`, Excel export functionality will be disabled.
          * 
-         * @default null
+         * @default undefined
          */
-        url: string | null;
+        url?: string;
 
         /**
          * Default title shown in the Excel export modal when preparing the export.
@@ -241,7 +241,7 @@ export interface ITableOptions {
          * 
          * @default "Report"
          */
-        defaultTitle: string;
+        defaultTitle?: string;
 
         /**
          * Determines whether the user can edit the title of the Excel file in the export modal.
@@ -251,17 +251,17 @@ export interface ITableOptions {
          * 
          * @default true
          */
-        titleAllowUserEdit: boolean;
+        titleAllowUserEdit?: boolean;
     }
 
-    copyToClipboardTime: number;
+    copyToClipboardTime?: number;
 }
 
 export const DEFAULT_TABLE_OPTIONS: ITableOptions = {
     isActive: true,
     data: [],
-    urlTableConfiguration: null,
-    urlTableData: null,
+    urlTableConfiguration: undefined,
+    urlTableData: undefined,
     header: {
         buttons: [],
         clearSortsEnabled: true,
@@ -274,8 +274,8 @@ export const DEFAULT_TABLE_OPTIONS: ITableOptions = {
         shown: []
     },
     rows: {
-        style:  () => ({}),
-        class:  () => ({}),
+        style: () => ({}),
+        class: () => ({}),
         action: {
             buttons: [],
             header: "Actions",
@@ -308,12 +308,12 @@ export const DEFAULT_TABLE_OPTIONS: ITableOptions = {
     predefinedFilters: {},
     views: {
         saveMode: TableViewSaveMode.None,
-        saveKey: null,
-        urlGet: null,
-        urlSave: null
+        saveKey: undefined,
+        urlGet: undefined,
+        urlSave: undefined
     },
     excelReport: {
-        url: null,
+        url: undefined,
         defaultTitle: "Report",
         titleAllowUserEdit: true
     },

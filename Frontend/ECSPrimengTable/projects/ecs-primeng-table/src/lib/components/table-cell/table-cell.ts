@@ -23,7 +23,7 @@ export class TableCell {
   @Input() col: any;
   @Input() rowData: any;
   @Input() globalSearchText: string | null = null;
-  @Input() predefinedFiltersCollection: { [key: string]: IPredefinedFilter[] } = {}; // Contains a collection of the values that need to be shown for predefined column filters
+  @Input() predefinedFiltersCollection?: { [key: string]: IPredefinedFilter[] } = {}; // Contains a collection of the values that need to be shown for predefined column filters
   @Input() dateFormat: string = "dd-MMM-yyyy HH:mm:ss zzzz";
   @Input() dateTimezone: string = "+00:00";
   @Input() dateCulture: string = "en-US";
@@ -104,7 +104,7 @@ export class TableCell {
     return null; // Return null if the column does not use predefined filter values
   }
   getPredefinedFilterValues(columnKeyName: string): IPredefinedFilter[] {
-    return this.predefinedFiltersCollection[columnKeyName] || []; // Return the predefined filter values or an empty array if the option name does not exist
+    return this.predefinedFiltersCollection?.[columnKeyName] || []; // Return the predefined filter values or an empty array if the option name does not exist
   }
 
     highlightText(cellValue: any, colMetadata: IColumnMetadata, globalSearchText: string | null): SafeHtml {

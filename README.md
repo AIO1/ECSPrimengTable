@@ -1256,7 +1256,7 @@ public class TestController : ControllerBase {
             if(!success) {
                 return BadRequest("Invalid items per page");
             }
-            return Ok(_service.GetTableData(inputData));
+            return Ok(data);
         } catch (Exception ex) {
             return StatusCode(StatusCodes.Status500InternalServerError, 
                 $"An unexpected error occurred: {ex.Message}");
@@ -1326,6 +1326,39 @@ With this setup, your table data endpoint is fully functional and ready to integ
 
 
 #### 6.1.2 Frontend
+Assuming you have completed all the steps in the setup section and you are using standalone components in your frontend, this section will guide you on how to implement a basic **ECS PrimeNG table** that simply displays data.
+
+In your desired component TypeScript file, a minimal definition should look like this (assuming the component is named `Home`):
+```ts
+import { Component } from '@angular/core';
+import { ECSPrimengTable, ITableOptions, createTableOptions } from '@eternalcodestudio/primeng-table';
+
+@Component({
+  selector: 'ecs-home',
+  standalone: true,
+  imports: [
+    ECSPrimengTable
+  ],
+  templateUrl: './home.html'
+})
+export class Home {
+  tableOptions: ITableOptions = createTableOptions({
+    urlTableConfiguration: "Test/GetTableConfiguration",
+    urlTableData: "Test/GetTableData"
+  });
+}
+```
+
+In this component, we only define the paths to your API endpoints. It is assumed that the ECS PrimeNG table component has already been provided with the base URL of your API in the http service injection.
+
+In your component's HTML, the table can be displayed as follows:
+```html
+<ecs-primeng-table [tableOptions]="tableOptions"/>
+```
+
+You only need to pass the `tableOptions` property.
+
+Once you start up your API and serve the frontend, you should be able to see the table rendered on the page if everything is set up correctly.
 
 
 
