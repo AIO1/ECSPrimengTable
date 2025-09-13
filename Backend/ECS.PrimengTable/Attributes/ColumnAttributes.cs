@@ -70,7 +70,7 @@ namespace ECS.PrimengTable.Attributes {
             string columnDescription = "",
             bool dataTooltipShow = true,
             string dataTooltipCustomColumnSource = "",
-            FrozenColumnAlign frozenColumnAlign = FrozenColumnAlign.Noone,
+            FrozenColumnAlign frozenColumnAlign = FrozenColumnAlign.None,
             CellOverflowBehaviour cellOverflowBehaviour = CellOverflowBehaviour.Hidden,
             bool cellOverflowBehaviourAllowUserEdit = true,
             double initialWidth = 0
@@ -83,8 +83,8 @@ namespace ECS.PrimengTable.Attributes {
             DataAlignVerticalAllowUserEdit = dataAlignVerticalAllowUserEdit;
             CanBeHidden = canBeHidden;
             StartHidden = startHidden && canBeHidden;
-            CanBeResized = frozenColumnAlign == FrozenColumnAlign.Noone && canBeResized;
-            CanBeReordered = canBeReordered && frozenColumnAlign == FrozenColumnAlign.Noone;
+            CanBeResized = frozenColumnAlign == FrozenColumnAlign.None && canBeResized;
+            CanBeReordered = canBeReordered && frozenColumnAlign == FrozenColumnAlign.None;
             CanBeSorted = canBeSorted;
             CanBeFiltered = canBeFiltered;
             FilterPredefinedValuesName = filterPredefinedValuesName;
@@ -96,7 +96,7 @@ namespace ECS.PrimengTable.Attributes {
             FrozenColumnAlign = frozenColumnAlign;
             CellOverflowBehaviour = dataType == DataType.Boolean ? CellOverflowBehaviour.Hidden : cellOverflowBehaviour;
             CellOverflowBehaviourAllowUserEdit = cellOverflowBehaviourAllowUserEdit && dataType != DataType.Boolean;
-            InitialWidth = initialWidth <= 0 && frozenColumnAlign != FrozenColumnAlign.Noone ? 100 : initialWidth;
+            InitialWidth = initialWidth <= 0 && frozenColumnAlign != FrozenColumnAlign.None ? 100 : initialWidth;
         }
     }
 }

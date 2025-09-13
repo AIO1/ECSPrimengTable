@@ -568,6 +568,7 @@ Some important design aspects to take into account:
 - Columns cannot be resized if they are not visible.
 - By design, resized columns will always maintain a minimal width (about 18px).
 - This ensures that users cannot make a column completely disappear by dragging it below this threshold.
+- Frozen columns cannot be resized.
 
 <p align="center">
   <img width="757" height="432" alt="resize example" src="https://github.com/user-attachments/assets/f8cb1b9e-f518-4e65-bc1e-875a6de7afdd"/>
@@ -1607,7 +1608,7 @@ By default, all columns are aligned **horizontally at `Center`** and **verticall
 
 Users are allowed to change both the horizontal and vertical alignment through the **column editor menu** by default.
 
-If different initial alignments are required, or if user customization must be restricted, the `ColumnAttributes` of the DTO provide the following configuration options:
+If different initial alignments are required, or if user customization must be restricted, the `ColumnAttributes` of the DTO provides the following configuration options:
 
 - **Initial alignment**
   - **`dataAlignHorizontal`**: Uses the `DataAlignHorizontal` enum. Default value is `Center`. Possible values are `Left`, `Center` and `Right`.
@@ -1634,6 +1635,9 @@ If you need a different default behaviour, or if you want to prevent users from 
 
 - **`cellOverflowBehaviourAllowUserEdit`**: Controls whether users can change the column’s overflow behaviour through the column editor menu. Default is `true`. Set it to `false` to prevent users from modifying this setting.
 
+> [!NOTE]
+> When the column's data type is `boolean`, the `cellOverflowBehaviour` setting will be automatically overridden to `Hidden`.
+
 <br><br>
 
 
@@ -1656,18 +1660,40 @@ You can customize the column properties menu behavior through the following tabl
 
 
 #### 6.3.6 Resize
+By default, all columns are resizable. The only exception is frozen columns, which cannot be resized.
+
+To prevent users from resizing a specific non-frozen column, you can use the following option in the column's `ColumnAttributes` within the DTO:
+- **`canBeResized`**: Defaults to `true`. If set to `true`, the column can be resized by the user. Set to `false` to disable resizing for that column.
+
+Additionally, there is a property called `initialWidth` that can be used to set a column's initial width in pixels.
 
 <br><br>
 
 
 
 #### 6.3.7 Reorder
+By default, all columns are reorderable, except for frozen columns which cannot be moved.
+
+To prevent users from reordering a specific non-frozen column, use the following option in the column's `ColumnAttributes` within the DTO:
+- **`canBeReordered`**: Defaults to `true`. When `true`, the user can drag and drop the column to change its position. Set to `false` to disable this functionality for that column.
 
 <br><br>
 
 
 
 #### 6.3.8 Frozen
+Enabling a frozen column in your table that follows horizontal scrolling is straightforward.
+
+In your column's `ColumnAttributes` within the DTO, the following properties determine the behavior of the frozen column:
+- **`frozenColumnAlign`**: An enum of type `FrozenColumnAlign`, defaulting to `None`. The available values are:
+  - `None`: The column will not be frozen and will not follow horizontal scrolling.
+  - `Left`: The column is frozen to the left, remaining visible on the left side while the table scrolls horizontally.
+  - `Right`: The column is frozen to the right, remaining visible on the right side while the table scrolls horizontally.
+
+When a column has a `frozenColumnAlign` value other than `None`, the following rules apply:
+- **`canBeResized`** is automatically overridden to `false`. Frozen columns cannot be resized.
+- **`canBeReordered`** is automatically overridden to `false`. Frozen columns cannot be reordered.
+- **`initialWidth`** is set to `100px` by default when freezing the column. You can adjust this value if needed by specifying an `initialWidth` greater than 0 to override this default value.
 
 <br><br>
 
@@ -2256,50 +2282,6 @@ This reusable table will automatically handle all the pagination and number of r
 - When loading the table, the total number of pages will be computed based on the number of records that can be shown per page. Also, the total records will be computed and shown to the user in the table footer.
 - If the user applies a filter, the total number of pages could be updated. The number of total records and how many records are available taking into account the filters will be also updated. This reusable component will also take into account that if the user was for example in a page 12, and now taking into account filters there are only 5 pages available, he will be moved to page 5.
 - If the user changes a page, data displayed in the table is updated.
-
-
-### 4.11 Column editor and setting up column initial properties
-WIP
-
-
-### 4.12 Column resize
-By default, all columns can be resized. The user can put the mouse at the edge of the header of a column and the resize icon will appear. If the user holds the right clic when this icon appears, he can then move the mouse left or right to change the horizontal size of a column.
-
-If you wish to disable this feature from a specific column, you can do so by modifying your DTO in the back-end. For the specific column that you wish to disable this feature from, in the "PrimeNGAttribute" you just have to give a value of false to "canBeResized" as shown in the next example:
-```c#
-[PrimeNGAttribute("Example column", canBeResized: false, ...)]
-public string? ExampleColumn { get; set; }
-```
-
-
-### 4.13 Column reorder
-By default, all columns can be reorder. The user can put the mouse inside the header of a column and the and the move icon will appear. If the user holds the right clic when this icon appears, he can then move the column to be before or after some specific columns. The frozen columns (explained further in this guide) will be before or after (depending if they are frozen left or right) from the unfrozen columns.
-
-If you wish to disable this feature from a specific column, you can do so by modifying your DTO in the back-end. For the specific column that you wish to disable this feature from, in the "PrimeNGAttribute" you just have to give a value of false to "canBeReordered" as shown in the next example:
-```c#
-[PrimeNGAttribute("Example column", canBeReordered: false, ...)]
-public string? ExampleColumn { get; set; }
-```
-
-
-### 4.14 Frozen columns
-By default, columns are not frozen. You can change this behaviour for any column, except the row actions or row select columns which is done through the front-end in your component. To enable apart, from these two columns, to have addtinal frozen columns, in your DTO you have to add in the "PrimeNGAttribute" a value different from noone to "frozenColumnAlign", for example:
-```c#
-[PrimeNGAttribute("Example column", frozenColumnAlign: EnumFrozenColumnAlign.Left, ...)]
-public string? ExampleColumn { get; set; }
-```
-
-This will make the "exampleColumn" to be frozen to the left of your table. To freeze the row actions column or the row selector, refer to the previous sections in this guide.
-
-
-### 4.15 Column widths
-By default all columns that are defined in the backend will have a width of 0px. This will be treated in the front-end to delegate the width to be automatically determined by the PrimeNG table component. However, this behaviour can be overriden if you wish to specify a fixed width of pixels to a column to start width. To define an initial width to a column, in your DTO you have to add in the "PrimeNGAttribute" a value different from 0 to "initialWidth", for example:
-```c#
-[PrimeNGAttribute("Example column", initialWidth: 150, ...)]
-public string? ExampleColumn { get; set; }
-```
-
-This will make the "exampleColumn" to start with a width of 150 pixels.
 
 
 ### 4.16 Column descriptions

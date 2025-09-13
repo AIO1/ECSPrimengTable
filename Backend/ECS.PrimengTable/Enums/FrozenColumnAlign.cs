@@ -1,6 +1,6 @@
 ﻿namespace ECS.PrimengTable.Enums {
     public enum FrozenColumnAlign {
-        Noone,
+        None,
         Left,
         Right
     }
