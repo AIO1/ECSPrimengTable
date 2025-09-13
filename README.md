@@ -6,6 +6,8 @@
 # ECS PrimeNG Table
 A solution created by Alex Ibrahim Ojea that enhances the PrimeNG table with advanced filters and extended functionality, delegating all query and filtering logic to the database engine. The frontend is built with Angular 20 and PrimeNG 20 components, while the backend is a .NET 8 (ASP.NET) API connected to Microsoft SQL Server, easily adaptable to other databases. This approach prevents server and frontend overload by handling filtering and paging dynamically in the database, and includes features such as column visibility, column filters, custom views, and more.
 
+<br><br><br>
+
 
 
 ## Introduction
@@ -31,6 +33,8 @@ This is an example of the final solution:
     <img width="1899" height="978" alt="Example table" src="https://github.com/user-attachments/assets/d7bc4183-6895-4166-afa7-a2cd64d2abdd" />
 </p>
 
+<br><br><br>
+
 
 
 ## 1 Required software
@@ -40,6 +44,8 @@ To run this project, you will need:
 - [Node.js](https://nodejs.org/en/download/package-manager) – to run the Angular application. Managing Node versions with [NVM](https://github.com/nvm-sh/nvm) is recommended.
 - [Microsoft SQL Server](https://www.microsoft.com/en-us/sql-server/sql-server-downloads) – the database engine used for queries. Optional, can be replaced with other engines with minor code adjustments.
 - (Optional) [DBeaver](https://dbeaver.io/download/) – A GUI for database management that works with multiple engines. You can use other tools, but this is the one I normally use.
+
+<br><br><br>
 
 
 
@@ -69,6 +75,8 @@ The following image shows the ER diagram of all the tables:
     <img width="1132" height="526" alt="ER diagram of example project" src="https://github.com/user-attachments/assets/63762420-6204-4b10-8486-987ec8ca95eb" />
 </p>
 
+<br><br>
+
 
 
 ### 2.2 Backend (API in ASP.NET)
@@ -80,6 +88,8 @@ The following image shows the ER diagram of all the tables:
 #### 2.2.1 Open the project
 Using **Visual Studio 2022**, open the backend solution located in [this path](Backend). Make sure the **ASP.NET workload** and **.NET 8 framework** are installed. If any component is missing, use the **Visual Studio Installer** to add it.
 
+<br><br>
+
 
 
 #### 2.2.2 Update the database connection string
@@ -88,6 +98,8 @@ Using **Visual Studio 2022**, open the backend solution located in [this path](B
 
 Next, update the database configuration for your backend API. Open the [appsettings.Development.json](Backend/ECSPrimengTableExample/appsettings.Development.json) file and ensure that the connection string under `"DB_primengtablereusablecomponent"` matches your setup.
 If you change the identifier name of the connection string in `appsettings.json`, remember to update it accordingly in [Program.cs](Backend/ECSPrimengTableExample/Program.cs).
+
+<br><br>
 
 
 
@@ -110,6 +122,8 @@ These are the common changes you may need to make in the command:
 - `--context`: Sets the name of the `DbContext`. In this example, it will be `primengTableReusableComponentContext`.
 - `-f`: Forces overwriting existing files.
 - `--no-onconfiguring`: Tells the scaffolding process not to configure the connection in the `DbContext`. In this example, the connection is managed through the `appsettings.Development.json` file.
+
+<br><br>
 
 
 
@@ -140,6 +154,8 @@ Upon execution, you should receive a **200 response** with a body similar to the
 ```
 If you see these results, it means your API is running correctly and communicating with the database, as these GET endpoints retrieve data directly from it.
 Take note of the **port number** in the API URL, as it will be needed later to configure the frontend.
+
+<br><br>
 
 
 
@@ -186,6 +202,8 @@ After a few seconds, a new tab in your web browser should open, displaying the t
 
 If you have reached this step, congratulations! You have successfully set up and started the demo project! :smile:
 
+<br><br><br>
+
 
 
 ---
@@ -213,6 +231,8 @@ In addition, make sure the following required dependencies are installed:
 (Replace `<version>` with the specific package version you are downloading, e.g., `8.0.1`).
 
 With these dependencies in place and the package installed, your backend is ready to use the **ECS PrimeNG Table**.
+
+<br><br>
 
 
 
@@ -242,6 +262,8 @@ In addition, make sure the following required dependencies are installed in your
 > [!CAUTION]  
 > These are **peer dependencies** and are **not installed automatically**. If your project doesn't already include them, you must install them separately using NPM.
 
+<br><br>
+
 
 
 #### 3.2.2 Configure Angular locales
@@ -261,6 +283,8 @@ This step is required before using the table. If the locale is not correctly reg
 
 You can include this configuration at the global level (e.g., `app.module.ts` or `app.config.ts`) or at a more local level, depending on your application structure.
 
+<br><br>
+
 
 
 #### 3.2.3 Required services for ECS PrimeNG Table
@@ -269,6 +293,8 @@ The **ECS PrimeNG Table** package defines two abstract services that you need to
 - **ECSPrimengTableNotificationService**: handles notifications (toasts) for the table.
 
 These services are abstract, meaning the package does not know how you want to handle HTTP requests or notifications in your project. You need to create your own implementations.
+
+<br><br>
 
 
 
@@ -307,6 +333,8 @@ export class HttpService extends ECSPrimengTableHttpService {
 }
 ```
 
+<br><br>
+
 
 
 ###### Example: Notification service
@@ -334,6 +362,8 @@ export class NotificationService extends ECSPrimengTableNotificationService {
 }
 ```
 
+<br><br>
+
 
 
 ###### Registering the services
@@ -351,11 +381,15 @@ export const appConfig: ApplicationConfig = {
 ```
 This tells the **ECS PrimeNG table** package to use your custom services for handling HTTP requests and notifications.
 
+<br><br><br>
+
 
 
 ---
 ## 4 Functional overview
 The goal of this section is to provide a **user-level overview** of all the features included in the **ECS PrimeNG table**. It allows you to quickly understand what the table can offer and how these functionalities can be utilized in your projects. This section provides a clear, at a glance view of everything available without diving into code.
+
+<br><br>
 
 
 
@@ -393,6 +427,8 @@ Don’t worry if some of these concepts are unclear at this point, each feature 
 > This solution works only to data that is already persisted in the database.
 > It is **not intended** to handle data currently being edited in memory on the front end and not yet saved to the database.
 
+<br><br>
+
 
 
 ### 4.2 Date formatting
@@ -418,6 +454,8 @@ You can configure this customization per table, with several possible approaches
 > [!NOTE]
 > While per-table customization is possible, it is recommended to set a **global configuration** for all tables. Individual table settings are mainly useful for specific scenarios, but managing a global configuration is easier and more consistent.
 
+<br><br>
+
 
 
 ### 4.3 Column configurations
@@ -436,6 +474,8 @@ Columns can be configured to define how cell data is displayed and treated. The 
 > [!NOTE]  
 > All data types support null (empty) values, allowing cells to remain blank if no data is available.
 
+<br><br>
+
 
 
 #### 4.3.2 Visibility
@@ -447,6 +487,7 @@ You can also restrict visibility changes for specific columns. For example, some
 
 Additionally, developers can define **utility columns** that remain hidden from the user interface. These columns (such as row IDs or internal references) are not only invisible to the end user but also excluded from the column properties menu, ensuring they remain hidden while still being available for internal logic or processes.
 
+<br><br>
 
 
 
@@ -469,6 +510,8 @@ Users can change the alignment of any column using a dedicated column properties
 - **Restrict per column**: Prevent users from changing the horizontal and/or vertical alignment for specific columns.
 - **Disable globally**: Turn off the entire Column Properties menu so users cannot adjust alignment or any other column settings.
 
+<br><br>
+
 
 
 #### 4.3.4 Overflow behaviour
@@ -482,6 +525,8 @@ By default, the overflow behaviour for all columns is set to **Hidden**.
 Users can adjust the overflow behaviour of each column through the **column properties menu** (explained in later sections). This feature can be controlled in two ways:
 - **Restrict per column**: Prevent users from changing the overflow behaviour for specific columns.
 - **Disable globally**: Turn off the entire column properties menu so users cannot modify overflow behaviour or any other column settings.
+
+<br><br>
 
 
 
@@ -510,6 +555,8 @@ At the bottom-right of the modal, users can either **Cancel** or **Apply** their
     <img width="1232" height="527" alt="Modify column properties menu" src="https://github.com/user-attachments/assets/b6831580-ea14-4b33-81f9-587a7563fee6" />
 </p>
 
+<br><br>
+
 
 
 #### 4.3.6 Resize
@@ -526,6 +573,7 @@ Some important design aspects to take into account:
   <img width="757" height="432" alt="resize example" src="https://github.com/user-attachments/assets/f8cb1b9e-f518-4e65-bc1e-875a6de7afdd"/>
 </p>
 
+<br><br>
 
 
 
@@ -551,6 +599,8 @@ How it works is as follows:
   <img width="1542" height="649" alt="column reorder example" src="https://github.com/user-attachments/assets/a731ffa5-87e6-414f-b3b3-6cf64d9e9de8"/>
 </p>
 
+<br><br>
+
 
 
 #### 4.3.8 Frozen
@@ -563,6 +613,8 @@ These columns remain **visible at all times**, even when the user scrolls the ta
 <p align="center">
   <img width="661" height="526" alt="frozen columns example" src="https://github.com/user-attachments/assets/1a38a4b3-e3e7-430b-ad90-189654363aa6"/>
 </p>
+
+<br><br>
 
 
 
@@ -577,6 +629,8 @@ This feature is especially useful for columns that may require extra details to 
   <img width="496" height="143" alt="column description example" src="https://github.com/user-attachments/assets/48b98b97-a922-4fec-895f-07ed6b1232b5"/>
 </p>
 
+<br><br>
+
 
 
 #### 4.3.10 Cell tooltip
@@ -589,6 +643,8 @@ It is also possible to configure the tooltip to display the value from another c
 
 > [!CAUTION]
 > Keep in mind that when referencing other columns, you can only access data from columns that are currently visible in the table. Therefore, avoid mapping tooltips to columns that users can hide, and instead use utility columns that remain always available.
+
+<br><br>
 
 
 
@@ -613,6 +669,9 @@ In the **top-left corner of the table**, there is a button to **clear all sortin
 
 > [!NOTE]
 > If no columns allow sorting, you may hide this button. However, it is **not recommended** to hide it if some columns are sortable, as this could confuse users by preventing them from resetting the sorting.
+
+<br><br>
+
 
 
 #### 4.3.12 Filtering
@@ -673,6 +732,8 @@ An example for a filter menu for text data type:
   <img width="588" height="296" alt="Filter menu example for text" src="https://github.com/user-attachments/assets/8453051f-80f8-44ca-8e0c-83ddf4bb8353" />
 </p>
 
+<br><br>
+
 
 
 #### 4.3.13 Predefined filters
@@ -701,6 +762,8 @@ Predefined filters also have a special use case for columns of type `list`. In t
   <img width="1052" height="453" alt="Predefined filter example" src="https://github.com/user-attachments/assets/90b15f1a-c1f2-42a9-b853-83583acb26f8" />
 </p>
 
+<br><br>
+
 
 
 ### 4.4 Row configurations
@@ -728,6 +791,8 @@ Users can also **unselect a previously selected row**. There are two ways to con
 > If the default behavior (holding down `CTRL` to unselect) is enabled, repeatedly clicking the same row **without holding `CTRL`** will count as multiple selections.  
 > This can cause unintended behavior if actions are triggered on each selection, so plan your row actions accordingly.
 
+<br><br>
+
 
 
 #### 4.4.2 Checkbox select
@@ -752,6 +817,8 @@ The **checkbox select column** has this additional customizable options:
   <img width="311" height="362" alt="Checkbox row select example" src="https://github.com/user-attachments/assets/0e387896-6569-46f0-96cb-9f9f68536932" />
 </p>
 
+<br><br>
+
 
 
 #### 4.4.3 Dynamic styling
@@ -769,6 +836,8 @@ In the example below:
 
 > [!TIP]
 > A row can combine multiple styles simultaneously, applied from different rules.
+
+<br><br>
 
 
 
@@ -804,6 +873,8 @@ An example of the actions columns with row action buttons:
   <img width="124" height="124" alt="Row action buttons" src="https://github.com/user-attachments/assets/af65a3f1-2cc7-455e-bf85-059f9e372d24" />
 </p>
 
+<br><br>
+
 
 
 ### 4.6 Global filter
@@ -835,6 +906,9 @@ An example of the global filter:
 > - **Optimize your backend** for keyword searches (e.g., using proper indexes).
 > - **Limit the total number of records** retrieved at once if performance is a concern.
 
+<br><br>
+
+
 
 ### 4.7 Pagination and record count
 The **ECS PrimeNG table** automatically manages both pagination and record counting for you. This means only the data required for the current page is loaded on the front-end, optimizing performance and minimizing the amount of information transferred.
@@ -859,6 +933,8 @@ An example of the **pagination and record count**:
 > [!CAUTION]
 > Avoid allowing very high numbers of items per page, as this may reduce performance.
 
+<br><br>
+
 
 
 ### 4.8 Copy cell content
@@ -870,12 +946,16 @@ You can also customize:
 - The duration of the press before the copy action is triggered.  
 - Or disable the feature entirely if it is not needed.
 
+<br><br>
+
 
 
 ### 4.9 Dynamic height
 Enabled by default, this feature automatically adjusts the **maximum height** of the table to fit its container.
 
 The vertical scroll bar will appear **inside the table** to navigate records on the current page, while the **header and paginator remain visible** at all times.
+
+<br><br>
 
 
 
@@ -888,6 +968,8 @@ This behavior can be deferred if needed. For example, in any of these scenarios:
 - Any other scenario you might have.
 
 Once ready, the table can be manually updated through external calls.
+
+<br><br>
 
 
 
@@ -908,6 +990,8 @@ Users can customize the export with the following options:
 - **Selected rows**: Appears only if the table has the **row checkbox selector** enabled. Users can export selected rows, unselected rows, or all rows regardless of selection.
 
 Once satisfied with the configuration, users can click **Export** to generate the Excel file, which will be automatically downloaded to their device.
+
+<br><br>
 
 
 
@@ -955,6 +1039,8 @@ Rules and limitations of views:
 - By default, a table can have up to 10 views (configurable if needed).  
 - **Load on startup**: If checked for a view, it will automatically apply the next time the table loads. Only one view can have this enabled at a time.
 
+<br><br><br>
+
 
 
 ---
@@ -994,11 +1080,15 @@ The purpose of this section is to provide a table that maps the features describ
 
 </div>
 
+<br><br><br>
+
 
 
 ---
 ## 6 Technical overview
 The goal of this section is to provide a technical overview of the **ECS PrimeNG table**. It dives into the configuration options and implementation details, giving developers a clear understanding of how the table works under the hood. This section helps you grasp the mechanics, and integrate the table efficiently into your projects.
+
+<br><br>
 
 
 
@@ -1045,6 +1135,8 @@ Controller
 > Separating layers into different projects is optional but recommended for larger applications.  
 > This structure promotes **clean architecture** and makes it easier to scale or replace parts independently.
 
+<br><br>
+
 
 
 ### 6.1 Understanding the basics
@@ -1059,6 +1151,9 @@ For every **ECS PrimeNG table** you want to use, even when displaying simple dat
   - **Template:** Use the `<ecs-primeng-table>` element in the component's HTML and configure the minimal required properties.
 
 In this section, we will focus on creating a table that displays simple data without row actions or other advanced features.
+
+<br><br>
+
 
 #### 6.1.1 Backend
 ##### 6.1.1.1 Setting up the DTO
@@ -1108,6 +1203,8 @@ Some important points about this example DTO:
 
 > [!CAUTION]
 > Avoid adding a property named `Selector` in your class, especially if you plan to use the row selection feature. This name is reserved as a virtual column used internally by the table, and using it can cause conflicts.
+
+<br><br>
 
 
 
@@ -1189,6 +1286,8 @@ namespace ECSPrimengTableExample.Services {
 
 > [!TIP]
 > Replace `TestDto` with the DTO used for your table. The service will automatically read its column definitions and build the configuration accordingly.
+
+<br><br>
 
 
 
@@ -1323,6 +1422,8 @@ namespace ECSPrimengTableExample.Repository {
 
 With this setup, your table data endpoint is fully functional and ready to integrate with the ECS PrimeNG table frontend.
 
+<br><br>
+
 
 
 #### 6.1.2 Frontend
@@ -1360,53 +1461,214 @@ You only need to pass the `tableOptions` property.
 
 Once you start up your API and serve the frontend, you should be able to see the table rendered on the page if everything is set up correctly.
 
+<br><br>
+
 
 
 ### 6.2 Configuring date formats
+In your service where `EcsPrimengTableService.GetTableConfiguration` is called, you can pass additional parameters to customize how dates are displayed.
+
+The **ECS PrimeNG table** will automatically handle the date conversion, and the configurations you define in the backend will be reflected in the frontend when rendering table cells.
+
+For maximum flexibility, it is recommended to store the user’s preferences for:
+- **Date format**: A string, e.g. `"dd-MMM-yyyy HH:mm:ss zzzz"`
+- **Date timezone**: A string, e.g. `"+00:00"`
+- **Date culture**: A string, e.g. `"en-US"`
+
+Let’s assume that these values are stored in a variable named `userPreferences` and that you are working with a `TestDto`.
+
+An example service implementation could look like this:
+```c#
+using ECSPrimengTable.Services;
+using ECSPrimengTableExample.DTOs;
+using ECSPrimengTableExample.Interfaces;
+
+namespace ECSPrimengTableExample.Services {
+    public class TestService : ITestService {
+
+        public TableConfigurationModel GetTableConfiguration() {
+            var userPreferences = getUserDataFromDatabase(); // Get the user preferences from the database
+            return EcsPrimengTableService.GetTableConfiguration<TestDto>(null, userPreferences.dateFormat,
+                userPreferences.dateTimezone, userPreferences.dateCulture);
+        }
+    }
+}
+```
+
+> [!NOTE]
+> If no arguments are specified, the defaults format for dates are:
+> - **Date format**: `"dd-MMM-yyyy HH:mm:ss zzzz"`
+> - **Date timezone**: `"+00:00"`
+> - **Date culture**: `"en-US"`
+
+<br><br>
 
 
 
 ### 6.3 Columns
-
-
-
 #### 6.3.1 Choosing the appropriate data type
+By default, all columns in your table are treated as **text**. However, as described in the related functional documentation, there are **five main data types** available.
+
+Choosing the correct data type is important because:
+- It influences how cells are rendered in the table.
+- It affects how certain **ECS PrimeNG table** features behave (e.g., filtering, sorting, formatting).
+
+Additionally, it is crucial to **declare whether a column is nullable**. If this is not correctly defined, dynamic queries may fail, causing your table data endpoint to break in certain scenarios.
+
+An enum named `DataType` is available, which defines the five possible data types you can associate with a column.
+
+To set the data type, simply define it in the `dataType` property of the `ColumnAttributes` applied to your DTO properties.
+
+**_Example_**
+
+Consider a DTO with:  
+- A row identifier (GUID)  
+- Two strings (one nullable, one not)  
+- A numeric value  
+- A nullable date  
+- A boolean  
+
+The DTO declaration would look like this:
+```C#
+public class TestDto {
+	[ColumnAttributes(sendColumnAttributes: false)]
+	public Guid RowID { get; set; }
+
+	[ColumnAttributes("Username")]
+	public string Username { get; set; } = string.Empty;
+
+	[ColumnAttributes("Alias")]
+	public string? Alias { get; set; }
+
+	[ColumnAttributes("Money", dataType: DataType.Numeric)]
+	public decimal Money { get; set; }
+
+	[ColumnAttributes("Birthday", dataType: DataType.Date)]
+	public DateTime? Birthday { get; set; }
+
+	[ColumnAttributes("Has a house", dataType: DataType.Boolean)]
+	public bool House { get; set; }
+}
+```
+
+> [!IMPORTANT]
+> Always select the appropriate `DataType` for your columns to ensure correct rendering and reliable query handling. 
+
+> [!CAUTION]
+> If a column can contain null values, you must explicitly mark the property as nullable in C# by appending `?` after the type.
+ 
+<br><br>
 
 
 
 #### 6.3.2 Configuring visibility and order
+##### Visibility
+By default, all columns are **visible**. You can control column visibility using the `ColumnAttributes` of your DTO by configuring the following options:
+
+- **`sendColumnAttributes`**
+  - Use this when you need a column for **frontend functionality** but don’t want it visible to the user.
+  - If set to `false`, the column will always remain hidden, and all other visibility options (`canBeHidden`, `startHidden`) will be ignored.
+  - Example use case: internal IDs, keys, or technical references required by the application logic.
+
+- **`canBeHidden`**
+  - Determines whether the user can toggle the visibility of the column in the column editor menu.
+  - Default: `true` (users can toggle the visibility).
+  - If set to `false`, the column will always remain visible, and the user cannot hide it.
+
+- **`startHidden`**
+  - Defines whether the column is visible when the table first loads.
+  - Default: `false` (the column is visible initially).
+  - If set to `true`, the column will start as hidden, but the user can make it visible through the column editor menu.
+  - **Important**: if `canBeHidden` is `false`, the `startHidden` option is ignored, and the column will always be visible.
+
+<br><br>
+
+
+
+##### Order
+By default, columns are displayed in the frontend **following the order of their declaration in your DTO class**:
+- The first property in the class corresponds to the **leftmost column**.
+- The last property corresponds to the **rightmost column**.
+
+There are two exceptions to this rule:
+1. **Frozen columns**: These can be pinned to the left or right side of the table, and they will always remain fixed in that position regardless of DTO order.
+2. **Selector and row action columns** (explained in later sections):
+   - If frozen, they remain at the extreme sides of the table.
+   - If not frozen, they are positioned at the sides, directly before any frozen columns.
+
+<br><br>
 
 
 
 #### 6.3.3 Horizontal and vertical alignment
+By default, all columns are aligned **horizontally at `Center`** and **vertically at `Middle`**, which means that the content of each cell is displayed at its center.
+
+Users are allowed to change both the horizontal and vertical alignment through the **column editor menu** by default.
+
+If different initial alignments are required, or if user customization must be restricted, the `ColumnAttributes` of the DTO provide the following configuration options:
+
+- **Initial alignment**
+  - **`dataAlignHorizontal`**: Uses the `DataAlignHorizontal` enum. Default value is `Center`. Possible values are `Left`, `Center` and `Right`.
+  - **`dataAlignVertical`**: Uses the `DataAlignVertical` enum. Default value is `Middle`. Possible values are `Top`, `Middle` and `Bottom`.
+
+- **Restricting alignment changes**
+  - **`dataAlignHorizontalAllowUserEdit`**: By default set to `true`. If set to `false`, the user cannot change the horizontal alignment of the column in the editor menu.
+  - **`dataAlignVerticalAllowUserEdit`**: By default set to `true`. If set to `false`, the user cannot change the vertical alignment of the column in the editor menu.
+
+<br><br>
 
 
 
 #### 6.3.4 Overflow behaviour
+All columns come with a default **cell overflow behaviour** of `Hidden`.
+
+By default, users are allowed to change the overflow behaviour of a column through the **column properties menu**.  
+
+If you need a different default behaviour, or if you want to prevent users from modifying it, the `ColumnAttributes` of your DTO provides the following options:  
+
+- **`cellOverflowBehaviour`**: Defines how the content of the cell is handled when it exceeds the column width. It uses the `CellOverflowBehaviour` enum, which has two possible values:  
+  - `Hidden` (default): exceeding the width of the column will be truncated and not displayed.  
+  - `Wrap`: Excess content is wrapped onto new lines, allowing the row to expand vertically as needed to fit all content.  
+
+- **`cellOverflowBehaviourAllowUserEdit`**: Controls whether users can change the column’s overflow behaviour through the column editor menu. Default is `true`. Set it to `false` to prevent users from modifying this setting.  
+
+<br><br>
 
 
 
 #### 6.3.5 Column properties menu
 
+<br><br>
+
 
 
 #### 6.3.6 Resize
+
+<br><br>
 
 
 
 #### 6.3.7 Reorder
 
+<br><br>
+
 
 
 #### 6.3.8 Frozen
+
+<br><br>
 
 
 
 #### 6.3.9 Descriptions
 
+<br><br>
+
 
 
 #### 6.3.10 Cell tooltip
+
+<br><br>
 
 
 
@@ -1414,117 +1676,109 @@ Once you start up your API and serve the frontend, you should be able to see the
 > [!NOTE]  
 > The arguments in "PerformDynamicQuery" of "defaultSortColumnName" and "defaultSortOrder" should both have the same list length.
 
+<br><br>
+
+
 
 #### 6.3.12 Filtering
 Take into account that the global filter is one of the most costly operations launched to the database engine, since basically it performs a LIKE = '%VALUE_PROVIDED_BY_USER%' to each column.
 
+<br><br>
+
+
 
 #### 6.3.13 Predefined filters
+
+<br><br>
 
 
 
 ### 6.4 Rows
-
-
-
 #### 6.4.1 Single select
+
+<br><br>
 
 
 
 #### 6.4.2 Checkbox select
 
+<br><br>
+
 
 
 #### 6.4.3 Dynamic styling
+
+<br><br>
 
 
 
 ### 6.5 Setting up row an header action buttons
 
+<br><br>
+
 
 
 ### 6.6 Configuring the global filter
+
+<br><br>
 
 
 
 ### 6.7 Pagination properties
 
+<br><br>
+
 
 
 ### 6.8 Copy cell content
+
+<br><br>
 
 
 
 ### 6.9 Dynamic height
 
+<br><br>
+
 
 
 ### 6.10 Deferred startup
+
+<br><br>
 
 
 
 ### 6.11 Configuring Excel reports
 
+<br><br>
+
 
 
 ### 6.12 Setting up views
 
+<br><br><br>
+
+
 
 ---
 ## 7 Component reference
+
+<br><br><br>
+
 
 
 ---
 ## 8 Editing ECS PrimeNG table and integrating locally
 
 
----
 
 
 
-#### 4.1.4 Implementing a new table in the frontend
-Once you have at least created an endpoint to fetch the columns and the data in you API (we are ye assuming an scenario where you don't need predifined filters), you can generate a new component on your frontend through Visual Studio Code terminal (using CMD, not the default powershell terminal that opens up) by first doing "cd" to you frontend root folder and then executing the command:
-```sh
-ng generate c OPTIONAL_PATH_FROM_ROOT_FOLDER_TO_GENERATE_COMPONENT YOUR_COMPONENT_NAME
-```
 
-This will generate you component inside a folder with four files. Assuming that to start, you only want to show some data the moment the component is loaded, in the file that has been generated with an ".html" extension you must add:
-```html
-<ecs-primeng-table #dt
-    columnsSourceURL="YOUR_API_ENDPOINT_TO_FETCH_COLUMNS"
-    dataSoureURL="YOUR_API_ENDPOINT_TO_FETCH_DATA>
-</ecs-primeng-table>
-```
 
-With only this, when starting the backend and the the frontend and navigating to the component, a table will be shown and it will automatically get the columns and data the moment the new component is entered. With this you would have completed a simple table that can be used to show data on the frontend with lots of personalization options to the user.
-
-In the above example, the "ecs-primeng-table" has been given the template reference variable "dt", which is optional to do. This is needed when you want to access from the component exposed functions of "ecs-primeng-table". From the demo project, you should be aware that the endpoints of your API shouldn't be the complete URL, but rather the combination of what is already given in the variable "APIbaseURL" in the file [constants.ts](Frontend/primengtablereusablecomponent/src/constants.ts) and the endpoint part that you specify in the "ecs-primeng-table" component.
 
 
 ### 4.2 Date formating
-Something that a first glance might sound simple but I've seen lots of developers struggle with this. Its important to know how you should handle your date storage and how you should display it to the end user.
-
-My personal reccomendation, always store in your databases dates in UTC and (if using MSSQL) as a datetime2 type, even if you are not interested in saving the time part. Its a way to guarantee consistency when working with dates. This solution assumes that all your dates are stored in the database as datetime2 in UTC timezone.
-
-If you need to show dates in a table, you don't need to do much more than just declaring in your DTO the appropiate row as date type and making sure that your date is stored in UTC. By default, in the front-end, it will be shown with the format "dd-MMM-yyyy HH:mm:ss zzzz", with the time zone "+00:00" and with the date culture "en-US".
-
-This can be easily customized per user if you are storing their date preferences in your database (or if they have a way to select it and send it before fetching the table columns). In the previous example we called "GetColumnsInfo" in the backend passing it our DTO for it to prepare all our columns data that will be sent to the front-end. "GetColumnsInfo" can be also given three optional arguments to customize how a date is shown to a user. If before calling this function, you have a way to fetch the preferences of the user calling this endpoint, you can pass this arguments as shown in the following example:
-```c#
-[HttpGet("[action]")]
-public IActionResult TestGetCols() {
-    try {
-        string dateFormat = "dd-MM-yyyy HH:mm zzzz"
-        string dateTimezone = "+02:00"
-        string dateCulture = "en-US"
-        return Ok(PrimeNGHelper.GetColumnsInfo<TestDto>(dateFormat, dateTimezone, dateCulture)); // Get all the columns information to be returned
-    } catch(Exception ex) { // Exception Handling: Returns a result with status code 500 (Internal Server Error) and an error message.
-        return StatusCode(StatusCodes.Status500InternalServerError, $"An unexpected error occurred: {ex.Message}");
-    }
-}
-```
-
-This is a hardcoded example, normally you would get the userID and retrieve this date customization from the database. From the example, the date will be represented with the format "dd-MM-yyyy HH:mm zzzz" and in the time zone "+02:00". You don't need to do anything else, since this will be automatically handled for you and the user will see the date properly converted. From this example, if the date is stored in the database as "12-oct-2024 13:37:25", the user will see it in the table as "12-10-2024 15:37 GMT+02:00".
-
 From the setup steps for implementing this reusable component, you might remember that there you had to created the database function [04 FormatDateWithCulture.txt](Database%20scripts/04%20FormatDateWithCulture.txt). This is actually not needed, since its only use is for being able to use the golbal filter functionality on columns that have the date type. The global filter tries to search things as a string, so this function makes a conversion of your date to a format that matches the date as you are showing it to the user in the frontend, taking into account the date format, timezone offset and culture that you wish to use. The database function needs to be exposed in the backend (as explained in previous sections) so that when the global filter is used, this function can be called with no issues. If for any reasons you were unable to use this function, the global filtered can be disabled in the date type columns to avoid errors when filtering.
 
 
@@ -1597,34 +1851,6 @@ If at least a row action button has been provided, an additional column will be 
 - **actionsColumnAligmentRight** (boolean): By default true. If true, this column will be placed at the right most part of your table. If false, it will be placed to the left of the table.
 - **actionsColumnFrozen** (boolean): By default true. If true, this column will be frozen and follow the horizontal scroll if the table has a width longer than the component were it is drawn. If false, the column won't be frozen and act as a normal column.
 - **actionsColumnResizable** (boolean): By default false. If false, the user can't resize the column. If true, the user will be able to resize this column.
-
-
-### 4.4 Row selector
-The goal of this feature is to allow the user to select rows and allow him to filter by rows that have been selected or rows that are not selected. From different components in the front-end, we can access the list of multiple "rowID" that the user could have selected and we can also subscribe to changes when the user changes the selection stauts of a row. The following image shows an example of how this column looks:
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/2c1ba3b8-b939-4e17-840a-c7bb74fbf987" alt="Row selector example">
-</p>
-
-
-#### 4.4.1 Enabling and configuring the row selector
-By default this feature is disabled and you need to activate it in each table that you wish to use it. To do so is as simple as in the HTML setting the variable "rowSelectorColumnActive" to true as shown in the next example:
-```html
-<ecs-primeng-table #dt
-    ...
-    [rowSelectorColumnActive]="true"
-    ...>
-</ecs-primeng-table>
-```
-
-Apart from activating the row selector, there are some additional properties of this column that can be modified through the HTML of your component, which are the following:
-- **rowSelectorColumName** (string): The title that will appear in the column header, by default is "Selected".
-- **rowSelectorColumnWidth** (number): A fixed width for this columns in pixels. By default is 150.
-- **rowSelectorColumnAligmentRight** (boolean): By default true. If true, this column will be placed at the right most part of your table (before the actions column if present and if both are the same frozen type). If false, it will be placed to the left of the table (after the actions column if present and if both are the same frozen type).
-- **rowSelectorColumnFrozen** (boolean): By default true. If true, this column will be frozen and follow the horizontal scroll if the table has a width longer than the component were it is drawn. If false, the column won't be frozen and act as a normal column.
-- **rowselectorColumnResizable** (boolean): By default false. If false, the user can't resize the column. If true, the user will be able to resize this column.
-
-An additional feature of this column, which is always active, is that it will show a filter button were the user will be able to filter by rows that are selected or unselected. By your side to have this feature working there is nothing that you need to do apart from making sure that in your back-end DTO you don't have a "Selector" property, since this could enter in conflict with this feature.
-
 
 #### 4.4.2 Subscription to changes
 The table component has an output which you can subscribe to for listening to changes when a user selects or unselects a row. To do so, in your component that is using the table, you first need to create a function in yor TypeScript that will be called when a user checks a row, for example:
@@ -2111,139 +2337,3 @@ You can modify the amount of delay (which is given in seconds) or disbale this f
 ```
 
 This will modify the default value that the user need to hold down the mouse for the value of a cell to be cpied to the clipboard from 0.5 seconds to 1.5 seconds. If you put a value equal or less than 0, this feature will be disabled.
-
-
-### 4.19 Compute table scroll height
-WIP
-
-
-### 4.20 Table views
-WIP
-
-
-> [!CAUTION]
-> WORK IN PROGRESS. All the information below this point could be outdated.
-
----
----
----
-
-
-
-
-
-
-### Preparing what is going to be shown in the frontend
-For anything that needs to be sent to the frontend (including columns that will be not shown to the user like the ID columns) you must create a DTO. Each element of the DTO that is going to be used must have an attribute declared using "PrimeNGAttribute". The "PrimeNGAttribute" allows you to define certain aspects on how the data of any of the entreis of the DTO should be treated and shown in the frontend.
-
-From the file [PrimeNGAttribute.cs](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/Services/PrimeNGAttribute.cs), you will see that you can specify multiple things to each element of the DTO, the things that can be specified per columns are:
-
-- **header:** Used to specify the name that the column will have in the frontend.
-- **dateType:** An ENUM used to indicate the type of data that is being managed. This will affect the global filter and the filter per column. The filter by column will display different options to the user in the frontend depending on the data type specified. The are four data types and they must be declared as they appear exactly here:
-  - **"Text":** Used mainly for strings and nullable strings. This is the default option if nothing has been specified.
-  - **"Numeric":** Used for any type of data in C# that handles numeric values like int, long, ...
-  - **"Booelan":** Used for bool and nullable bool types.
-  - **"Date":** Used for valid date data, for example, datetime.
-- **dataAlignHorizontal:** An ENUM being the default value "Center", the value provided will be used to determine the horizontal aligment of the data in the frontend. The possible values that must be declared as they appear exactly here are:
-  - "Left"
-  - "Center"
-  - "Right"
-- **dataAlignHorizontalAllowUserEdit:** By default true. If true, the user can edit the horizontal aligment in the front-end.
-- **dataAlignVertical:** An ENUM being the default value "Middle", the value provided will be used to determine the vertical aligment of the data in the frontend. The possible values that must be declared as they appear exactly here are:
-  - "Top"
-  - "Middle"
-  - "Bottom"
-- **dataAlignVerticalAllowUserEdit:** By default true. If true, the user can edit the vertical aligment in the front-end.
-- **canBeHidden:** Being the default value true, this parameter will indicate if the user in the frontend can hider or not this column. When a column is hidden, it means it won't be recovered in the SELECT statement to the database, saving up on resources. If a columns is hidden, it won't be shown in the frontend until the user selects it again.
-- **startHidden:** Default value is false. If the value is true and if "canBeHidden" is true, the column will be first shown to the user as hidden, and if he want to view it, the user must request it in the column selector.
-- **canBeResized:** Default true. If true, it means that the user will have the ability to resize the column.
-- **canBeReordered:** Default true. If true, the user can drag a column and place it in a different order.
-- **canBeSorted:** Default true. If true, the user can press the header of a column to sort the column. If pressed again, the sort order will be inverted. The user has te ability to perform a multisort holding down "CTRL" key and the clicking in all the columns that he wants to sort by.
-- **canBeFiltered:** Default true. If true, in the frontend, the user will see a filter icon in the column. When the filter icon is pressed, a menu with different options to filter by will be shown to the user. The menu that is displayed and the available rules will depend in the "dataType" and in "filterPredifinedValuesName".
-- **filterPredifinedValuesName:** If "canBeFiltered" is true, it will be used by the frontend to look for the data in an entity with the name provided here. In further sections there is an in depth explanation on how to use this.
-- **canBeGlobalFiltered:** Indicates if the column is affected by the glboal filter. The "boolean" data type can't be globally filtered. By default, all the other types of columns are affected by the global filter.
-- **sendColumnAttributes:** By default true. This value should be set to false for columns that you wish to send to the frontend, but you do not wish the user to be able to see them. These columns are not affected by the filters or ordering. It is normally used for fields like the ID.
-- **columnDescription:** A string that if informed, it will show a "i" icon on the table header and when the user hovers over it, it will show a tooltip that shows the value given here. Useful to describe what the column is about.
-- **dataTooltipShow:** By default true. When the user hovers an item in the grid, after a brief delay, the data will be shown inside a tooltip. Useful for a cell that contains a long data that can't be shown easily inside the column width.
-- **dataTooltipCustomColumnSource:** By default empty string. If a name of a column of the DTO is provided (case sensitive), and DataTooltipShow is true, the tooltip message will read from the DataTooltipCustomColumnSource column that is referenced.
-- **frozenColumnAlign:** An enum and by default noone. If noone the column will not be frozen when scrolled horizontally. If value is different from noone, the column will be frozen to the left or right.
-- **wrapIsActive:** By default false. If true, the text in the column will be wraped in the frontend.
-- **wrapAllowUserEdit:** By default true. If true, the user can enable or disable word wrap in the frontend.
-
-From the example, we can see the following DTO in [TestDTO.cs](Backend/PrimeNGTableReusableComponent/PrimeNGTableReusableComponent/DTOs/TestDTO.cs) that is used to send the data to the frontend.
-```c#
-public class TestDto {
-	[PrimeNGAttribute(sendColumnAttributes: false)]
-	public Guid id { get; set; }
-
-	[PrimeNGAttribute(sendColumnAttributes: false)]
-	public bool canBeDeleted { get; set; }
-
-	[PrimeNGAttribute("Username", dataAlignHorizontal: EnumDataAlignHorizontal.Left, canBeHidden: false, columnDescription: "A random username", frozenColumnAlign: EnumFrozenColumnAlign.Left)]
-	public string username { get; set; } = null!;
-
-	[PrimeNGAttribute("Age", dataType: EnumDataType.Numeric, columnDescription: "The age of the user")]
-	public byte? age { get; set; }
-
-	[PrimeNGAttribute("Employment status", filterPredifinedValuesName: "employmentStatusPredifinedFilter", columnDescription: "A predifined filter that shows the employment status of the user")]
-	public string? employmentStatusName { get; set; }
-
-	[PrimeNGAttribute("Birthdate", dataType: EnumDataType.Date, dataAlignHorizontal: EnumDataAlignHorizontal.Left, startHidden: true, columnDescription: "When was the user born")]
-	public DateTime? birthdate { get; set; }
-
-	[PrimeNGAttribute("Payed taxes?", dataType: EnumDataType.Boolean, startHidden: true, columnDescription: "If the user has payed his taxes or not. You've got to pay your taxes :)")]
-	public bool payedTaxes { get; set; }
-}
-```
-
-As you can see fron the above DTO, the columns "id" and "canBeDeleted" are marked as a "SendColumnAttributes" to false. This is due to the fact that we want to obtain these columns and use them in Typescript, but we don't want to show them to the user. The "id" column is used to identify the record and the "canBeDeleted" is used to show a delete button in those rows where this value is true.
-
-
-### Implementing a new table in the frontend
-Once you have at least created an endpoint to fetch the columns and the data in you API (we are ye assuming an scenario where you don't need predifined filters), you can generate a new component on your frontend through Visual Studio Code terminal (using CMD, not the default powershell terminal that opens up) by first doing "cd" to you frontend root folder and then executing the command:
-```sh
-ng generate c OPTIONAL_PATH_FROM_ROOT_FOLDER_TO_GENERATE_COMPONENT YOUR_COMPONENT_NAME
-```
-
-This will generate you component inside a folder with four files. Assuming that to start, you only want to show some data the moment the component is loaded, in the file that has been generated with an ".html" extension you must add:
-```html
-<ecs-primeng-table #dt
-    columnsSourceURL="YOUR_API_ENDPOINT_TO_FETCH_COLUMNS"
-    dataSoureURL="YOUR_API_ENDPOINT_TO_FETCH_DATA/>
-```
-
-With only this, when starting the backend and the the frontend and navigating to the component, a table will be shown and it will automatically get the columns and data the moment the new component is entered. With this you would have completed a simple table that can be used to show data on the frontend with lots of personalization options to the user.
-
-In the above example, the "ecs-primeng-table" has been given the template reference variable "dt", which is optional to do. This is needed when you want to access from the component exposed functions of "ecs-primeng-table". From the demo project, you should be aware that the endpoints of your API shouldn't be the complete URL, but rather the combination of what is already given in the variable "APIbaseURL" in the file [constants.ts](Frontend/primengtablereusablecomponent/src/constants.ts) and the endpoint part that you specify in the "ecs-primeng-table" component.
-
-This project offers some additional things that you can do with the tables and are explained in further chapters. To end this chapter, here is a list of all the parameters that can be given to a table in the HTML declaration:
-
-- **canPerformActions** (boolean): By default true. If is set to false, when entering the component, the table won't try to fetch the columns and data until explicitly told to do so calling "updateDataExternal". In later chapters it is shown how to use it.
-- **globalSearchEnabled** (boolean): By default true. Used to enable or disable the global search.
-- **globalSearchPlaceholder** (string): A placeholder to be shown in the global filter if no data has been entered. By default is "Search keyword".
-- **rowActionButtons** (IprimengActionButtons[]): A list that contains all buttons that will appear in the actions column for each record. Explained how to declare them in later chapters.
-- **headerActionButtons** (IprimengActionButtons[]): A list that contains all buttons that will appear in the right side of the header of the table. Explained how to declare them in later chapters.
-- **columnsSourceURL** (string): The URL (without the base API URL) that will be used to fetch all the information related to the columns.
-- **dataSoureURL** (string): The URL (without the base API URL) that will be used to fetch all the information related to the data.
-- **predifinedFiltersCollection** ({ [key: string]: IPrimengPredifinedFilter[] }): Contains a collection of the values that need to be shown for predifined column filters. Explained in later chapters how to use it.
-- **predifinedFiltersNoSelectionPlaceholder** (string): A text to be displayed in the dropdown if no value has been selected in a column that uses predifined filters. Default value is: "Any value".
-- **predifinedFiltersCollectionSelectedValuesText** (string): A text to display in the predifined filters dropdown footer indicating the number of items that have been selected. Default value is: "items selected".
-- **noDataFoundText** (string): The text to be shown when no data has been returned. Default value is: "No data found for the current filter criteria.".
-- **showingRecordsText** (string): The text that must be displayed as part of "Showing records". The default value is: "Showing records".
-- **applyingFiltersText** (string): The text that is shown next to the number of records after applying filter rules. The default value is: "Available records after applying filters".
-- **notApplyingFiltersText** (string): The text to be shown next to the number of total records available (not applying filters). The default value is: "Number of available records".
-- **actionColumnName** (string): The column name were the action buttons will appear. Default value is: "Actions".
-- **actionsColumnAligmentRight** (boolean): By default true, it can be changed to false to make the actions column appear in the left part of the table, instead that on the right.
-- **actionsColumnFrozen** (boolean): By default true. If true, it will freeze the actions column so that if the table is scrolled horizontally, it will remain visible.
-- **actionsColumnResizable** (boolean): By default false. If true, it will allow the user to resize the actions column.
-- **rowSelectorColumnActive** (boolean): By default false. If true, a column will be shown to the user that includes a checkbox per row. This selection and filtering that the user can do is all managed by the table component. You can fetch the selected rows through the output selectedRows.
-- **rowSelectorColumName** (string): The title of the row selection column. By default is "Selected".
-- **rowSelectorColumnAligmentRight** (boolean): By default true. If true, the row selector column is put at the right end of the table (or false if its at the left).
-- **rowSelectorColumnFrozen** (boolean): By default true. If true, the row selector column will be frozen.
-- **computeScrollHeight** (boolean): By default true. If true, the table will try to keep the footer within the view's height.
-- **tableStateSaveAs** (enum): Default value is noone and the possible values are sessionStorage, localStorage and databaseStorage. It indicated were the table state should be saved to.
-- **tableStateSaveKey** (string): If specified (and tableStateSaveAs is different than noone), the save and load table state will be available. The key is used to save the table data with this reference. Different tables should have different keys so that they are now overwriten.
-
-There is an output which you can access from other components:
-
-- **selectedRows:** (any): A list of all the "id" selected by the user in a row. By default is empty but the user can add elements through the front-end if rowSelectorColumnActive is true.
