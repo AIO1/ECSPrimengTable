@@ -1449,6 +1449,8 @@ export class Home {
   });
 }
 ```
+> [!CAUTION]
+> It is important that the variable you use as `tableOptions` is initialized using `createTableOptions`. This ensures that the table is created with the necessary base configuration, preventing errors or unexpected behaviour.
 
 In this component, we only define the paths to your API endpoints. It is assumed that the ECS PrimeNG table component has already been provided with the base URL of your API in the http service injection.
 
@@ -1622,21 +1624,32 @@ If different initial alignments are required, or if user customization must be r
 #### 6.3.4 Overflow behaviour
 All columns come with a default **cell overflow behaviour** of `Hidden`.
 
-By default, users are allowed to change the overflow behaviour of a column through the **column properties menu**.  
+By default, users are allowed to change the overflow behaviour of a column through the **column properties menu**.
 
-If you need a different default behaviour, or if you want to prevent users from modifying it, the `ColumnAttributes` of your DTO provides the following options:  
+If you need a different default behaviour, or if you want to prevent users from modifying it, the `ColumnAttributes` of your DTO provides the following options:
 
-- **`cellOverflowBehaviour`**: Defines how the content of the cell is handled when it exceeds the column width. It uses the `CellOverflowBehaviour` enum, which has two possible values:  
-  - `Hidden` (default): exceeding the width of the column will be truncated and not displayed.  
-  - `Wrap`: Excess content is wrapped onto new lines, allowing the row to expand vertically as needed to fit all content.  
+- **`cellOverflowBehaviour`**: Defines how the content of the cell is handled when it exceeds the column width. It uses the `CellOverflowBehaviour` enum, which has two possible values:
+  - `Hidden` (default): exceeding the width of the column will be truncated and not displayed.
+  - `Wrap`: Excess content is wrapped onto new lines, allowing the row to expand vertically as needed to fit all content.
 
-- **`cellOverflowBehaviourAllowUserEdit`**: Controls whether users can change the column’s overflow behaviour through the column editor menu. Default is `true`. Set it to `false` to prevent users from modifying this setting.  
+- **`cellOverflowBehaviourAllowUserEdit`**: Controls whether users can change the column’s overflow behaviour through the column editor menu. Default is `true`. Set it to `false` to prevent users from modifying this setting.
 
 <br><br>
 
 
 
 #### 6.3.5 Column properties menu
+As described in the functional documentation for this section, the table includes a button in the top-left corner by default. When clicked, this button opens the **Column properties menu**.
+
+You can customize the column properties menu behavior through the following table options:
+
+- **`selectorEnabled`**: *(default: `true`)*
+  Controls the visibility of the top-left button.
+  - `true`: Button is visible and users can open the column properties menu.
+  - `false`: Button is hidden.
+
+- **`selectorIcon`**: *(default: PrimeNG icon `pi pi-pen-to-square`)*
+  Specifies the icon displayed on the button. You can replace it with any icon from PrimeNG or other libraries such as Font Awesome or Material Icons.
 
 <br><br>
 
@@ -1673,7 +1686,7 @@ If you need a different default behaviour, or if you want to prevent users from 
 
 
 #### 6.3.11 Sorting
-> [!NOTE]  
+> [!NOTE]
 > The arguments in "PerformDynamicQuery" of "defaultSortColumnName" and "defaultSortOrder" should both have the same list length.
 
 <br><br>

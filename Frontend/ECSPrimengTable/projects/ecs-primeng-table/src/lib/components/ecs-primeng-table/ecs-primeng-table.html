@@ -71,7 +71,7 @@
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <!--CHOOSE COLUMNS TO SHOW-->
                     @if (tableOptions.columns?.selectorEnabled) {
-                        <p-button icon="pi pi-pen-to-square" (onClick)="columnSelectorShow()" pTooltip="Modify columns"
+                        <p-button [icon]="tableOptions.columns?.selectorIcon ?? 'pi pi-pen-to-square'" (onClick)="columnSelectorShow()" pTooltip="Modify columns"
                             [showDelay]="700" tooltipPosition="top" styleClass="p-button-icon-only"/>
                     }
                     <!--CLEAR SORTS AND FILTERS-->

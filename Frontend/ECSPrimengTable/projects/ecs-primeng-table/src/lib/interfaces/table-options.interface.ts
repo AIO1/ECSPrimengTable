@@ -77,6 +77,8 @@ export interface ITableOptions {
          */
         selectorEnabled?: boolean;
 
+        selectorIcon?: string;
+
         /**
          * The combination of non-selectable columns and user-selected columns 
          * that must be displayed in the table.
@@ -271,6 +273,7 @@ export const DEFAULT_TABLE_OPTIONS: ITableOptions = {
     },
     columns: {
         selectorEnabled: true,
+        selectorIcon: "pi pi-pen-to-square",
         shown: []
     },
     rows: {
