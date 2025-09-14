@@ -56,7 +56,9 @@ internal static class TableConfigurationService {
                 CanBeGlobalFiltered = colAtt.CanBeGlobalFiltered,
                 ColumnDescription = colAtt.ColumnDescription,
                 DataTooltipShow = colAtt.DataTooltipShow,
-                DataTooltipCustomColumnSource = colAtt.DataTooltipCustomColumnSource,
+                DataTooltipCustomColumnSource = string.IsNullOrEmpty(colAtt.DataTooltipCustomColumnSource)
+                    ? colAtt.DataTooltipCustomColumnSource
+                    : char.ToLower(colAtt.DataTooltipCustomColumnSource[0]) + colAtt.DataTooltipCustomColumnSource.Substring(1),
                 FrozenColumnAlign = colAtt.FrozenColumnAlign,
                 CellOverflowBehaviour = colAtt.CellOverflowBehaviour,
                 CellOverflowBehaviourAllowUserEdit = colAtt.CellOverflowBehaviourAllowUserEdit,

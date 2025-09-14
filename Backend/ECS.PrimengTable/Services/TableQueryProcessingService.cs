@@ -1,11 +1,12 @@
 ﻿using ECS.PrimengTable.Attributes;
+using ECS.PrimengTable.Enums;
 using ECS.PrimengTable.Models;
-using System.Reflection;
 using System.Linq.Dynamic.Core;
+using System.Reflection;
 
 namespace ECS.PrimengTable.Services {
     internal class TableQueryProcessingService {
-        internal static TablePagedResponseModel PerformDynamicQuery<T>(TableQueryRequestModel inputData, IQueryable<T> baseQuery, MethodInfo stringDateFormatMethod, List<string>? defaultSortColumnName = null, List<int>? defaultSortOrder = null) {
+        internal static TablePagedResponseModel PerformDynamicQuery<T>(TableQueryRequestModel inputData, IQueryable<T> baseQuery, MethodInfo stringDateFormatMethod, List<string>? defaultSortColumnName = null, List<ColumnSort>? defaultSortOrder = null) {
             long totalRecordsNotFiltered = 0; // All available records
             long totalRecords = 0; // Number of records after applying filters
             GetDynamicQueryBase<T>(ref inputData, ref baseQuery, stringDateFormatMethod, ref totalRecordsNotFiltered, ref totalRecords, defaultSortColumnName, defaultSortOrder);
@@ -20,7 +21,7 @@ namespace ECS.PrimengTable.Services {
             };
         }
 
-        internal static void GetDynamicQueryBase<T>(ref TableQueryRequestModel inputData, ref IQueryable<T> baseQuery, MethodInfo stringDateFormatMethod, ref long totalRecordsNotFiltered, ref long totalRecords, List<string>? defaultSortColumnName = null, List<int>? defaultSortOrder = null, bool performSort = true, bool performFilters = true) {
+        internal static void GetDynamicQueryBase<T>(ref TableQueryRequestModel inputData, ref IQueryable<T> baseQuery, MethodInfo stringDateFormatMethod, ref long totalRecordsNotFiltered, ref long totalRecords, List<string>? defaultSortColumnName = null, List<ColumnSort>? defaultSortOrder = null, bool performSort = true, bool performFilters = true) {
             if(inputData.Columns != null) {
                 for(int i = 0; i < inputData.Columns.Count; i++) {
                     string column = inputData.Columns[i];
@@ -92,14 +93,14 @@ namespace ECS.PrimengTable.Services {
         /// <param name="defaultSortColumnName">The default column name for sorting when no explicit sorting is provided.</param>
         /// <param name="defaultSortColumnOrder">The default sorting order (1 for ascending, -1 for descending) when no explicit sorting is provided.</param>
         /// <returns>An IQueryable representing the query after applying sorting.</returns>
-        internal static IQueryable<T> ApplySorting<T>(IQueryable<T> query, List<ColumnSortModel>? sortModels, List<string>? defaultSortColumnName = null, List<int>? defaultSortOrder = null) {
+        internal static IQueryable<T> ApplySorting<T>(IQueryable<T> query, List<ColumnSortModel>? sortModels, List<string>? defaultSortColumnName = null, List<ColumnSort>? defaultSortOrder = null) {
             if(sortModels != null && sortModels.Count != 0) { // Check if explicit sorting details are provided
                 string orderByExpression = string.Join(",", sortModels.Select(s => $"{s.Field} {(s.Order == 1 ? "ascending" : "descending")}")); // Apply sorting using dynamic LINQ library
                 query = query.OrderBy(orderByExpression);
             } else if(defaultSortColumnName != null && defaultSortColumnName.Count > 0) { // If no explicit sorting is provided, check if default sorting is specified
                 var orderByExpressions = new List<string>();
                 for(int i = 0; i < defaultSortColumnName.Count; i++) {
-                    string direction = (defaultSortOrder != null && i < defaultSortOrder.Count && defaultSortOrder[i] == 1) ? "ascending" : "descending";
+                    string direction = (defaultSortOrder != null && i < defaultSortOrder.Count && (int)defaultSortOrder[i] == 1) ? "ascending" : "descending";
                     orderByExpressions.Add($"{defaultSortColumnName[i]} {direction}");
                 }
                 string finalOrderByExpression = string.Join(",", orderByExpressions);

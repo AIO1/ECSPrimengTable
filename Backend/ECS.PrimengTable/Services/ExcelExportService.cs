@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace ECS.PrimengTable.Services {
     internal class ExcelExportService {
-        internal static (bool, byte[]?, string) GenerateExcelReport<T>(ExcelExportRequestModel inputDataAll, IQueryable<T> baseQuery, MethodInfo stringDateFormatMethod, List<string>? defaultSortColumnName = null, List<int>? defaultSortOrder = null, string sheetName = "MAIN", byte pageStack = 250) {
+        internal static (bool, byte[]?, string) GenerateExcelReport<T>(ExcelExportRequestModel inputDataAll, IQueryable<T> baseQuery, MethodInfo stringDateFormatMethod, List<string>? defaultSortColumnName = null, List<ColumnSort>? defaultSortOrder = null, string sheetName = "MAIN", byte pageStack = 250) {
             try {
                 TableQueryRequestModel inputData = new() {
                     Page = inputDataAll.Page,
@@ -28,11 +28,6 @@ namespace ECS.PrimengTable.Services {
                         .Select(column => column.Field)
                         .ToList();
                 }
-                /*var propertyAccessors = inputData.Columns!
-                    .ToDictionary(
-                        column => column,
-                        column => (Func<object, object?>)((item) => item.GetType().GetProperty(column)?.GetValue(item))
-                    );*/
                 var propertyAccessors = inputData.Columns!
                     .ToDictionary(
                         column => char.ToUpperInvariant(column[0]) + column.Substring(1),

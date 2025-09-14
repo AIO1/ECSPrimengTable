@@ -1,7 +1,8 @@
-﻿using ECS.PrimengTable.Interfaces;
+﻿using ECS.PrimengTable.Enums;
+using ECS.PrimengTable.Interfaces;
 using ECS.PrimengTable.Models;
-using System.Reflection;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection;
 
 namespace ECS.PrimengTable.Services {
     public static class EcsPrimengTableService {
@@ -30,7 +31,7 @@ namespace ECS.PrimengTable.Services {
             IQueryable<T> baseQuery,
             MethodInfo stringDateFormatMethod,
             List<string>? defaultSortColumnName = null,
-            List<int>? defaultSortOrder = null
+            List<ColumnSort>? defaultSortOrder = null
         ) {
             return TableQueryProcessingService.PerformDynamicQuery<T>(inputData, baseQuery, stringDateFormatMethod, defaultSortColumnName, defaultSortOrder);
         }
@@ -40,7 +41,7 @@ namespace ECS.PrimengTable.Services {
             IQueryable<T> baseQuery,
             MethodInfo stringDateFormatMethod,
             List<string>? defaultSortColumnName = null,
-            List<int>? defaultSortOrder = null,
+            List<ColumnSort>? defaultSortOrder = null,
             string sheetName = "MAIN",
             byte pageStack = 250
         ) {

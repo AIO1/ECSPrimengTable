@@ -1700,20 +1700,88 @@ When a column has a `frozenColumnAlign` value other than `None`, the following r
 
 
 #### 6.3.9 Descriptions
+If you want a column to include a description, it must be defined in the backend within your DTO class by modifying the column's `ColumnAttributes`. The relevant property is:
+- **`columnDescription`**: Defaults to an empty string. If a value is provided, an info icon will appear in the column header. When the user hovers over this icon, a tooltip will be displayed showing the specified description in the frontend.
 
 <br><br>
 
 
 
 #### 6.3.10 Cell tooltip
+By default, all cells (except those with a `boolean` data type) display a tooltip with their value when the user hovers over the cell.
+
+If you want to disable this behavior, or display a tooltip based on a different column, you can configure the following properties in the `ColumnAttributes` of your DTO class:
+- **`dataTooltipShow`**: Defaults to `true`. When set to `false`, no tooltip will be displayed when the user hovers over a cell in that column.
+- **`dataTooltipCustomColumnSource`**: Defaults to an empty string. Allows you to map the tooltip content to another column.
+
+Using `dataTooltipCustomColumnSource` to reference a column with `sendColumnAttributes` set to `false` can be particularly useful, since this ensures data is always available in the frontend for tooltips, even if it is not directly displayed in the table.
+
+> [!IMPORTANT]
+> The column referenced in `dataTooltipCustomColumnSource` must have the same name as the property in the class.
+> The first character may be uppercase or lowercase, since it will automatically be converted to lowercase for the frontend.
 
 <br><br>
 
 
 
 #### 6.3.11 Sorting
-> [!NOTE]
-> The arguments in "PerformDynamicQuery" of "defaultSortColumnName" and "defaultSortOrder" should both have the same list length.
+All columns in the table (except for the actions column and the row selector column) can be sorted by the user.
+
+To disable sorting for a specific column, configure it in the backend by modifying the column's `ColumnAttributes` in your DTO class:
+- **`canBeSorted`**: Defaults to `true`. When set to `false`, the column cannot be sorted by the user.
+
+You can also define a default sorting order that will be applied when the user has not set any sort.
+
+To do so, you must create **two lists of the same length**:
+- A list of column names (as strings), where each name matches the property name of your DTO class.
+- A list of sort orders (using the `ColumnSort` enum provided by the **ECS PrimeNG table**) corresponding to each column.
+
+Both lists must then be passed as arguments to `EcsPrimengTableService.PerformDynamicQuery` in your service and the sorting will be applied in the order of your lists.
+
+An example of a service applying default sorting to `Age` and `EmploymentStatusName`, one in descending order and the other one in ascending order would look like this:  
+```c#
+using ECSPrimengTable.Services;
+using ECS.PrimengTable.Enums;
+using ECSPrimengTableExample.DTOs;
+using ECSPrimengTableExample.Interfaces;
+
+namespace ECSPrimengTableExample.Services {
+    public class TestService : ITestService {
+        private readonly ITestRepository _repo;
+
+        private readonly List<string> columnsToOrderByDefault = ["Age", "EmploymentStatusName"];
+        private readonly List<ColumnSort> columnsToOrderByOrderDefault = [ColumnSort.Descending, ColumnSort.Ascending];
+
+        public TestService(ITestRepository repository) {
+            _repo = repository;
+        }
+
+        public (bool success, TablePagedResponseModel data) GetTableData(TableQueryRequestModel inputData) {
+            if(!EcsPrimengTableService.ValidateItemsPerPageAndCols(inputData.PageSize, inputData.Columns)) { // Validate the items per page size and columns
+                return (false, null!);
+            }
+            return (true,EcsPrimengTableService.PerformDynamicQuery(inputData, GetBaseQuery(), null, columnsToOrderByDefault, columnsToOrderByOrderDefault);
+        }
+
+        private IQueryable<TestDto> GetBaseQuery() {
+            return _repo.GetTableData()
+                .Select(u => new TestDto {
+                    RowID = u.Id,
+                    Username = u.Username,
+                    Money = u.Money,
+                    House = u.House
+                });
+        }
+    }
+}
+```
+
+> [!WARNING]  
+> Both default sort lists must have the same length.
+
+In the frontend, you have two configuration options related to sorting. Inside the `header` entry of your component’s variable that holds the `ITableOptions`, the following properties are available:
+- **`clearSortsEnabled`**: Defaults to `true`. When set to `false`, the **clear sorts** button will be disabled.
+- **`clearSortsIcon`**: Allows customization of the **clear sorts** button icon. By default, it uses `pi pi-sort-alt-slash` from the PrimeNG icon library. You may use any other icons from PrimeNG or third-party providers such as Material Icons or Font Awesome.
 
 <br><br>
 
@@ -1996,37 +2064,6 @@ private _updateTableEndpoint(newEndpoint: string){
 }
 ```
 
-
-### 4.6 Column sorting
-By default, all columns that are shown in the front-end (with the exception of the actions and row selector column) can be sorted. When a column can be sorted, a user can perform in the header a first click to sort in ascending order, and a second click in the same column to sort in descensing order.
-
-If a different column is clicked and the first one was in ascending order, the new clicked column will be sorted in ascending order and the first one will have it sorting cleared.
-
-The table allows a multi-sorting feature to the user were he can hold the "Ctrl" key and then click multiple column headers to perform multi-sorting.
-
-The table includes in the top left a button for clearing all sorting that has been done to the table. This button will be only be enabled when at least one sorting made by the user is active. The following image shows were this button is located at:
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/9b2cd936-7bd0-4054-9940-fa7dbc53a20f" alt="Clear sorting button">
-</p>
-
-If for any reason, you want to hide this button, you can do so by in in your component HTML that is using the table, setting the variable "showClearSorts" to false.
-```html
-<ecs-primeng-table #dt
-    ...
-    [showClearSorts]="false"
-    ...>
-</ecs-primeng-table>
-```
-
-If you wish to disable the possibility of a user sorting an specific column, you can do so by modifying your DTO in the back-end. For the specific column that you wish to disable the sorting, in the "PrimeNGAttribute" you just have to give a value of false to "canBeSorted" as shown in the next example:
-```c#
-[PrimeNGAttribute("Example column", canBeSorted: false, ...)]
-public string? ExampleColumn { get; set; }
-```
-
-By doing this, when the user clicks the header of the column "Example column", the column won't be sorted. Also, the sorting icon in the column header will no longer be shown.
-
-
 ### 4.7 Column filter
 By default all columns in the table can be filtered (except the row actions column). This feature allows the user to select in the column header the filter icon to open up a small modal were he can put what filters shall apply to the column as shown in the image below: 
 <p align="center">
@@ -2282,41 +2319,6 @@ This reusable table will automatically handle all the pagination and number of r
 - When loading the table, the total number of pages will be computed based on the number of records that can be shown per page. Also, the total records will be computed and shown to the user in the table footer.
 - If the user applies a filter, the total number of pages could be updated. The number of total records and how many records are available taking into account the filters will be also updated. This reusable component will also take into account that if the user was for example in a page 12, and now taking into account filters there are only 5 pages available, he will be moved to page 5.
 - If the user changes a page, data displayed in the table is updated.
-
-
-### 4.16 Column descriptions
-This feature is configurable by column. In the back-end, in your DTO, to the column that you want to add a description to, in the "PrimeNGAttribute" you just have to give a value to "columnDescription", and this value will be shown in the frontend. Thats it :D
-
-The table will manage the rest for you. An example would be as follows:
-```c#
-[PrimeNGAttribute("Employment status", columnDescription: "A predifined filter that shows the employment status of the user", ...)]
-public string? EmploymentStatusName { get; set; }
-```
-
-It will be shown in the frontend like this:
-![image](https://github.com/user-attachments/assets/488e8fe5-2fcb-42e3-80df-73717bf11cf5)
-
-
-### 4.17 Cell tooltip
-By default all cells (except the bool data type) will show a tolltip with their value when the user hovers the mouse over the cell for at least 0.7 seconds. If you wish to disable this feature, in the "PrimeNGAttribute" you just have to give a value of "false" to "dataTooltipShow" as shown in the next example:
-```c#
-[PrimeNGAttribute("Example column", dataTooltipShow: false, ...)]
-public string? ExampleColumn { get; set; }
-```
-
-You can also customize the tooltip value that will be shown, so it matches the value of another clumn. This is usefull if you are sending a column with "sendColumnAttributes" to "false" and you wish to just display their value in the tooltip of another column. To do so, in the "PrimeNGAttribute" you need to give the name of the column (matching your DTO entry starting with a lowercase) to "dataTooltipCustomColumnSource" as shown in the next example:
-```c#
-[PrimeNGAttribute(sendColumnAttributes: false, ...)]
-public string? TooltipSource { get; set; }
-
-[PrimeNGAttribute("Example column", dataTooltipCustomColumnSource: "tooltipSource", ...)]
-public string? ExampleColumn { get; set; }
-```
-
-In this example, when the user hovers over the cells of "ExampleColumn", the tooltip will show the data of the column "TooltipSource".
-
-> [!CAUTION]
-> The "dataTooltipCustomColumnSource" that is referenced must match the name of a column defined in the DTO starting with lowercase, since this is how it is then treated in the front-end.
 
 
 ### 4.18 Copy cell content

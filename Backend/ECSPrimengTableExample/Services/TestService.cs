@@ -1,4 +1,5 @@
 ﻿using Data.PrimengTableReusableComponent;
+using ECS.PrimengTable.Enums;
 using ECS.PrimengTable.Models;
 using ECS.PrimengTable.Services;
 using ECSPrimengTableExample.DTOs;
@@ -13,7 +14,7 @@ namespace ECSPrimengTableExample.Services {
         private static readonly MethodInfo stringDateFormatMethod = typeof(MyDBFunctions).GetMethod(nameof(MyDBFunctions.FormatDateWithCulture), [typeof(DateTime), typeof(string), typeof(string), typeof(string)])!; // Needed import for being able to perform global search on dates
 
         private readonly List<string> columnsToOrderByDefault = ["Age", "EmploymentStatusName"];
-        private readonly List<int> columnsToOrderByOrderDefault = [0, 0];
+        private readonly List<ColumnSort> columnsToOrderByOrderDefault = [ColumnSort.Descending, ColumnSort.Ascending];
 
         public TestService(ITestRepository repository) {
             _repo = repository;
