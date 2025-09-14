@@ -719,6 +719,10 @@ The available rules per data type are as follows:
 - **List**
   - If not setup as a predefined filter, it will work as the text filter.
 
+For the `date` data type, filters consider only the date portion and ignore the time. For example, if the user applies the filter **Date is** with the value `23-Sep-2024`, all records with a date between `23-Sep-2024 00:00:00` and `23-Sep-2024 23:59:59` will be returned.
+
+Timezone conversion is automatically handled by the table. For instance, if the table is configured to use GMT+02:00 and a user applies the filter `23-Sep-2024`, the query will correctly filter records between `23-Sep-2024 02:00:00 UTC` and `24-Sep-2024 01:59:59 UTC`.
+
 In the **top-left corner of the table**, there is a button to **clear all active filters**. This button is enabled only when at least one filter has been applied by the user.
 
 <p align="center">
@@ -1780,7 +1784,7 @@ namespace ECSPrimengTableExample.Services {
 > Both default sort lists must have the same length.
 
 In the frontend, you have two configuration options related to sorting. Inside the `header` entry of your component’s variable that holds the `ITableOptions`, the following properties are available:
-- **`clearSortsEnabled`**: Defaults to `true`. When set to `false`, the **clear sorts** button will be disabled.
+- **`clearSortsEnabled`**: Defaults to `true`. When set to `false`, the **clear sorts** button will be hidden.
 - **`clearSortsIcon`**: Allows customization of the **clear sorts** button icon. By default, it uses `pi pi-sort-alt-slash` from the PrimeNG icon library. You may use any other icons from PrimeNG or third-party providers such as Material Icons or Font Awesome.
 
 <br><br>
@@ -1788,13 +1792,241 @@ In the frontend, you have two configuration options related to sorting. Inside t
 
 
 #### 6.3.12 Filtering
-Take into account that the global filter is one of the most costly operations launched to the database engine, since basically it performs a LIKE = '%VALUE_PROVIDED_BY_USER%' to each column.
+All columns in the table (except for the actions column) can be filtered by the user.
+
+To disable filtering for a specific column, configure it in the backend using the column's `ColumnAttributes`:
+- **`canBeFiltered`**: Defaults to `true`. When set to `false`, the filter option will not be available for that column.
+
+In the frontend, two configuration options related to filtering are available under the `header` entry of your component’s variable that holds the `ITableOptions`:
+- **`clearFiltersEnabled`**: Defaults to `true`. When set to `false`, the **clear filters** button will be hidden.
+- **`clearFiltersIcon`**: Allows customization of the **clear filters** button icon. By default, it uses `pi pi-filter-slash` from the PrimeNG icon library. Other icons from PrimeNG or third-party libraries (e.g., Material Icons, Font Awesome) may also be used.
+
+> [!TIP]  
+> The filter menu displayed depends on the data type configured for the property in your DTO class on the backend.
 
 <br><br>
 
 
 
 #### 6.3.13 Predefined filters
+> [!CAUTION]  
+> Do not use this feature on columns that may contain a large number of distinct values, as it could lead to performance issues. This feature is intended for columns with a small, limited set of values.
+
+In some scenarios, you may want to restrict the available filter options for a column to a predefined list of possible values.
+
+There are two strategies for defining predefined filters:
+- **Hardcoding the list in the frontend**: Suitable when you have a small, fixed list of values (e.g., `"Open"`, `"Closed"`).
+- **Fetching the list from the backend**: The frontend can call an endpoint before loading the table. The table supports a **deferred startup process**, ensuring it doesn’t attempt to load data until these values are ready (see the *Deferred startup* section).
+
+Regardless of the strategy, predefined filters must first be defined in the TypeScript of your component. To do this, create a dictionary and provide the required number of predefined lists to be used.
+
+Example: managing two predefined filter lists in the same table (assuming the component is named `Home` and is a standalone component):
+```ts
+import { Component } from '@angular/core';
+import { ECSPrimengTable, ITableOptions, createTableOptions, IPredefinedFilter } from '@eternalcodestudio/primeng-table';
+
+@Component({
+  selector: 'ecs-home',
+  standalone: true,
+  imports: [
+    ECSPrimengTable
+  ],
+  templateUrl: './home.html'
+})
+export class Home {
+  listOfPredifinedValues1: IPredefinedFilter[] = [];
+  listOfPredifinedValues2: IPredefinedFilter[] = [];
+  myPredifinedFiltersCollection: { [key: string]: IPredefinedFilter[] } = {
+    'nameOfList1': this.listOfPredifinedValues1,
+    'nameOfList2': this.listOfPredifinedValues2
+  };
+
+  tableOptions: ITableOptions = createTableOptions({
+    urlTableConfiguration: "Test/GetTableConfiguration",
+    urlTableData: "Test/GetTableData",
+    predefinedFilters: this.myPredifinedFiltersCollection
+  });
+}
+```
+
+At this point, the table has two predefined filter lists available: `nameOfList1` and `nameOfList2`.
+
+To associate columns with the predefined lists, configure them in the DTO using `ColumnAttributes`:
+```C#
+public class TestDto {
+	[ColumnAttributes(sendColumnAttributes: false)]
+	public Guid RowID { get; set; }
+
+	[ColumnAttributes("Example column 1", filterPredefinedValuesName: "nameOfList1", ...)]
+	public string? Column1 { get; set; }
+
+	[ColumnAttributes("Example column 2", filterPredefinedValuesName: "nameOfList2", ...)]
+	public string? Column2 { get; set; }
+}
+```
+
+The value of `filterPredefinedValuesName` must match the dictionary key created in the frontend component.
+
+Once this is done, predefined filters will work as soon as you populate them with data.
+
+For the table to match cell values with predefined filter options, the value returned by the backend for a cell must match the `value` property of one of the items in the `IPredefinedFilter` array.
+
+The next sections describe the different representations of a predefined filter, which must be configured when populating the `IPredefinedFilter` list.
+
+If filtering is enabled in a column where a predefined filter has been configured, when the user presses the filter button a modal will appear showing the available options. The user can select one or more values, and a search bar will also be available for convenience.
+
+> [!NOTE]
+> If a column can contain `null` values, you do **not** need to add `null` to the `IPredefinedFilter` array. The table will simply render no option for null values.
+
+> [!NOTE]  
+> The tooltip for a predefined value will display the content of its `value` property.
+
+> [!TIP]
+> A single element of the `IPredefinedFilter` array can use multiple representations at the same time (for example, combining an icon with text). You can also mix different representations within the same array: one value could be displayed with an icon, while another could be shown as a tag. 
+
+<br><br>
+
+
+
+##### Plain text
+To display an element as plain text in a predefined filter, you need to define in each `IPredefinedFilter` entry at least these properties:
+- **`value`**: Must match the underlying value of the cell, so that the table can map it properly.
+- **`name`**: The text shown in the cell.
+- **`displayName`**: Set to `true` so the value in `name` is actually displayed.
+
+**_Example_**
+
+Suppose you have the following possible values in a column that you wish to represent as plain text:
+- Ok
+- Warning
+- Critical
+
+Your `IPredefinedFilter` list in TypeScript could look like this:
+```ts
+examplePredfinedFilter: IPredefinedFilter[] = [
+    {
+        value: "backendValueForOK",
+        name: "OK",
+        displayName: true
+    }, {
+        value: "backendValueForWarning",
+        name: "Warning",
+        displayName: true
+    }, {
+        value: "backendValueForCritical",
+        name: "Critical",
+        displayName: true
+    }
+];
+```
+
+> [!IMPORTANT]
+> It is recommended in this scenario that in the `IPredefinedFilter` array, the properties **`value`** and **`name`** contain the same text.
+> This ensures that the **global filter** works as expected, since the UI displays the `name` but the global filter internally uses the `value`.
+
+<br><br>
+
+
+
+##### Tag
+To display an element as a tag in a predefined filter, you need to define in each `IPredefinedFilter` entry at least these properties:
+- **`value`**: Must match the underlying value of the cell, so that the table can map it properly.
+- **`name`**: The text shown in the tag.
+- **`displayTag`**: Set to `true` so the a tag is displayed containing as text `name`.
+- **`tagStyle`** *(optional)*: If you want to apply a style to the tag, like for example, changing its color.
+
+**_Example_**
+
+Suppose you have the following possible values in a column that you wish to represent in a tag with the following colors:
+- Ok (green)
+- Warning (orange)
+- Critical (red)
+
+Your `IPredefinedFilter` list in TypeScript could look like this:
+```ts
+examplePredfinedFilter: IPredefinedFilter[] = [
+    {
+        value: "backendValueForOK",
+        name: "OK",
+        displayTag: true,
+        tagStyle: {
+            background: 'rgb(0, 255, 0)'
+        }
+    }, {
+        value: "backendValueForWarning",
+        name: "Warning",
+        displayTag: true,
+        tagStyle: {
+            background: 'rgb(255, 130, 30)'
+        }
+    }, {
+        value: "backendValueForCritical",
+        name: "Critical",
+        displayTag: true,
+        tagStyle: {
+            background: 'rgb(255, 0, 0)'
+        }
+    }
+];
+```
+
+> [!IMPORTANT]
+> It is recommended in this scenario that in the `IPredefinedFilter` array, the properties **`value`** and **`name`** contain the same text.
+> This ensures that the **global filter** works as expected, since the UI displays the `name` but the global filter internally uses the `value`.
+
+<br><br>
+
+
+##### Icon
+To display an element as an icon in a predefined filter, you need to define in each `IPredefinedFilter` entry at least these properties:
+- **`value`**: Must match the underlying value of the cell, so that the table can map it properly.
+- **`icon`**: Specifies the icon to display. You can use icons from PrimeNG or other libraries, such as Font Awesome or Material Icons.
+- **`iconColor`** *(optional)*: Defines the color of the icon.
+- **`iconStyle`** *(optional)*: Allows you to specify additional CSS styles for the icon, such as font size.
+
+**_Example_**
+
+Suppose you have the following possible values in a column that you wish to represent with an icon with the following options:
+- Ok (Uses `pi-check` with color green)
+- Warning (Uses `pi-exclamation-triangle` with color orange)
+- Critical (Uses `pi-times` with color red and a font size of size 1.5 rem)
+
+Your `IPredefinedFilter` list in TypeScript could look like this:
+```ts
+examplePredfinedFilter: IPredefinedFilter[] = [
+    {
+        value: "backendValueForOK",
+        icon: "pi pi-check",
+        iconColor: "green"
+    }, {
+        value: "backendValueForWarning",
+        icon: "pi pi-exclamation-triangle",
+        iconColor: "orange"
+    }, {
+        value: "backendValueForCritical",
+        icon: "pi pi-times",
+        iconColor: "red",
+        iconStyle: "font-size: 1.5rem"
+    }
+];
+```
+> [!TIP]  
+> If you are using a PrimeNG icon, you can add `pi-spin` to make it spin (e.g., `pi pi-spin pi-spinner`).
+> Note that in newer versions of PrimeNG, the spinning effect may not appear if animations are disabled in the OS or browser.
+
+> [!IMPORTANT]  
+> If a predefined filter displays only icons, it is recommended to disable the global filter for that column in your DTO class in your backend.
+> This prevents the global filter from attempting to filter by a column without text, which could be confusing for users.
+
+<br><br>
+
+
+##### Image
+WIP
+
+> [!IMPORTANT]
+> If a predefined filter displays only images, it is recommended to disable the global filter for that column in your DTO class in your backend.
+> This prevents the global filter from attempting to filter by a column without text, which could be confusing for users.
 
 <br><br>
 
@@ -1802,66 +2034,79 @@ Take into account that the global filter is one of the most costly operations la
 
 ### 6.4 Rows
 #### 6.4.1 Single select
+WIP
 
 <br><br>
 
 
 
 #### 6.4.2 Checkbox select
+WIP
 
 <br><br>
 
 
 
 #### 6.4.3 Dynamic styling
+WIP
 
 <br><br>
 
 
 
 ### 6.5 Setting up row an header action buttons
+WIP
 
 <br><br>
 
 
 
 ### 6.6 Configuring the global filter
+WIP
+
+Take into account that the global filter is one of the most costly operations launched to the database engine, since basically it performs a LIKE = '%VALUE_PROVIDED_BY_USER%' to each column.
 
 <br><br>
 
 
 
 ### 6.7 Pagination properties
+WIP
 
 <br><br>
 
 
 
 ### 6.8 Copy cell content
+WIP
 
 <br><br>
 
 
 
 ### 6.9 Dynamic height
+WIP
 
 <br><br>
 
 
 
 ### 6.10 Deferred startup
+WIP
 
 <br><br>
 
 
 
 ### 6.11 Configuring Excel reports
+WIP
 
 <br><br>
 
 
 
 ### 6.12 Setting up views
+WIP
 
 <br><br><br>
 
@@ -1869,6 +2114,7 @@ Take into account that the global filter is one of the most costly operations la
 
 ---
 ## 7 Component reference
+WIP
 
 <br><br><br>
 
@@ -1876,8 +2122,9 @@ Take into account that the global filter is one of the most costly operations la
 
 ---
 ## 8 Editing ECS PrimeNG table and integrating locally
+WIP
 
-
+<br><br><br>
 
 
 
@@ -2063,206 +2310,6 @@ private _updateTableEndpoint(newEndpoint: string){
     }, 1);
 }
 ```
-
-### 4.7 Column filter
-By default all columns in the table can be filtered (except the row actions column). This feature allows the user to select in the column header the filter icon to open up a small modal were he can put what filters shall apply to the column as shown in the image below: 
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/ef575f1b-3f0d-4bda-9825-b49c1d8ae90c" alt="Filter menu not boolean">
-</p>
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/99aa70bb-1988-49d8-a547-efc0334daa49" alt="Filter menu boolean">
-</p>
-
-Depending on the data type that you have configured in the backend for each column in the DTO, the filter menu will show different options.
-
-All the filter menus, except for bool data type, show in the upper part the options "Match all" or "Match any", being the default selected "Match all". "Match all" means that only the records that match all rules specified in the column shall be reurned (the equivalent to an AND operator in SQL), where as "Match any" will lookup for any records that match any of the defined filtering rules in that column (the equivalent to an OR operator in SQL).
-
-The user can define up to two different rules per column, except for the bool data type were he can only filter by "true", "false" or "both". Inside those rules, the user can select a different ruleset to lookup by, being the different options depending on the column data type as follows:
-- **EnumDataType.Text**:
-    - Starts with
-    - Contains
-    - Not contains
-    - Ends with
-    - Equals
-    - Not equals
-- **EnumDataType.Numeric**:
-    - Equals
-    - Not equals
-    - Less than
-    - Less than or equal to
-    - Greater than
-    - Greater than or equal to
-- **EnumDataType.Date**:
-    - Date is
-    - Date is not
-    - Date is before
-    - Date is after
-	
-The date filters don't take into account the time, just the date. So for example, if the user selects to filter by "Date is" with the value "23-Sep-2024", it will return all records that have in that column a date between "23-Sep-2024 00:00:00" and "23-Sep-2024 23:59:59". The timezone conversion is already managed by the table so you don't have to worry about it, so for example, if a user is viewing the date in the timezone GMT+02:00, in UTC it will filter by "23-Sep-2024 02:00:00" and "24-Sep-2024 01:59:59".
-
-The table includes in the top left a button for clearing all filters that has been done to the table (including the predifined filters and global filters that are explained later on). This button will be only be enabled when at least one column filter, predifined filter or global filter made by the user is active. The following image shows were this button is located at:
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/b6a3b33c-c03c-4ccf-8ca6-d475c74676d4" alt="Clear filters button">
-</p>
-
-If for any reason, you want to hide this button, you can do so by in in your component HTML that is using the table, setting the variable "showClearFilters" to false.
-```html
-<ecs-primeng-table #dt
-    ...
-    [showClearFilters]="false"
-    ...>
-</ecs-primeng-table>
-```
-
-If you wish to disable the possibility of a user filtering an specific column, you can do so by modifying your DTO in the back-end. For the specific column that you wish to disable the filtering feature, in the "PrimeNGAttribute" you just have to give a value of false to "canBeFiltered" as shown in the next example:
-```c#
-[PrimeNGAttribute("Example column", canBeFiltered: false, ...)]
-public string? ExampleColumn { get; set; }
-```
-
-By doing this, the column won't no longer have in the header the filter icon.
-
-
-### 4.8 Column predfined filter
-You might have some scenarios were you would like to limit the filter options that the user has available to a list of the only possible values that the column could have. This reusable component offers you a way to do so. 
-
-> [!CAUTION]
-> Do not use this feature on columns were there could be lots of different values, since this could lead to performance issues. This feature is designed for columns with a small variety of values.
-
-There are two strategies when defining the predifined filter which are:
-- Hardcoding the list of possible values in the front-end. An example of this could be if you have a small list of know values like for example "Open" and "Closed".
-- Fetching the list of possible values in the front-end from an endpoint of the back-end before loading the table.
-
-No matter what of the two strategies you follow, first of all, if you want to define the predifined filters in the TypeScript of your component you must create a dictionary and provide the N amount of predifined lists that you are going to use. An example of this could be done to manage two predifined filter list in the same table is as follows:
-```ts
-import { IPrimengPredifinedFilter } from '../../interfaces/primeng/iprimeng-predifined-filter';
-
-export class YourClass {
-    ...
-    listOfPredifinedValues1: IPrimengPredifinedFilter[] = [];
-	listOfPredifinedValues2: IPrimengPredifinedFilter[] = [];
-    myPredifinedFiltersCollection: { [key: string]: IPrimengPredifinedFilter[] } = {
-        'nameOfList1': this.listOfPredifinedValues1,
-		'nameOfList2': this.listOfPredifinedValues2
-    };
-    ...
-}
-```
-
-And in the HTML of your component:
-```html
-<ecs-primeng-table #dt
-    ...
-    [predifinedFiltersCollection]="myPredifinedFiltersCollection"
-    ...>
-</ecs-primeng-table>
-```
-
-Now the table has available two lists of predifined filters that we can use which are "nameOfList1" and "nameOfList2" (although they actually don't hold any data). To map the columns to the different predfined lists that we have just setup, we need to do it in the DTO in the back-end as shown in the following code fragment:
-```c#
-[PrimeNGAttribute("Example column 1", filterPredifinedValuesName: "nameOfList1", ...)]
-public string? Column1 { get; set; }
-
-[PrimeNGAttribute("Example column 2", filterPredifinedValuesName: "nameOfList2", ...)]
-public string? Column2 { get; set; }
-```
-
-As you can see, the "filterPredifinedValuesName" must match the name entry of the dictionary that has been created in the front-end of our component that will be using the table. With all this, technically our predfined filters should already work, but there is not much that we can do with them right now since they are both empty. You should now populate them with the corresponding value of what you want to use. The next subsections describe how you can populate a "IPrimengPredifinedFilter" array to represent your data in different ways when drawn in the table. Take into account that you can modify different ways of representing your data, for example, you can combine images with text.
-
-For the table component being able to match the options with the cell data, the value sent by the backend for a cell, must match the "value" property of one of the items of the "IPrimengPredifinedFilter" array.
-
-In the front-end, when the user presses the filter button in a column with predifined values, a small modal will be shown with the option to select one or more values to filter by. Additionally, the modal will include a search bar.
-
-> [!NOTE]
-> If a list of values in a column could be null, this possibility does not need to be added to the "IPrimengPredifinedFilter" array. The table won't draw any value in null values.
-
-
-### 4.8.1 Column predfined filter - Simple text
-Imagine that you have the following possible values in a column:
-- Ok
-- Warning
-- Critical
-
-If you wish to just represent them as text, your "IPrimengPredifinedFilter" list should be populated similar to the following example in your TypeScript code:
-```ts
-examplePredfinedFilter: IPrimengPredifinedFilter[] = [
-    {
-        value: "backendValueForOK",
-        name: "OK",
-        displayName: true
-    }, {
-        value: "backendValueForWarning",
-        name: "Warning",
-        displayName: true
-    }, {
-        value: "backendValueForCritical",
-        name: "Critical",
-        displayName: true
-    }
-];
-```
-> [!IMPORTANT]  
-> It is recommended that from the "IPrimengPredifinedFilter" array, the property of "value" and "name" match, so that the user can use the global filter, since what is displayed in the front-end is the "name", and what is used by the global filter is "value".
-
-If from the demo project we modify the script that retrieves the values of the different employment status to be displayed as a simple text, how the table will shown them to the user is as follows:
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/dfaf6c9b-c860-44d7-a135-e3293986bdb1" alt="Predifined filter - simple text">
-</p>
-
-
-### 4.8.2 Column predfined filter - Tags
-Imagine that you have the following possible values in a column, that you wish to represent in a tag with the following colors:
-- Ok (With a green tag)
-- Warning (With an orange tag)
-- Critical (With an red tag)
-
-To achieve this your "IPrimengPredifinedFilter" list should be populated similar to the following example in your TypeScript code:
-```ts
-examplePredfinedFilter: IPrimengPredifinedFilter[] = [
-    {
-        value: "backendValueForOK",
-        name: "OK",
-        displayTag: true,
-        tagStyle: {
-            background: 'rgb(0, 255, 0)'
-        }
-    }, {
-        value: "backendValueForWarning",
-        name: "Warning",
-        displayTag: true,
-        tagStyle: {
-            background: 'rgb(255, 130, 30)'
-        }
-    }, {
-        value: "backendValueForCritical",
-        name: "Critical",
-        displayTag: true,
-        tagStyle: {
-            background: 'rgb(255 , 0, 0)'
-        }
-    }
-];
-```
-> [!IMPORTANT]  
-> It is recommended that from the "IPrimengPredifinedFilter" array, the property of "value" and "name" match, so that the user can use the global filter, since what is displayed in the front-end is the "name", and what is used by the global filter is "value".
-
-If we launch the demo project, it already shows the column of "Employment status" as tas with different colors. Here is an example of how it looks:
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/49d197e0-1081-455e-bb78-1172cc65e3ab" alt="Predifined filter - tags">
-</p>
-
-
-### 4.8.3 Column predfined filter - Icons
-WIP
-> [!IMPORTANT]  
-> If you are just going to show icons in a predifined filter, it is strongly recommended that in the DTO in the backend you set in the column "PrimeNGAttribute" the "canBeGlobalFiltered" to "false", so that the global filter doesn't try to filter by this column that is not showing any text.
-
-
-### 4.8.4 Column predfined filter - Images
-WIP
-> [!IMPORTANT]  
-> If you are just going to show images in a predifined filter, it is strongly recommended that in the DTO in the backend you set in the column "PrimeNGAttribute" the "canBeGlobalFiltered" to "false", so that the global filter doesn't try to filter by this column that is not showing any text.
-
 
 ### 4.9 Global filter
 The global filter is enabled by default in all columns of your table, except for bool data types and the actions column were this filter will be never applied. The global filter is located on the top right of your table headers as shown in the image below:
