@@ -13,8 +13,7 @@ import { SpinnerService } from './core/services/spinner.service';
     DialogModule,
     ProgressSpinnerModule
   ],
-  templateUrl: './app.html',
-  styleUrl: './app.scss'
+  templateUrl: './app.html'
 })
 export class App {
   isSpinnerVisible: boolean = false;

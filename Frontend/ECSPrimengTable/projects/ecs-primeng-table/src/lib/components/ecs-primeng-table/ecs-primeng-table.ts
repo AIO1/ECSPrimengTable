@@ -901,16 +901,16 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
       const filters = this.tableOptions.predefinedFilters?.[key];
       if (Array.isArray(filters)  && filters.length > 0) {
         filters.forEach(filter => {
-          if (filter.iconBlobSourceEndpoint && !filter.iconBlob) {
-            filter.iconBlob = undefined;
-            filter.iconBlobSourceEndpointResponseError = false;
-            this.tableService.getIconBlob(filter.iconBlobSourceEndpoint).subscribe({
+          if (filter.imageBlobSourceEndpoint && !filter.imageBlob) {
+            filter.imageBlob = undefined;
+            filter.imageBlobFetchError = false;
+            this.tableService.getIconBlob(filter.imageBlobSourceEndpoint).subscribe({
               next: (response: HttpResponse<Blob>) => {
-                filter.iconBlob = response.body!;
+                filter.imageBlob = response.body!;
                 this.showExportModal=false;
               },
               error: () => { // Handle error response
-                filter.iconBlobSourceEndpointResponseError = true;
+                filter.imageBlobFetchError = true;
               }
             });
           }

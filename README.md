@@ -2021,7 +2021,18 @@ examplePredfinedFilter: IPredefinedFilter[] = [
 <br><br>
 
 
-##### Image
+##### Image (from URL)
+WIP
+
+> [!IMPORTANT]
+> If a predefined filter displays only images, it is recommended to disable the global filter for that column in your DTO class in your backend.
+> This prevents the global filter from attempting to filter by a column without text, which could be confusing for users.
+
+<br><br>
+
+
+
+##### Image (from Blob)
 WIP
 
 > [!IMPORTANT]
