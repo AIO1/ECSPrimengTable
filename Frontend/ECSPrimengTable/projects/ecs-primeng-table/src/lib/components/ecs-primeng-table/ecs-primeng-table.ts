@@ -458,7 +458,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
     this.tableService.fetchTableData(this.tableOptions.urlTableData!, requestData)
       .pipe(
         finalize(() => {
-          this.onDataEndUpdate.emit(); // Esto siempre se ejecuta
+          this.onDataEndUpdate.emit(); // This is always executed after data update.
         })
       )
       .subscribe({

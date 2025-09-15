@@ -978,7 +978,22 @@ Once ready, the table can be manually updated through external calls.
 
 
 
-### 4.11 Excel report
+### 4.11 Changing the data endpoint dinamically
+It is possible to change the **data source** of a table while it is in use, without needing to reload or download the entire table configuration again.
+
+This feature is especially useful in scenarios where:
+- The **columns** (and even the **views**) remain the same.
+- You only need to adjust where the table fetches its data from.
+
+A common example is when you apply a **higher-level filter**.
+
+For instance, switching between different clients: the table keeps the same structure, but the data source changes so you can view information for the selected client across the whole application.  
+
+<br><br>
+
+
+
+### 4.12 Excel report
 With minimal setup, you can allow users to **export table data** through an interactive menu with multiple export options.
 
 If enabled, an **Excel icon** will appear at the top right of the table. Clicking it opens a modal window like this:
@@ -1000,7 +1015,7 @@ Once satisfied with the configuration, users can click **Export** to generate th
 
 
 
-### 4.12 Views
+### 4.13 Views
 As seen in previous sections, users have many options to customize how data is displayed in the table.
 
 Sometimes users want to **save all these customizations** so they don’t have to remember or reapply them each time.
@@ -1080,8 +1095,9 @@ The purpose of this section is to provide a table that maps the features describ
 | Table | [4.8 Copy cell content](#48-copy-cell-content) | [6.8 Copy cell content](#68-copy-cell-content) |
 | Table | [4.9 Dynamic height](#49-dynamic-height) | [6.9 Dynamic height](#69-dynamic-height) |
 | Table | [4.10 Deferred startup](#410-deferred-startup) | [6.10 Deferred startup](#610-deferred-startup) |
-| Excel report | [4.11 Excel report](#411-excel-report) | [6.11 Configuring Excel reports](#611-configuring-excel-reports) |
-| Views | [4.12 Views](#412-views) | [6.12 Setting up views](#612-setting-up-views) |
+| Table | [4.11 Changing the data endpoint dinamically](#411-changing-the-data-endpoint-dinamically) | [6.11 Changing the data endpoint dinamically](#611-changing-the-data-endpoint-dinamically) |
+| Excel report | [4.12 Excel report](#412-excel-report) | [6.12 Configuring Excel reports](#612-configuring-excel-reports) |
+| Views | [4.13 Views](#413-views) | [6.13 Setting up views](#613-setting-up-views) |
 
 </div>
 
@@ -1468,6 +1484,42 @@ You only need to pass the `tableOptions` property.
 
 Once you start up your API and serve the frontend, you should be able to see the table rendered on the page if everything is set up correctly.
 
+Additionally, you can subscribe to table lifecycle events to detect when a **data fetch** has been completed. This is useful, for example, when the user changes the page, applies a filter, or triggers any action that requires reloading the table data if you need to listen to it.
+- **`onDataEndUpdate`**: Emitted after the table has finished fetching and updating its data. This event does not provide any payload (type: `void`).
+
+An example of this subscription could be:
+
+In your desired component TypeScript file:
+```ts
+import { Component } from '@angular/core';
+import { ECSPrimengTable, ITableOptions, createTableOptions } from '@eternalcodestudio/primeng-table';
+
+@Component({
+  selector: 'ecs-home',
+  standalone: true,
+  imports: [
+    ECSPrimengTable
+  ],
+  templateUrl: './home.html'
+})
+export class Home {
+  tableOptions: ITableOptions = createTableOptions({
+    urlTableConfiguration: "Test/GetTableConfiguration",
+    urlTableData: "Test/GetTableData"
+  });
+
+  onDataUpdated(): void {
+    console.log("Table data has been refreshed.");
+    // Add your custom logic here (e.g., update UI state, log analytics, etc.)
+  }
+}
+```
+
+In your HTML:
+```html
+<ecs-primeng-table [tableOptions]="tableOptions" (onDataEndUpdate)="onDataUpdated()"/>
+```
+
 <br><br>
 
 
@@ -1820,7 +1872,21 @@ There are two strategies for defining predefined filters:
 
 Regardless of the strategy, predefined filters must first be defined in the TypeScript of your component. To do this, create a dictionary and provide the required number of predefined lists to be used.
 
-Example: managing two predefined filter lists in the same table (assuming the component is named `Home` and is a standalone component):
+> [!NOTE]
+> If a column can contain `null` values, you do **not** need to add `null` to the `IPredefinedFilter` array. The table will simply render no option for null values.
+
+> [!NOTE]  
+> The tooltip for a predefined value will display the content of its `value` property.
+
+> [!NOTE]  
+> If you are using the data type `List`, it will render each possible value separated with ";".
+
+> [!TIP]
+> A single element of the `IPredefinedFilter` array can use multiple representations at the same time (for example, combining an icon with text). You can also mix different representations within the same array: one value could be displayed with an icon, while another could be shown as a tag. 
+
+**_Example_**
+
+Managing two predefined filter lists in the same table (assuming the component is named `Home` and is a standalone component):
 ```ts
 import { Component } from '@angular/core';
 import { ECSPrimengTable, ITableOptions, createTableOptions, IPredefinedFilter } from '@eternalcodestudio/primeng-table';
@@ -1874,15 +1940,6 @@ For the table to match cell values with predefined filter options, the value ret
 The next sections describe the different representations of a predefined filter, which must be configured when populating the `IPredefinedFilter` list.
 
 If filtering is enabled in a column where a predefined filter has been configured, when the user presses the filter button a modal will appear showing the available options. The user can select one or more values, and a search bar will also be available for convenience.
-
-> [!NOTE]
-> If a column can contain `null` values, you do **not** need to add `null` to the `IPredefinedFilter` array. The table will simply render no option for null values.
-
-> [!NOTE]  
-> The tooltip for a predefined value will display the content of its `value` property.
-
-> [!TIP]
-> A single element of the `IPredefinedFilter` array can use multiple representations at the same time (for example, combining an icon with text). You can also mix different representations within the same array: one value could be displayed with an icon, while another could be shown as a tag. 
 
 <br><br>
 
@@ -1938,9 +1995,9 @@ To display an element as a tag in a predefined filter, you need to define in eac
 **_Example_**
 
 Suppose you have the following possible values in a column that you wish to represent in a tag with the following colors:
-- Ok (green)
-- Warning (orange)
-- Critical (red)
+- Ok → green
+- Warning → orange
+- Critical → red
 
 Your `IPredefinedFilter` list in TypeScript could look like this:
 ```ts
@@ -1987,9 +2044,9 @@ To display an element as an icon in a predefined filter, you need to define in e
 **_Example_**
 
 Suppose you have the following possible values in a column that you wish to represent with an icon with the following options:
-- Ok (Uses `pi-check` with color green)
-- Warning (Uses `pi-exclamation-triangle` with color orange)
-- Critical (Uses `pi-times` with color red and a font size of size 1.5 rem)
+- Ok → Uses `pi-check` with color green.
+- Warning → Uses `pi-exclamation-triangle` with color orange.
+- Critical → Uses `pi-times` with color red and a font size of size 1.5 rem.
 
 Your `IPredefinedFilter` list in TypeScript could look like this:
 ```ts
@@ -2021,23 +2078,113 @@ examplePredfinedFilter: IPredefinedFilter[] = [
 <br><br>
 
 
-##### Image (from URL)
-WIP
+##### Image
+There are three ways to display an image in a predefined filter:
+- Provide the image directly through a URL.
+- Pass the image as a `Blob`.
+- Pass an endpoint from which the image `Blob` can be fetched.
+
+We will now cover the three different methods.
 
 > [!IMPORTANT]
 > If a predefined filter displays only images, it is recommended to disable the global filter for that column in your DTO class in your backend.
 > This prevents the global filter from attempting to filter by a column without text, which could be confusing for users.
 
-<br><br>
+<br>
 
+###### Using a URL
+To fetch an image from a URL, you need to define in each `IPredefinedFilter` entry at least these properties:
+- **`value`**: Must match the underlying value of the cell, so that the table can map it properly.
+- **`imageURL`**: The URL from which the image will be retrieved.
 
+**_Example_**
 
-##### Image (from Blob)
-WIP
+Suppose a column can have the following states, each represented by an image:
+- Ok → `https://somesite.com/imageOk.png`  
+- Warning → `https://somesite.com/imageWarning.png`  
+- Critical → `https://somesite.com/imageCritical.png` 
 
-> [!IMPORTANT]
-> If a predefined filter displays only images, it is recommended to disable the global filter for that column in your DTO class in your backend.
-> This prevents the global filter from attempting to filter by a column without text, which could be confusing for users.
+Your `IPredefinedFilter` list in TypeScript could look like this:
+```ts
+examplePredfinedFilter: IPredefinedFilter[] = [
+    {
+        value: "backendValueForOK",
+        imageURL: "https://somesite.com/imageOk.png"
+    }, {
+        value: "backendValueForWarning",
+        imageURL: "https://somesite.com/imageWarning.png"
+    }, {
+        value: "backendValueForCritical",
+        imageURL: "https://somesite.com/imageCritical.png"
+    }
+];
+```
+
+<br>
+
+###### Using a Blob
+To display an image from a Blob provided directly to the frontend, you need to define in each `IPredefinedFilter` entry at least these properties:
+- **`value`**: Must match the underlying value of the cell, so that the table can map it properly.
+- **`imageBlob`**: A valid image Blob (e.g., PNG, JPEG) to be displayed.
+
+**_Example_**
+
+Suppose a column can have the following states, each represented by a Blob variable:
+- Ok → `blobOk`  
+- Warning → `blobWarning`  
+- Critical → `blobCritical` 
+
+Your `IPredefinedFilter` list in TypeScript could look like this:
+```ts
+examplePredfinedFilter: IPredefinedFilter[] = [
+    {
+        value: "backendValueForOK",
+        imageBlob: blobOk
+    }, {
+        value: "backendValueForWarning",
+        imageBlob: blobWarning
+    }, {
+        value: "backendValueForCritical",
+        imageBlob: blobCritical
+    }
+];
+```
+
+<br>
+
+###### Fetching a Blob from an Endpoint
+The **ECS PrimeNG table** supports fetching images automatically from an endpoint that returns a valid image `Blob`. Once configured, the component will request the blob, handle the response, and display the image without additional setup.
+
+To achieve this, define the following properties in each `IPredefinedFilter` entry:  
+- **`value`**: Must match the underlying value of the cell so the table can map it correctly.
+- **`imageBlobSourceEndpoint`**: The backend endpoint from which the image blob will be fetched.
+
+When the fetch process starts, a skeleton placeholder will be shown until the blob is retrieved. If the request succeeds, the table will automatically populate the `imageBlob` property of the corresponding `IPredefinedFilter` entry with the retrieved `Blob`.
+
+If the request fails, the property **`imageBlobFetchError`** will be set to `true` for that entry, allowing you to detect and handle errors gracefully.
+
+**_Example_**
+
+Suppose a column can take the following states, each associated with the following endpoints to fetch an image blob:
+- Ok → `https://somesite.com/api/getBlob/ok`  
+- Warning → `https://somesite.com/api/getBlob/warning`  
+- Critical → `https://somesite.com/api/getBlob/critical` 
+
+Your `IPredefinedFilter` list in TypeScript could look like this:
+```ts
+examplePredfinedFilter: IPredefinedFilter[] = [
+    {
+        value: "backendValueForOK",
+        imageBlobSourceEndpoint: "https://somesite.com/api/getBlob/ok"
+    }, {
+        value: "backendValueForWarning",
+        imageBlobSourceEndpoint: "https://somesite.com/api/getBlob/warning"
+    }, {
+        value: "backendValueForCritical",
+        imageBlobSourceEndpoint: "https://somesite.com/api/getBlob/critical"
+    }
+];
+```
 
 <br><br>
 
@@ -2045,21 +2192,229 @@ WIP
 
 ### 6.4 Rows
 #### 6.4.1 Single select
-WIP
+The **single row selection** feature uses the `RowID` column, which must be defined in the DTO class used with your table.
+
+By default, this feature is **disabled**. To enable it, configure it from the frontend. In your component's `ITableOptions` configuration, inside the `rows` property, you can use the `singleSelector` object with the following properties:
+- **`enabled`** *(Default: `false`)*: If set to `true`, users can click a row to select it. You can then subscribe to selection events to execute custom actions.
+- **`metakey`** *(Default: `true`)*: When `true`, users must hold **CTRL** and click on a selected row to unselect it. When `false`, users can unselect a row simply by clicking it again.
+
+You can subscribe to changes in row selection using the following event emitters:
+- **`onRowSelect`**: Triggered when a row is selected.
+- **`onRowUnselect`**: Triggered when a row is unselected.
+
+Both emitters provide an object with the following structure:
+- **`rowID`**: The unique row identifier, provided by the backend through the `RowID` property in the DTO class.
+- **`rowData`**: The raw row data, containing all the columns currently available on the frontend.
+
+> [!NOTE]
+> On mobile devices (phones or tablets), the `CTRL` key configuration is ignored. Users can unselect a previously selected row by simply clicking it, as mobile devices do not have a `CTRL` key.
+
+> [!CAUTION]
+> If the default behavior (holding down `CTRL` to unselect) is enabled, repeatedly clicking the same row **without holding `CTRL`** will count as multiple selections.  
+> This can cause unintended behavior if actions are triggered on each selection, so plan your row actions accordingly.
+
+**_Example_**
+
+For enabling the single row selector and subscribing to changes, in your desired component TypeScript file, a minimal definition should look like this (assuming the component is named `Home`):
+```ts
+import { Component } from '@angular/core';
+import { ECSPrimengTable, ITableOptions, createTableOptions } from '@eternalcodestudio/primeng-table';
+
+@Component({
+  selector: 'ecs-home',
+  standalone: true,
+  imports: [
+    ECSPrimengTable
+  ],
+  templateUrl: './home.html'
+})
+export class Home {
+  tableOptions: ITableOptions = createTableOptions({
+    urlTableConfiguration: "Test/GetTableConfiguration",
+    urlTableData: "Test/GetTableData",
+    rows: {
+      singleSelector: {
+        enabled: true,
+        // metakey: false // Uncomment to allow unselecting rows by clicking them directly
+      }
+    }
+  });
+
+  onRowSelect(event: { rowID: any, rowData: any }){
+    // You can access the event.rowID or event.rowData here of the selected row
+    console.log("Row selected:", event.rowID, event.rowData);
+  }
+  onRowUnselect(event: { rowID: any, rowData: any }){
+    // You can access the event.rowID or event.rowData here of the unselected row
+    console.log("Row unselected:", event.rowID, event.rowData);
+  }
+}
+```
+
+And in your HTML:
+```html
+<ecs-primeng-table [tableOptions]="tableOptions" (onRowSelect)="onRowSelect($event)" (onRowUnselect)="onRowUnselect($event)"/>
+```
 
 <br><br>
 
 
 
 #### 6.4.2 Checkbox select
-WIP
+The **checkbox row selection** feature relies on the `RowID` column, which must be defined in the DTO class used with your table.
+
+By default, this feature is **disabled**. To enable it, configure it from the frontend.
+
+In your component's `ITableOptions` configuration, inside the `rows` property, use the `checkboxSelector` object with the following options:
+- **`enabled`** *(Default: `false`)*: If `true`, a new column with checkboxes will be displayed. Users can select or unselect rows using these checkboxes. Additionally an option to filter by this column will be enabled.
+- **`header`** *(Default: `"Selected"`)*: The header label for the checkbox selection column.
+- **`alignmentRight`** *(Default: `false`)*: If `true`, the column will appear on the right side of the table. Otherwise, it will appear on the left.
+- **`width`** *(Default: `150`)*: The fixed column width in pixels.
+- **`frozen`** *(Default: `true`)*: If `true`, the column remains visible when horizontally scrolling the table.
+- **`resizable`** *(Default: `false`)*: If `true`, users can resize the column.
+
+You can subscribe to changes in row checkbox selection using:
+- **`onRowCheckboxChange`**: Triggered whenever a row checkbox is selected or unselected. The emitted object has the following structure:
+  - **`rowID`**: The unique row identifier, provided by the backend via the `RowID` property in the DTO class.
+  - **`selected`**: `true` if the row is selected, `false` if unselected.
+
+At any time, you can access the component’s `selectedRowsCheckbox` property, which contains an array of currently selected rows (`rowID`).
+
+> [!NOTE]
+> When the checkbox selection column is aligned to the left, it will always appear **after** the action column (if the action column is also aligned left).
+>
+> When aligned to the right, it will always appear **before** the action column (if the action column is visible and aligned right).
+>
+> This behavior is consistent only if both action and checkbox row selector columns are frozen at the same time(or if they are unfrozen at the same time).
+
+**_Example_**
+
+To enable the checkbox row selector, subscribe to selection changes, and access the table's `selectedRowsCheckbox` property, your component TypeScript file can have a minimal setup like this (assuming the component is named `Home`):
+```ts
+import { Component } from '@angular/core';
+import { ECSPrimengTable, ITableOptions, createTableOptions } from '@eternalcodestudio/primeng-table';
+
+@Component({
+  selector: 'ecs-home',
+  standalone: true,
+  imports: [
+    ECSPrimengTable
+  ],
+  templateUrl: './home.html'
+})
+export class Home {
+  @ViewChild('dt') dt!: ECSPrimengTable; // Get the reference to the object table
+
+  tableOptions: ITableOptions = createTableOptions({
+    urlTableConfiguration: "Test/GetTableConfiguration",
+    urlTableData: "Test/GetTableData",
+    rows: {
+      checkboxSelector: {
+        enabled: true,
+        // header: "Selected", // Uncomment to change header
+        // alignmentRight: false, // Uncomment to change the location of the column
+        // width: 150, // Uncomment to change column width in px
+        // frozen: true, // Uncomment to change frozen status
+        // resizable: false // Uncomment to change column resize behaviour
+      }
+    }
+  });
+
+  onRowCheckboxChange(event: { rowID: any, selected: boolean }){
+    // You can access the event.rowID or event.selected here of the selected row
+    console.log("Row checkbox change:", event.rowID, event.selected);
+    // Also you could access the array of selected rowID
+    console.log("Row checkbox currently selected:", this.dt.selectedRowsCheckbox);
+  }
+}
+```
+
+And in your HTML (note the `#dt` template reference to access the table instance from TypeScript):
+```html
+<ecs-primeng-table #dt [tableOptions]="tableOptions" (onRowCheckboxChange)="onRowCheckboxChange($event)"/>
+```
+
+With this setup:
+- The `#dt` template reference allows you to access the table component instance directly in TypeScript. You can use it to read the `selectedRowsCheckbox` array at any time. 
+- The `(onRowCheckboxChange)` event binding ensures that your `onRowCheckboxChange` method is called whenever a row checkbox is selected or unselected, giving you access to the `rowID` and `selected` of the affected row.
 
 <br><br>
 
 
 
 #### 6.4.3 Dynamic styling
-WIP
+The **dynamic styling** feature allows you to customize the appearance of rows either by applying **inline styles** or by adding **CSS classes**.
+
+Both approaches receive the `rowData` object as input, giving you access to all the values currently held in the row. This enables you to define rules based on column values and dynamically adjust the styling.
+
+In your component's `ITableOptions` configuration, inside the `rows` property, you can define:
+- **`style`**: A function that returns an object containing inline CSS styles to apply when a condition is met.
+- **`class`**: A function that returns one or more CSS class names to be injected when a condition is met.
+
+Both `style` and `class` functions are evaluated dynamically and can be updated at runtime, allowing styling rules to react to data changes.
+
+**_Example_**
+
+Assume you have a column of type `List`, where values are stored as a semicolon-separated string (e.g., `"Full-time; Remote; Contract"`).
+You want to apply:
+- A specific **inline style** if the list contains the value `"Full-time"`.
+- A specific **CSS class** if the list contains the value `"Unemployed"`.
+
+Your component TypeScript file could be defined as follows (assuming the component is named `Home`):
+```ts
+import { Component } from '@angular/core';
+import { ECSPrimengTable, ITableOptions, createTableOptions } from '@eternalcodestudio/primeng-table';
+
+@Component({
+  selector: 'ecs-home',
+  standalone: true,
+  imports: [
+    ECSPrimengTable
+  ],
+  templateUrl: './home.html'
+})
+export class Home {
+  @ViewChild('dt') dt!: ECSPrimengTable; // Get the reference to the object table
+
+  tableOptions: ITableOptions = createTableOptions({
+    urlTableConfiguration: "Test/GetTableConfiguration",
+    urlTableData: "Test/GetTableData",
+    rows: {
+      style: (rowData: any) => {
+        const list = rowData?.employmentStatusNameList?.split(';').map((s: string) => s.trim()) || [];
+        if (list.includes("Full-time")) {
+          return { fontWeight: 'bold', fontStyle: 'italic' };
+        }
+        return {};
+      },
+      class: (rowData: any) => {
+        const classes = [];
+        const list = rowData?.employmentStatusNameList?.split(';').map((s: string) => s.trim()) || [];
+        if(list.includes("Unemployed")){
+          classes.push('exampleClass');
+        }
+        return classes;
+      }
+    }
+  });
+
+
+}
+```
+
+And in your HTML:
+```html
+<ecs-primeng-table [tableOptions]="tableOptions"/>
+```
+
+Because the class is pushing the `exampleClass`, you have to declare the CSS class at a component or global level so it can be rendered properly. Assuming you define it at a global level, your `styles.scss` could look like this:
+```scss
+.exampleClass {
+  background-color: #ffcccc !important;
+  color: #990000 !important;
+  font-weight: bold !important;
+}
+```
 
 <br><br>
 
@@ -2082,14 +2437,67 @@ Take into account that the global filter is one of the most costly operations la
 
 
 ### 6.7 Pagination properties
-WIP
+The **ECS PrimeNG table** manages pagination automatically. There is no need for additional frontend configuration.
+
+The only customization available is defined in the **backend**, where you specify which page sizes are allowed for the user.
+
+This is done in the method `EcsPrimengTableService.GetTableConfiguration`.
+
+**_Example_**
+
+The following minimal service configuration allows **10, 20, 30, 40 and 50 items per page**:
+```c#
+using ECSPrimengTable.Services;
+using ECSPrimengTableExample.DTOs;
+using ECSPrimengTableExample.Interfaces;
+
+namespace ECSPrimengTableExample.Services {
+    public class TestService : ITestService {
+
+        public static readonly int[] AllowedItemsPerPage = [10, 20, 30, 40, 50];
+
+        public TableConfigurationModel GetTableConfiguration() {
+            return EcsPrimengTableService.GetTableConfiguration<TestDto>(AllowedItemsPerPage);
+        }
+    }
+}
+```
 
 <br><br>
 
 
 
 ### 6.8 Copy cell content
-WIP
+By default, the **copy cell content** feature is enabled.
+
+When a user holds down the mouse on a cell for a certain duration, the cell’s content is automatically copied to the clipboard.
+
+You can adjust this behavior or disable it completely via the `ITableOptions` configuration in your frontend component.
+- **`copyToClipboardTime`**: Defines the number of seconds the user must hold the mouse button on a cell before its content is copied. Set to `<= 0` to turn off this feature entirely.
+
+**_Example_**
+
+For setting the **copy cell content** to copy after holding the mouse down for 0.8 seconds, in your desired component TypeScript file, a minimal definition should look like this (assuming the component is named `Home`):
+```ts
+import { Component } from '@angular/core';
+import { ECSPrimengTable, ITableOptions, createTableOptions } from '@eternalcodestudio/primeng-table';
+
+@Component({
+  selector: 'ecs-home',
+  standalone: true,
+  imports: [
+    ECSPrimengTable
+  ],
+  templateUrl: './home.html'
+})
+export class Home {
+  tableOptions: ITableOptions = createTableOptions({
+    urlTableConfiguration: "Test/GetTableConfiguration",
+    urlTableData: "Test/GetTableData",
+    copyToClipboardTime: 0.8
+  });
+}
+```
 
 <br><br>
 
@@ -2109,14 +2517,21 @@ WIP
 
 
 
-### 6.11 Configuring Excel reports
+### 6.11 Changing the data endpoint dinamically
 WIP
 
 <br><br>
 
 
 
-### 6.12 Setting up views
+### 6.12 Configuring Excel reports
+WIP
+
+<br><br>
+
+
+
+### 6.13 Setting up views
 WIP
 
 <br><br><br>
@@ -2217,58 +2632,6 @@ If at least a row action button has been provided, an additional column will be 
 - **actionsColumnFrozen** (boolean): By default true. If true, this column will be frozen and follow the horizontal scroll if the table has a width longer than the component were it is drawn. If false, the column won't be frozen and act as a normal column.
 - **actionsColumnResizable** (boolean): By default false. If false, the user can't resize the column. If true, the user will be able to resize this column.
 
-#### 4.4.2 Subscription to changes
-The table component has an output which you can subscribe to for listening to changes when a user selects or unselects a row. To do so, in your component that is using the table, you first need to create a function in yor TypeScript that will be called when a user checks a row, for example:
-```ts
-rowSelect($event: any){
-    if($event.selected){ // If the row has been selected
-        this.sharedService.clearToasts();
-        this.sharedService.showToast("info","ROW SELECT", `The row with ID ${$event.rowID} has been selected.`);
-    } else { // If the row has been unselected
-        this.sharedService.clearToasts();
-        this.sharedService.showToast("info","ROW UNSELECT", `The row with ID ${$event.rowID} has been unselected.`);
-    }
-}
-```
-
-And now in the HTML of your component, you can call it like so:
-```html
-<ecs-primeng-table #dt
-    ...
-    (selectedRowsChange)="rowSelect($event)"
-    ...>
-</ecs-primeng-table>
-```
-
-With this subscription to "selectedRowsChange", each time a user changes the selection of a row, the even will be emitted and the "rowSelect" function will be triggered. The event variable contains the following:
-- **selected** (boolean): True if the user has selected this row or false if it has been unselected.
-- **rowID** (any): The ID of the affected row.
-
-
-#### 4.4.3 Accesing the table component selected rows variable
-Apart from subscribing to changes, something else that you can do is accesing a variable managed by the table component that contains all the row IDs of the currently selected rows. To achieve this, assuming that you have specified an alias for the table in your component's HTML as shown in previous example (it should be "dt"), you should go to the TypeScript of your component and do the following:
-```ts
-import { ViewChild, ... } from '@angular/core';
-import { PrimengTableComponent, ... } from '../primeng-table/primeng-table.component';
-
-export class YourClass {
-    ...
-    @ViewChild('dt') dt!: PrimengTableComponent; // Get the reference to the object table
-    ...
-}
-```
-
-By importing from "@angular/core" the "ViewChild", from "primeng-table.component" the "PrimengTableComponent" and calling the "ViewChild" as shown in the example, you should now be able to access the table exposed variables.
-
-The variable that we are interested in is "selectedRows". This variable is an array that contains all the row IDs of the rows that are currently selected by the user. You could combine this with the subscription to changes shown before to, for example, log to console all the selected row IDs:
-```ts
-rowSelect($event: any){
-    console.log(this.dt.selectedRows);
-}
-```
-
-With this change in the "rowSelect" function from the "Subscription to changes" example, you can now log to console each time a user changes the selection value of a row.
-
 
 ### 4.5 Delay the table init or change the data endpoint dinamically
 When you enter a component in your front-end that uses the table, by default, the table will fetch the columns from the configured endpoint and, if the column fetching was succesful, it will try and fetch the data afterwards. There might be scenarios were this behaviour is not ideal, since you might want to retrieve some data before the table loads. There is a way to disable the table from fetching the columns and afterwards the data upon entering a component and it can be changed in the HTML of your component that is using the table by setting the "canPerformActions" to "false" as shown below:
@@ -2323,10 +2686,7 @@ private _updateTableEndpoint(newEndpoint: string){
 ```
 
 ### 4.9 Global filter
-The global filter is enabled by default in all columns of your table, except for bool data types and the actions column were this filter will be never applied. The global filter is located on the top right of your table headers as shown in the image below:
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/117d4917-45fc-4330-97fd-739322a5ebf4" alt="Global filter">
-</p>
+The global filter is enabled by default in all columns of your table, except for bool data types and the actions column were this filter will be never applied.
 
 When the user writes a value in the global filter text box, after a brief delay of the user not changing the value, a filter rule will be launched to the table were basically, the global filter will try to filter each individual column perfoming a LIKE '%VALUE_INTRODUCED_BY_USER%', which basically means that any match of that value introduced by the user (doesn't matter in which position of the cell) will be returned. When a value is written to the global filter, at the left of the text box an "X" icon will appear, that when pressed by the user, it will clear the global filter.
 
@@ -2364,31 +2724,3 @@ By doing this, the column won't take into account any global filters that should
 
 > [!CAUTION]
 > For date data types to work properly using the global filter, you need to have properly setup the database function **04 FormatDateWithCulture.sql** explained in previous sections and you also need to have permission of function execution in your database for the user that is going to execute the query. This is needed because said function, transforms the date to a string that can be filtered by. If for any reason you don't want dates to be global filtered, for each individual column that is of type date, you must set in the DTO the "canBeGlobalFiltered" to "false".
-
-
-### 4.10 Pagination and number of results
-At the footer of the table it is included a summary of the total results, results that are currently available (taking into account the filters) and the pagination.
-
-In the pagination, the user can change the number of rows to display per page. The list of possible values is hardcoded in the table source code in the back-end in the **PrimeNGHelper.cs**. At the start of the file there is an array of integers named "allowedItemsPerPage" that contains the different values that are shown to the user in the front-end. This values could be updated if you need to, but because of how the code of this reusable component has been created, this change will affect all your tables.
-
-in the paginator, the user can click the arrows or select a page number to navigate between pages.
-
-This reusable table will automatically handle all the pagination and number of results aspects for you. This includes the following scenarios:
-- When loading the table, the total number of pages will be computed based on the number of records that can be shown per page. Also, the total records will be computed and shown to the user in the table footer.
-- If the user applies a filter, the total number of pages could be updated. The number of total records and how many records are available taking into account the filters will be also updated. This reusable component will also take into account that if the user was for example in a page 12, and now taking into account filters there are only 5 pages available, he will be moved to page 5.
-- If the user changes a page, data displayed in the table is updated.
-
-
-### 4.18 Copy cell content
-This is a feature that is enabled by default in the table. If a user has the mouse above a cell and holds the right click, after a brief delay, an informational toast message will be displayed in the top right of the screen indicating that the contents of the cell has been copied to the clipboard.
-
-You can modify the amount of delay (which is given in seconds) or disbale this feature completely. To do so, in the HTML of your component, in the part were you are calling the table you should add the following:
-```html
-<ecs-primeng-table #dt
-    ...
-    [copyCellDataToClipboardTimeSecs]="1.5"
-    ...>
-</ecs-primeng-table>
-```
-
-This will modify the default value that the user need to hold down the mouse for the value of a cell to be cpied to the clipboard from 0.5 seconds to 1.5 seconds. If you put a value equal or less than 0, this feature will be disabled.
