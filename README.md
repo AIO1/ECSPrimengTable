@@ -2655,14 +2655,85 @@ WIP
 
 
 ### 6.10 Deferred startup
-WIP
+You can defer the initialization of the table by setting the **`isActive`** property to `false` in your `ITableOptions` configuration.
+
+The **`isActive`** flag controls whether the table should fetch its column configuration and data:
+- **`true`** (default): the table automatically fetches configuration and data when the component starts.
+- **`false`**: the table will not perform any requests until you explicitly activate it again using the function `updateData()` of the table.
+
+This is particularly useful if you want to delay table loading until specific conditions are met, such as retrieving some initial data that's required before the table can be shown.
+
+**_Example_**
+
+Assume that you want to prevent your table from fetching its configuration and data on component startup. Your component TypeScript file could be defined as follows (assuming the component is named `Home`):
+```ts
+import { Component } from '@angular/core';
+import { ECSPrimengTable, ITableOptions, createTableOptions } from '@eternalcodestudio/primeng-table';
+
+@Component({
+  selector: 'ecs-home',
+  standalone: true,
+  imports: [
+    ECSPrimengTable
+  ],
+  templateUrl: './home.html'
+})
+export class Home {
+  tableOptions: ITableOptions = createTableOptions({
+    urlTableConfiguration: "Test/GetTableConfiguration",
+    urlTableData: "Test/GetTableData",
+    isActive: false
+  });
+}
+```
+
+And in your HTML:
+```html
+<ecs-primeng-table [tableOptions]="tableOptions"/>
+```
 
 <br><br>
 
 
 
 ### 6.11 Changing the data endpoint dinamically
-WIP
+You can dynamically change the data source endpoint of your table by temporarily disabling it with **`isActive`** and then updating the **`urlTableData`** property in your `ITableOptions` configuration. To do so:
+1. Set **`isActive`** to `false` to prevent the table from updating.
+2. Update the **`urlTableData`** property with the new endpoint.
+3. Wait at least one Angular cycle before reactivating the table (to allow change detection to propagate).
+4. Finally, call **`updateData()`** on the table instance to fetch data from the new endpoint.
+
+> [!IMPORTANT]  
+> - If the table has already been initialized, changing **`urlTableConfiguration`** will have no effect. The **ECS PrimeNG table** only fetches configuration once during its first load.
+> - This feature is intended for scenarios where the **column configuration stays the same** and only the **data source** changes.
+
+**_Example_**
+
+Assume that you want to update the data endpoint from your component.
+
+If your `ITableOptions` variable is named `tableOptions` and you are using `#dt` as the template reference for the table, you could do the following: 
+```ts
+updateTableEndpoint(newEndpoint: string){
+    this.tableOptions.isActive = false;
+    this.tableOptions.urlTableData = newEndpoint;
+    setTimeout(() => {
+        this.dt.updateData();
+    }, 1);
+}
+```
+
+You can also reset filters and sorts while updating the endpoint if desired: 
+```ts
+updateTableEndpoint(newEndpoint: string){
+    this.tableOptions.isActive = false;
+    this.tableOptions.urlTableData = newEndpoint;
+    this.dt.clearFilters(this.dt, true); // Clear all active filters
+    this.dt.clearSorts(this.dt, true); // Clear all active sorts
+    setTimeout(() => {
+        this.dt.updateData();
+    }, 1);
+}
+```
 
 <br><br>
 
@@ -2705,57 +2776,6 @@ WIP
 ### 4.2 Date formating
 From the setup steps for implementing this reusable component, you might remember that there you had to created the database function [04 FormatDateWithCulture.txt](Database%20scripts/04%20FormatDateWithCulture.txt). This is actually not needed, since its only use is for being able to use the golbal filter functionality on columns that have the date type. The global filter tries to search things as a string, so this function makes a conversion of your date to a format that matches the date as you are showing it to the user in the frontend, taking into account the date format, timezone offset and culture that you wish to use. The database function needs to be exposed in the backend (as explained in previous sections) so that when the global filter is used, this function can be called with no issues. If for any reasons you were unable to use this function, the global filtered can be disabled in the date type columns to avoid errors when filtering.
 
-### 4.5 Delay the table init or change the data endpoint dinamically
-When you enter a component in your front-end that uses the table, by default, the table will fetch the columns from the configured endpoint and, if the column fetching was succesful, it will try and fetch the data afterwards. There might be scenarios were this behaviour is not ideal, since you might want to retrieve some data before the table loads. There is a way to disable the table from fetching the columns and afterwards the data upon entering a component and it can be changed in the HTML of your component that is using the table by setting the "canPerformActions" to "false" as shown below:
-```html
-<ecs-primeng-table #dt
-    ...
-    [canPerformActions]="false"
-    ...>
-</ecs-primeng-table>
-```
-
-With this value set to false, the table won't load anything until you explictly tell it to do so.
-
-This will be useful for example for the predifined filters (what are predifined filters is explained in further chapters) if you want to set them up with values from your database instead of hardcoded values, or if you want to change were the data is fetched from.
-
-In this section we will look at and example on how to change the data endpoint dinamically. To do so, we need to have a reference to the table element in the TypeScript part of your component (assuming its "dt"):
-```ts
-import { ViewChild, ... } from '@angular/core';
-import { PrimengTableComponent, ... } from '../primeng-table/primeng-table.component';
-
-export class YourClass {
-    ...
-    @ViewChild('dt') dt!: PrimengTableComponent; // Get the reference to the object table
-    ...
-}
-```
-
-Imagine that at any point you wish to change the endpoint, to do so, first we need to disable the table from performing actions (so it doesn't try and download the new data), we then need to update the endpoint variable and finally we can activate the table again (after waiting at least one step). An example function to do all this could be the following:
-```ts
-private _updateTableEndpoint(newEndpoint: string){
-    this.dt.canPerformActions = false;
-    this.dt.dataSoureURL = newEndpoint;
-    setTimeout(() => {
-        this.dt.canPerformActions = true;
-        this.dt.updateDataExternal();
-    }, 1);
-}
-```
-
-With this function, you will now be able to update the endpoint of the table. You could also clear all filters and sorting applied before bringing the new data making these changes to the function:
-```ts
-private _updateTableEndpoint(newEndpoint: string){
-    this.dt.canPerformActions = false;
-    this.dt.dataSoureURL = newEndpoint;
-    this.dt.clearFilters(this.dt, true); // Clear all active filters
-    this.dt.clearSorts(this.dt, true); // Clear all active sorts
-    setTimeout(() => {
-        this.dt.canPerformActions = true;
-        this.dt.updateDataExternal();
-    }, 1);
-}
-```
 
 ### 4.9 Global filter
 The global filter is enabled by default in all columns of your table, except for bool data types and the actions column were this filter will be never applied.

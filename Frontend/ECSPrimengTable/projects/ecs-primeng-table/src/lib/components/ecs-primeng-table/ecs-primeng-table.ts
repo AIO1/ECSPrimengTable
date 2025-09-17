@@ -160,7 +160,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
   }
 
   /**
-   * Used to update the data of a table externally outside the component. Use this method instead of 'updateData' to force the data updata of a table
+   * Used to update the data of a table externally outside the component.
    *
    */
   updateData(): void {
