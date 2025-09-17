@@ -26,8 +26,8 @@ export class TableButton {
 
   @Output() clicked = new EventEmitter<any>();
 
-  isDisabled(): boolean {
-    return this.button.condition ? !this.button.condition(this.rowData) : false;
+  currentCondition(): boolean {
+    return (this.button.condition?.(this.rowData));
   }
 
   handleClick() {

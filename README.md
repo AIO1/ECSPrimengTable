@@ -854,12 +854,18 @@ The key difference between both of them:
 - **Row action buttons** can access the data of the row in which they are clicked, allowing you to perform actions on a specific record.
 
 The customizable properties for action buttons are:
-- **Icon:** You can optionally display an icon and customize its **color** and **size**. Icons can come from multiple libraries, such as **PrimeNG icons**, **Font Awesome**, **Material Icons**, etc...
-- **Label:** Text to display on the button.
-- **Color:** The button color.
-- **Tooltip:** The text to be displayed when hovering the button.
-- **Condition:** Allows disabling the button if a specific condition is not met.
-- **Action:** The function or operation to execute when the button is clicked.
+- **Icon**: You can optionally display an icon and customize its **color** and **size**. Icons can come from multiple libraries, such as **PrimeNG icons**, **Font Awesome**, **Material Icons**, etc...
+- **Icon position**: By default `left`, but the icon can be displayed to the `right`, `bottom` or `top` of the label.
+- **Label**: Text to display on the button.
+- **Rounded**: If the button should have round corners or not.
+- **Raised**: If active, adds a shadow to indicate elevation in the button.
+- **Variant**: The default is a normal button, but you can also have buttons that are text or outlined.
+- **Color**: The button color.
+- **Style**: Additional styles to add to the button.
+- **Condition**: Allows disabling the button if a specific condition is not met.
+- **Hide if condition not met**: By default if a specified condition is not met, the button will be disabled, but you can also hide it completely instead.
+- **Action**: The function or operation to execute when the button is clicked.
+- **Tooltip**: The text to be displayed when hovering the button.
 
 An example of a header action button: 
 <p align="center">
@@ -867,11 +873,11 @@ An example of a header action button:
 </p>
 
 When at least one row action button is defined, a new column automatically appears to display the buttons for each row. This column has the following customizable options:**  
-- **Header title:** Default is `"Actions"`  
-- **Alignment:** Default is right  
-- **Width:** Default is `150px`  
-- **Frozen column:** Default is `true`  
-- **Resizable by user:** Default is `false`  
+- **Header title**: Default is `"Actions"`  
+- **Alignment**: Default is right  
+- **Width**: Default is `150px`  
+- **Frozen column**: Default is `true`  
+- **Resizable by user**: Default is `false`  
 
 An example of the actions columns with row action buttons:  
 <p align="center">
@@ -1089,7 +1095,7 @@ The purpose of this section is to provide a table that maps the features describ
 | Rows | [4.4.1 Single select](#441-single-select) | [6.4.1 Single select](#641-single-select) |
 | Rows | [4.4.2 Checkbox select](#442-checkbox-select) | [6.4.2 Checkbox select](#642-checkbox-select) |
 | Rows | [4.4.3 Dynamic styling](#443-dynamic-styling) | [6.4.3 Dynamic styling](#643-dynamic-styling) |
-| Table | [4.5 Action buttons](#45-action-buttons) | [6.5 Setting up row an header action buttons](#65-setting-up-row-an-header-action-buttons) |
+| Table | [4.5 Action buttons](#45-action-buttons) | [6.5 Setting up row and header action buttons](#65-setting-up-row-and-header-action-buttons) |
 | Table | [4.6 Global filter](#46-global-filter) | [6.6 Configuring the global filter](#66-configuring-the-global-filter) |
 | Table | [4.7 Pagination and record count](#47-pagination-and-record-count) | [6.7 Pagination properties](#67-pagination-properties) |
 | Table | [4.8 Copy cell content](#48-copy-cell-content) | [6.8 Copy cell content](#68-copy-cell-content) |
@@ -2353,6 +2359,9 @@ In your component's `ITableOptions` configuration, inside the `rows` property, y
 
 Both `style` and `class` functions are evaluated dynamically and can be updated at runtime, allowing styling rules to react to data changes.
 
+> [!NOTE]
+> The `rowData` passed to the `style` and `class` functions contains the data currently available in the frontend for the specific row being processed.
+
 **_Example_**
 
 Assume you have a column of type `List`, where values are stored as a semicolon-separated string (e.g., `"Full-time; Remote; Contract"`).
@@ -2374,8 +2383,6 @@ import { ECSPrimengTable, ITableOptions, createTableOptions } from '@eternalcode
   templateUrl: './home.html'
 })
 export class Home {
-  @ViewChild('dt') dt!: ECSPrimengTable; // Get the reference to the object table
-
   tableOptions: ITableOptions = createTableOptions({
     urlTableConfiguration: "Test/GetTableConfiguration",
     urlTableData: "Test/GetTableData",
@@ -2397,8 +2404,6 @@ export class Home {
       }
     }
   });
-
-
 }
 ```
 
@@ -2420,8 +2425,147 @@ Because the class is pushing the `exampleClass`, you have to declare the CSS cla
 
 
 
-### 6.5 Setting up row an header action buttons
-WIP
+### 6.5 Setting up row and header action buttons
+#### Button definitions
+Action buttons can be used either in the table header or as row action buttons. Both types of buttons share the same set of properties.
+
+The main difference is that **row action buttons** receive the `rowData` object, which contains the data currently held in the frontend for that specific row.
+
+The available properties are:
+- **icon**: Optional. The icon to display on the button. Should be a valid icon name from PrimeNG, Material Icons, Font Awesome, or similar libraries.
+- **iconPos**: Optional. The position of the icon relative to the button label. Defaults to `"left"`. Possible values: `"left"`, `"right"`, `"top"`, `"bottom"`.
+- **label**: Optional. The text label displayed on the button.
+- **rounded**: Optional. If `true`, the button will be round. Defaults to `false`.
+- **raised**: Optional. If `true`, adds a shadow to indicate elevation. Defaults to `false`.
+- **variant**: Optional. Specifies the variant of the button. Can be `null` (default), `"text"`, or `"outlined"`.
+- **color**: Optional. The CSS class to apply for button styling. Example: `"p-button-success"` or `"custom-class"`.
+- **style**: Optional. Additional inline CSS styles for the button.
+- **condition**: Optional. A function that determines whether the button should be displayed for a given row.
+  - **rowData** parameter: The row data object (null for header buttons).
+  - Returns `true` if the button should be visible; `false` otherwise.
+- **conditionFailHide**: Optional. Controls behavior when `condition` returns false.
+  - If `true`, the button will be hidden when the condition is not met.
+  - If `false` or `undefined`, the button will remain visible but disabled.
+- **action**: Optional. The action to execute when the button is clicked.
+  - **rowData** parameter: The row data object of the clicked row (null for header buttons).
+- **tooltip**: Optional. Tooltip text to display when the user hovers over the button.
+
+The recommended approach is to define **two separate arrays** of `ITableButton`: one for **header action buttons** and one for **row action buttons**.
+
+- **Header action buttons**:  
+  The array of `ITableButton` should be assigned to the `buttons` property inside the `header` object of your `ITableOptions` configuration.  
+  These buttons are displayed in the table header and typically trigger actions that are not specific to a single row (e.g., creating a new record).
+
+- **Row action buttons**:  
+  The array of `ITableButton` should be assigned to the `buttons` property inside the `actions` object of the `rows` object in your `ITableOptions` configuration.
+  These buttons are displayed for each row and can access the `rowData` of the corresponding row. They usually trigger actions that operate on that specific row (e.g., edit, delete).
+  It is recommended to use the `rowID` when performing any backend actions on that record.
+
+> [!TIP]
+> Buttons added to the `ITableButton` array and passed to the table are always rendered from left to right. The first button in the array appears at the far left, while the last button appears at the far right.
+
+> [!IMPORTANT]
+> For row action buttons, if you depend on any element of the row data, remember that only data from hidden columns and columns that cannot be hidden by the user is guaranteed to be available. Do not rely on data from user-hideable columns, as it may not always be accessible in the frontend.
+
+> [!CAUTION]
+> Never assume that a button visible to the user can be safely executed based on frontend conditions alone. Always perform a final validation on the backend, because any data or state exposed in the frontend can be easily tampered with.
+
+**_Example_**
+
+Assume you want to have both header and row action buttons:
+- **Header action buttons**:
+  - A button to add a new record.
+- **Row action buttons**:
+  - A button to delete a record (only available to authorized users).
+  - A button to edit a record.
+
+Your component TypeScript file could be defined as follows (assuming the component is named `Home`):
+```ts
+import { Component } from '@angular/core';
+import { ECSPrimengTable, ITableOptions, createTableOptions, ITableButton } from '@eternalcodestudio/primeng-table';
+
+@Component({
+  selector: 'ecs-home',
+  standalone: true,
+  imports: [
+    ECSPrimengTable
+  ],
+  templateUrl: './home.html'
+})
+export class Home {
+  headerActionButtons: ITableButton[] = [
+    {
+      icon: 'pi pi-plus',
+      color: 'p-button-success',
+      action: () => {
+        // Action to execute when clicked.
+        // Example: Open a modal to create a new record.
+      },
+      label: "CREATE",
+      tooltip: "Create new record"
+    }
+  ];
+  rowActionButtons: ITableButton[] = [
+    {
+      icon: 'pi pi-trash',
+      tooltip: 'Delete record',
+      color: 'p-button-danger',
+      action: (rowData) => {
+        // Action to execute when clicked, only if condition evaluates to true.
+        // Example: Open a confirmation modal before deleting the record.
+        // Use rowData.rowID to identify the record in the backend.
+      },
+      condition: (rowData) => (rowData.canBeDeleted === true)
+    }, {
+      icon: 'pi pi-file-edit',
+      tooltip: 'Edit record',
+      color: 'p-button-primary',
+      action: (rowData) => {
+        // Action to execute when clicked.
+        // Example: Open a modal to edit the record.
+        // Use rowData.rowID to identify the record in the backend.
+      }
+    }
+  ];
+
+  tableOptions: ITableOptions = createTableOptions({
+    urlTableConfiguration: "Test/GetTableConfiguration",
+    urlTableData: "Test/GetTableData",
+    header: {
+      buttons: this.headerActionButtons
+    },
+    rows: {
+      action: {
+        buttons: this.rowActionButtons
+      }
+    }
+  });
+}
+```
+
+And in your HTML:
+```html
+<ecs-primeng-table [tableOptions]="tableOptions"/>
+```
+
+<br><br>
+
+
+
+#### Row actions column
+If at least one row action button is provided, an additional column will be added to the table to display these buttons. 
+
+Some properties of this column can be customized via the `actions` object inside the `rows` object of your `ITableOptions` configuration. The available options are:
+- **`header`** *(Default: `"Actions"`)*: The header label for the row actions column.
+- **`alignmentRight`** *(Default: `true`)*: If `true`, the column will appear on the right side of the table. Otherwise, it will appear on the left.
+- **`width`** *(Default: `150`)*: The fixed column width in pixels.
+- **`frozen`** *(Default: `true`)*: If `true`, the column remains visible when horizontally scrolling the table.
+- **`resizable`** *(Default: `false`)*: If `true`, users can resize the column.
+
+> [!NOTE]
+> When the row actions column is aligned to the left, it will always appear **at the beginning** of the table.
+>
+> When aligned to the right, it will always appear **at the end** of the table.
 
 <br><br>
 
@@ -2560,78 +2704,6 @@ WIP
 
 ### 4.2 Date formating
 From the setup steps for implementing this reusable component, you might remember that there you had to created the database function [04 FormatDateWithCulture.txt](Database%20scripts/04%20FormatDateWithCulture.txt). This is actually not needed, since its only use is for being able to use the golbal filter functionality on columns that have the date type. The global filter tries to search things as a string, so this function makes a conversion of your date to a format that matches the date as you are showing it to the user in the frontend, taking into account the date format, timezone offset and culture that you wish to use. The database function needs to be exposed in the backend (as explained in previous sections) so that when the global filter is used, this function can be called with no issues. If for any reasons you were unable to use this function, the global filtered can be disabled in the date type columns to avoid errors when filtering.
-
-
-### 4.3 Declaring header and row action buttons
-This component allows you to easily define buttons which can be placed on the top right header of the table or in each row of data. In your component, you should define all the buttons that you want to have as an array of IprimengActionButtons (you need different arrays for the header buttons and another one for the row buttons). The IprimengActionButtons values that can be passed are:
-- **icon:** If specified, it will show a PrimeNG icon. It has the capacity to show icons from PrimeNG or from other sources like Font Awesome. If you wish to show the "pi-address-book" from PrimeNG for example, you should put: "pi pi-address-book".
-- **label:** If specified, it will show a label inside the button.
-- **color:** The color property to be applied. The "color" references to the "severity" property of PrimeNG for the [button](https://primeng.org/button#severity).
-- **condition:** A condition that must be met in order to show the button. It can be passed a function and the expected return is a boolean. If no condition is specified, the button will always show. If the button is in a row, the data of the row can be accessed (like for example the "ID").
-> [!CAUTION]
-> Do NOT ever trust that if a user can press a button that should only be shown under some condition, the action should be done. Always perform an additional final validation in the backend, since the exposed data in the frontend can be easily tampered with.
-- **action:** The action that the button will perform when pressed. It can be passed a function and no return value is expected. If no action is specified, the button won't do anything when pressed.
-- **tooltip:** If given, it will show a tooltip when the user hovers the mouse over the button.
-
-> [!TIP]
-> Buttons that are added into the IprimengActionButtons array that are then passed to the table, will be always drawn from left to right, meaning that the first button provided in the array will be in the most left part, while the last button will be the last button in the right.
-
-> [!IMPORTANT]  
-> If the button is in a row, the data of the row can be accessed, like for example the "rowID" which is useful to perform actions or check specific conditions. There is an example on how to do it in this section later on. Remember NOT to rely on data from columns that can be hidden from the user, since if the column is hidden, you won't have the data available in the front-end (this does not apply to columns with the "sendColumnAttributes" to false, since these columns are always sent and are safe to rely on for these operations).
-
-From the example project here is an example on how you can specify buttons that are shown in the table. From the Typescript file [home.component.ts](Frontend/primengtablereusablecomponent/src/app/components/home/home.component.ts) we can see the following code fragment:
-```ts
-headerActionButtons: IprimengActionButtons[] = [
-    {
-        icon: 'pi pi-file',
-        color: 'p-button-success',
-        action: () => {
-            this.sharedService.clearToasts();
-            this.sharedService.showToast("info","Clicked on create a new record","Here you will for example show a modal to create a new record. Upon creating the record, you can do 'this.dt.updateDataExternal()' to refresh the table data and show the newly created record.");
-        },
-        label: "CREATE",
-        tooltip: "Create new record"
-    }
-];
-rowActionButtons: IprimengActionButtons[] = [
-    {
-        icon: 'pi pi-trash',
-        tooltip: 'Delete record',
-        color: 'p-button-danger',
-        action: (rowData) => {
-            this.sharedService.showToast("warn","Clicked on delete row",`The record ID is\n\n${rowData.rowID}\n\nThis button only appears if a condition is met. Remember that a backend validation should be done anyways because users can tamper with the exposed variables in the frontend.`);
-        },
-        condition: (rowData) => (rowData.canBeDeleted === true)
-    }, {
-        icon: 'pi pi-file-edit',
-        tooltip: 'Edit record',
-        color: 'p-button-primary',
-        action: (rowData) => {
-            this.sharedService.showToast("success","Clicked on edit row",`The record ID is\n\n${rowData.rowID}\n\nHere you could open a modal for the user to edit this record (you can retrieve data through the ID) and then call 'this.dt.updateDataExternal()' to refresh the table data.`);
-        }
-    }
-];
-```
-
-From the above code, it can be seen that two different arrays have been created, one being "headerActionButtons" and the other one "rowActionButtons". In the header buttons we have one button that is always shown and it will execute the action of showing a toast message. In the row action buttons we have two buttons, were both will show a toast message including the "rowData.rowID" value. The delete button will be only shown under a specific condition, being "rowData.canBeDeleted === true".
-
-Once the buttons have been defined in your component, you must pass them to the table in the HTML like so:
-```html
-<ecs-primeng-table #dt
-    ...
-    [headerActionButtons]="headerActionButtons"
-    [rowActionButtons]="rowActionButtons"
-    ...>
-</ecs-primeng-table>
-```
-
-If at least a row action button has been provided, an additional column will be added to your table to show the row action buttons. There are some properties of this column that can be altered from their defaults through the HTML of your component, which are the following:
-- **actionColumnName** (string): The title that will appear in the column header, by default is "Actions".
-- **actionsColumnWidth** (number): A fixed width for this columns in pixels. By default is 150.
-- **actionsColumnAligmentRight** (boolean): By default true. If true, this column will be placed at the right most part of your table. If false, it will be placed to the left of the table.
-- **actionsColumnFrozen** (boolean): By default true. If true, this column will be frozen and follow the horizontal scroll if the table has a width longer than the component were it is drawn. If false, the column won't be frozen and act as a normal column.
-- **actionsColumnResizable** (boolean): By default false. If false, the user can't resize the column. If true, the user will be able to resize this column.
-
 
 ### 4.5 Delay the table init or change the data endpoint dinamically
 When you enter a component in your front-end that uses the table, by default, the table will fetch the columns from the configured endpoint and, if the column fetching was succesful, it will try and fetch the data afterwards. There might be scenarios were this behaviour is not ideal, since you might want to retrieve some data before the table loads. There is a way to disable the table from fetching the columns and afterwards the data upon entering a component and it can be changed in the HTML of your component that is using the table by setting the "canPerformActions" to "false" as shown below:

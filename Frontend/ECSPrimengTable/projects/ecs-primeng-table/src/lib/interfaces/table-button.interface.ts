@@ -1,33 +1,77 @@
 /**
- * Interface representing the configuration for action buttons in a PrimeNG table.
+ * Interface representing a table action button, applicable for both header and row buttons.
  */
 export interface ITableButton {
-    /** 
-     * Gets or sets the icon to be displayed on the button.
-     * The value should be a string representing the PrimeIcons class name.
+    /**
+     * Optional. The icon to display on the button.
+     * Should be a valid icon name from PrimeNG, Material Icons, Font Awesome, or similar libraries.
      */
     icon?: string;
 
-    label?: string;
-    
-    /** 
-     * Gets or sets the color style class to be applied to the button.
-     * The value should be a string representing a CSS class for styling the button.
+    /**
+     * Optional. The position of the icon relative to the button label.
+     * Defaults to "left". Possible values are:
+     * - "left"
+     * - "right"
+     * - "top"
+     * - "bottom"
      */
-    color?: string
+    iconPos?: string;
 
     /**
-     * Gets or sets the condition for displaying the button.
-     * It is a function that takes row data as input and returns a boolean indicating
-     * whether the button should be displayed for that row.
+     * Optional. The text label displayed on the button.
+     */
+    label?: string;
+
+    /**
+     * Optional. If true, the button will be round. Defaults to false.
+     */
+    rounded?: boolean;
+
+    /**
+     * Optional. If true, adds a shadow to indicate elevation. Defaults to false.
+     */
+    raised?: boolean;
+
+    /**
+     * Optional. Specifies the variant of the button.
+     * Can be null (default), "text", or "outlined".
+     */
+    variant?: string;
+
+    /**
+     * Optional. The CSS class to apply for button styling.
+     * Example: "p-button-success" or "custom-class".
+     */
+    color?: string;
+    
+    /**
+     * Optional. Additional inline CSS styles for the button.
+     */
+    style?: string;
+
+    /**
+     * Optional. Function that determines whether the button should be displayed for a given row.
+     * @param rowData The row data object. Null for header buttons.
+     * @returns True if the button should be visible; false otherwise.
      */
     condition?: (rowData: any) => boolean;
 
     /**
-     * Represents the action to be executed when the button is clicked.
-     * This function takes the row data of the clicked row as input and performs
-     * specific actions based on that data.
+     * Optional. Controls behavior when `condition` returns false.
+     * - If `true`, the button will be hidden when the condition is not met.
+     * - If `false` or `undefined`, the button will remain visible but disabled.
+     */
+    conditionFailHide?: boolean;
+
+    /**
+     * Optional. The action to execute when the button is clicked.
+     * @param rowData The row data object of the clicked row. Null for header buttons.
      */
     action?: (rowData: any) => void;
+
+    /**
+     * Optional. Tooltip text to display when the user hovers over the button.
+     */
     tooltip?: string;
 }
