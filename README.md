@@ -2901,7 +2901,123 @@ updateTableEndpoint(newEndpoint: string){
 
 
 ### 6.12 Configuring Excel reports
-WIP
+This feature relies on [ClosedXML](https://github.com/ClosedXML/ClosedXML), so make sure you have the NuGet package installed in your backend before proceeding.
+
+Dynamic Excel report generation allows you to export the same data displayed in your table into an `.xlsx` file, with support for user customization when generating the report.
+
+To configure Excel reports, you need to define a new service and controller endpoint in your backend.
+
+If you already created an `IQueryable` for obtaining the table data (used by the dynamic query), you can reuse the same query to generate the Excel file.
+
+A typical service might look like this:
+```c#
+using ECSPrimengTable.Services;
+using ECSPrimengTableExample.DTOs;
+using ECSPrimengTableExample.Interfaces;
+
+namespace ECSPrimengTableExample.Services {
+    public class TestService : ITestService {
+        private readonly ITestRepository _repo;
+
+        public TestService(ITestRepository repository) {
+            _repo = repository;
+        }
+
+        public (bool success, byte[]? file, string errorMsg) GenerateExcelReport(ExcelExportRequestModel inputData) {
+            return EcsPrimengTableService.GenerateExcelReport(inputData, GetBaseQuery());
+        }
+
+        private IQueryable<TestDto> GetBaseQuery() {
+            return _repo.GetTableData()
+                .Select(u => new TestDto {
+                    RowID = u.Id,
+                    Username = u.Username,
+                    Money = u.Money,
+                    House = u.House
+                });
+        }
+    }
+}
+```
+Just like with dynamic queries, the method `EcsPrimengTableService.GenerateExcelReport` accepts three optional arguments:
+- A **database function** to format dates as strings (to ensure consistency between backend and frontend).
+- A **list of default ordering columns**.
+- Their **initial ordering direction** (ascending or descending).
+
+You now need an endpoint in your controller that calls the service and returns the Excel file to the client. A minimal implementation could look like this:
+```c#
+[ApiController]
+[Route("[controller]")]
+public class TestController : ControllerBase {
+    private readonly ITestService _service;
+
+    public TestController(ITestService service) {
+        _service = service;
+    }
+
+    [HttpPost("[action]")]
+    public IActionResult GenerateExcel([FromBody] ExcelExportRequestModel inputData) {
+        try {
+            (bool success, byte[]? file, string errorMsg) = _service.GenerateExcelReport(inputData);
+            if(!success) {
+                return BadRequest(errorMsg);
+            }
+            return File(file!, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", inputData.Filename);
+        } catch(Exception ex) { // Exception Handling: Returns a result with status code 500 (Internal Server Error) and an error message.
+            return StatusCode(StatusCodes.Status500InternalServerError, $"An unexpected error occurred: {ex.Message}");
+        }
+    }
+}
+```
+**Technical note:**  
+- The service returns the generated Excel file as a `byte[]`.
+- In the controller, the `File()` method is used to return the file with the correct MIME type for Excel (`application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`).
+- Exception handling ensures that unexpected errors return a clear message with HTTP status `500`.
+
+Once the backend endpoint is in place, the next step is configuring the frontend. At a minimum, you must provide the backend endpoint URL for Excel report generation.
+
+Excel report behavior can be customized via the `excelReport` object inside your `ITableOptions` configuration. The available options are:
+- **`url`** *(Default: `undefined`)*: Enables Excel reports by specifying the endpoint created earlier (e.g., `"Test/GenerateExcel"`).
+- **`defaultTitle`** *(Default: `"Report"`)*: Defines the default report title.
+- **`titleAllowUserEdit`** *(Default: `true`)*: Determines whether the user can override the title when exporting, or if the `defaultTitle` is always enforced.
+
+Your component TypeScript might look like this: 
+```ts
+import { Component } from '@angular/core';
+import { ECSPrimengTable, ITableOptions, createTableOptions } from '@eternalcodestudio/primeng-table';
+
+@Component({
+  selector: 'ecs-home',
+  standalone: true,
+  imports: [
+    ECSPrimengTable
+  ],
+  templateUrl: './home.html'
+})
+export class Home {
+  tableOptions: ITableOptions = createTableOptions({
+    urlTableConfiguration: "Test/GetTableConfiguration",
+    urlTableData: "Test/GetTableData",
+    excelReport: {
+      url: "Test/GenerateExcel",
+      // defaultTitle: "NEW TITLE", // Uncomment to override the default value
+      // titleAllowUserEdit: false // Uncomment to override the default value
+    }
+  });
+}
+```
+
+And your HTML:
+```html
+<ecs-primeng-table [tableOptions]="tableOptions"/>
+```
+
+With these steps in place:
+1. Backend service generates the Excel file using `ClosedXML` with the desired configurations from the user.
+2. Controller endpoint exposes the file as an HTTP response.
+3. Frontend is configured to use the endpoint and customize the behavior via `ITableOptions`.
+
+This integration provides users with a seamless way to export their table data into Excel while maintaining full control over some customization options.
 
 <br><br>
 
