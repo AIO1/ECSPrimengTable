@@ -13,7 +13,7 @@ namespace ECS.PrimengTable.Services {
         /// <param name="globalFilter">The text used for global filtering.</param>
         /// <param name="visibleColumns">The list of column names that are currently visible.</param>
         /// <returns>A filtered list based on the global filter and visible columns.</returns>
-        internal static IQueryable<T> ApplyGlobalFilter<T>(IQueryable<T> query, string? globalFilter, List<string> visibleColumns, MethodInfo stringDateFormatMethod, string dateFormat, string dateTimezone, string dateCulture) {
+        internal static IQueryable<T> ApplyGlobalFilter<T>(IQueryable<T> query, string? globalFilter, List<string> visibleColumns, string dateFormat, string dateTimezone, string dateCulture, MethodInfo? stringDateFormatMethod = null) {
             if(string.IsNullOrEmpty(globalFilter) || string.IsNullOrWhiteSpace(globalFilter)) { // If the global filter is empty or whitespace, return the original list
                 return query;
             }
@@ -21,7 +21,7 @@ namespace ECS.PrimengTable.Services {
             foreach(PropertyInfo property in typeof(T).GetProperties().Where(x => visibleColumns.Contains(x.Name))) { // Iterate through properties of type T where the property is visible
                 ColumnAttributes? attribute = (ColumnAttributes?)property.GetCustomAttributes(typeof(ColumnAttributes), false).FirstOrDefault(); // Retrieve PrimeNGAttributes attribute
                 if(attribute != null && attribute.CanBeGlobalFiltered) {  // Check if the property can be globally filtered
-                    var filterPredicate = QueryPredicateService.GetGlobalFilterPredicate<T>(property.Name, globalFilter, attribute.DataType, stringDateFormatMethod, dateFormat, dateTimezone, dateCulture); // Get the filter predicate for the property
+                    var filterPredicate = QueryPredicateService.GetGlobalFilterPredicate<T>(property.Name, globalFilter, attribute.DataType, dateFormat, dateTimezone, dateCulture, stringDateFormatMethod); // Get the filter predicate for the property
                     if(filterPredicate != null) { // If a valid filter predicate is obtained, combine it with the existing predicate using OR
                         predicate = predicate.Or(filterPredicate);
                     }
@@ -39,7 +39,7 @@ namespace ECS.PrimengTable.Services {
         /// <param name="visibleColumns">The list of column names that are currently visible. Must not be null.</param>
         /// <returns>A filtered list based on the column filters and visible columns.</returns>
         /// <exception cref="ArgumentNullException">Thrown if sourceList, columnFilters, or visibleColumns is null.</exception>
-        internal static IQueryable<T> ApplyColumnFilters<T>(IQueryable<T> query, Dictionary<string, List<ColumnFilterModel>> columnFilters, List<string> visibleColumns, MethodInfo stringDateFormatMethod) {
+        internal static IQueryable<T> ApplyColumnFilters<T>(IQueryable<T> query, Dictionary<string, List<ColumnFilterModel>> columnFilters, List<string> visibleColumns, MethodInfo? stringDateFormatMethod = null) {
             foreach(var entry in columnFilters) { // Iterate through the column filters
                 string key = entry.Key; // Get the key of the current column filter
                 if((!visibleColumns.Contains(key) && key != "RowID") || key == "Selector") {
@@ -55,11 +55,11 @@ namespace ECS.PrimengTable.Services {
                     PropertyInfo property = typeof(T).GetProperty(key) ?? throw new ArgumentNullException(key, $"The property with name '{key}' does not exist in type '{typeof(T).FullName}'."); // Retrieve the property
                     ColumnAttributes? attribute = (ColumnAttributes?)property.GetCustomAttributes(typeof(ColumnAttributes), false).FirstOrDefault() ?? throw new ArgumentNullException(key, $"The property with name '{key}' does not have the PrimeNGAttributes attribute in type '{typeof(T).FullName}'."); // Retrieve PrimeNGAttributes attribute and if its null throw error
                     if(value.MatchMode == "in") {
-                        QueryPredicateService.FilterPredicateInClauseBuilder<T>(value, property, attribute, stringDateFormatMethod, andPredicateOperator, ref combinedPredicate);
+                        QueryPredicateService.FilterPredicateInClauseBuilder<T>(value, property, attribute, andPredicateOperator, ref combinedPredicate, stringDateFormatMethod);
                     } else if(value.MatchMode == "notIn") {
-                        QueryPredicateService.FilterPredicateNotInClauseBuilder<T>(value, property, attribute, stringDateFormatMethod, andPredicateOperator, ref combinedPredicate);
+                        QueryPredicateService.FilterPredicateNotInClauseBuilder<T>(value, property, attribute, andPredicateOperator, ref combinedPredicate, stringDateFormatMethod);
                     } else {
-                        QueryPredicateService.FilterPredicateBuilder(property, attribute, value.Value, value.MatchMode, stringDateFormatMethod, andPredicateOperator, ref combinedPredicate);
+                        QueryPredicateService.FilterPredicateBuilder(property, attribute, value.Value, value.MatchMode, andPredicateOperator, ref combinedPredicate, stringDateFormatMethod);
                     }
                 }
                 query = query.Where(combinedPredicate); // Apply the combined predicate to filter the list   

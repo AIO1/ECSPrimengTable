@@ -2572,9 +2572,170 @@ Some properties of this column can be customized via the `actions` object inside
 
 
 ### 6.6 Configuring the global filter
-WIP
+#### Overview of the global filter
+The **global filter** allows users to perform a `LIKE` query on every column that has this feature enabled (by default, all columns).
 
-Take into account that the global filter is one of the most costly operations launched to the database engine, since basically it performs a LIKE = '%VALUE_PROVIDED_BY_USER%' to each column.
+It automatically converts all data types into text (for example, numbers) to make them searchable. For **date** columns, an additional setup is required, although this is optional.
+
+Columns with a boolean data type are ignored by the global filter.
+
+Additionally, when a match is found, the global filter highlights it in yellow within the corresponding column, making it easier for the user to identify where the match occurred.
+
+The global filter can be cleared if it contains any data, either by clicking the "X" icon on the right side of the input or by pressing the **clear filters** button (if it is enabled).
+
+> [!NOTE]
+> The global filter search is **case-insensitive**.
+
+> [!IMPORTANT]
+> While the global filter is very useful, it also has a downside.
+>
+> Since it performs a `LIKE` query per column (with `%` at both the start and end of the search term), this is one of the most expensive operations in SQL.
+>
+> The more columns that are visible (and enabled for global filtering), the longer it will take to update the displayed data when the global filter changes.
+
+<br><br>
+
+
+
+#### Column-level configuration
+To disable the global filter per column this can be done by setting to `false` the property `canBeGlobalFiltered` in the `ColumnAttributes` of your backend DTO class
+
+**_Example_**
+
+Assuming your DTO class is named `TestDTO` and you want to disable global filtering for the `Username` column:
+```C#
+public class TestDto {
+	[ColumnAttributes(sendColumnAttributes: false)]
+	public Guid RowID { get; set; }
+
+	[ColumnAttributes("Username", canBeGlobalFiltered: false)]
+	public string Username { get; set; } = string.Empty;
+
+	// Other properties of your class
+}
+```
+
+<br><br>
+
+
+
+#### Global settings
+If you wish to disable the global filter completely so it doesn't appear in the frontend, or if you want to modify the maximum length that a user can enter in the input box, it can be customized via the `globalFilter` object inside your `ITableOptions` configuration. The available options are:
+- **`enabled`** *(Default: `true`)*: Enables or disables the global filter input. When set to `true`, users can search across all table columns using the global search bar. When `false`, the global search input will not be rendered.
+- **`maxLength`** *(Default: `20`)*: Maximum number of characters allowed in the global filter input.
+
+**_Example_**
+
+Assuming you want to limit the length of your global filter to 15 characters, you can do so in your component's TypeScript file (assuming the component is named `Home`):
+```ts
+import { Component } from '@angular/core';
+import { ECSPrimengTable, ITableOptions, createTableOptions } from '@eternalcodestudio/primeng-table';
+
+@Component({
+  selector: 'ecs-home',
+  standalone: true,
+  imports: [
+    ECSPrimengTable
+  ],
+  templateUrl: './home.html'
+})
+export class Home {
+  tableOptions: ITableOptions = createTableOptions({
+    urlTableConfiguration: "Test/GetTableConfiguration",
+    urlTableData: "Test/GetTableData",
+    globalFilter: {
+      maxLength: 15,
+      // enabled: false // Uncomment to disable the global filter
+    }
+  });
+}
+```
+
+And in your HTML:
+```html
+<ecs-primeng-table [tableOptions]="tableOptions"/>
+```
+
+<br><br>
+
+
+#### Configuring global filter for date columns
+By default, date columns will not work with global filter, since they require a database function that converts dates into text using exactly the same format in which they are rendered in the frontend.
+
+Ensuring consistency between the database transformation and the frontend rendering is critical, otherwise, users may be confused when applying the global filter to date columns.
+
+The example project includes a SQL Server function you can use: [04 FormatDateWithCulture.sql](Database%20scripts/04%20FormatDateWithCulture.sql).
+
+If you are working with a database engine other than SQL Server, you will need to adapt the script accordingly.
+
+Assuming that you are using SQL Server as database engine and that you have already setup the database function described previously, you should now go to the backend and register the database function so it can be used.
+
+We will create next to the context a new cs file that will act as an extension of the base context. We will be doing it like this to avoid EF from overwriting our changes when scaffolding, and since the context is created as partial, it can be extended with no issues.
+
+The way to extend is as follows:
+```c#
+namespace YourDatabaseContextNamespace {
+    public partial class YourDatabaseContextClass {
+        partial void OnModelCreatingPartial(ModelBuilder modelBuilder) {
+            modelBuilder.HasDbFunction(() => MyDBFunctions.FormatDateWithCulture(default, default!, default!, default!))
+                        .HasName("FormatDateWithCulture")
+                        .HasSchema("dbo");
+        }
+    }
+    public static class MyDBFunctions {
+        [DbFunction("FormatDateWithCulture", "dbo")]
+        public static string FormatDateWithCulture(DateTime inputDate, string format, string timezone, string culture) {
+            throw new NotImplementedException("This method is a placeholder for calling a database function.");
+        }
+    }
+}
+```
+Here the database function is being registered inside the Entity Framework model. The method `HasDbFunction` links the SQL function `FormatDateWithCulture` to the static C# method. This way EF knows how to call the SQL Server function from LINQ. The static class `MyDBFunctions` with the `[DbFunction]` annotation works as a bridge between the C# code and the database function. The function is not executed in C#, EF translates its usage into SQL.
+
+Once done, in your service you can pass the database function like this:  
+```c#
+using YourDatabaseContextNamespace;
+using ECSPrimengTable.Services;
+using ECS.PrimengTable.Enums;
+using ECSPrimengTableExample.DTOs;
+using ECSPrimengTableExample.Interfaces;
+using System.Reflection;
+
+namespace ECSPrimengTableExample.Services {
+    public class TestService : ITestService {
+        private readonly ITestRepository _repo;
+
+        private static readonly MethodInfo stringDateFormatMethod = typeof(MyDBFunctions).GetMethod(nameof(MyDBFunctions.FormatDateWithCulture), [typeof(DateTime), typeof(string), typeof(string), typeof(string)])!; // Needed import for being able to perform global search on dates
+
+        public TestService(ITestRepository repository) {
+            _repo = repository;
+        }
+
+        public (bool success, TablePagedResponseModel data) GetTableData(TableQueryRequestModel inputData) {
+            if(!EcsPrimengTableService.ValidateItemsPerPageAndCols(inputData.PageSize, inputData.Columns)) { // Validate the items per page size and columns
+                return (false, null!);
+            }
+            return (true,EcsPrimengTableService.PerformDynamicQuery(inputData, GetBaseQuery(), stringDateFormatMethod, columnsToOrderByDefault, columnsToOrderByOrderDefault);
+        }
+
+        private IQueryable<TestDto> GetBaseQuery() {
+            return _repo.GetTableData()
+                .Select(u => new TestDto {
+                    RowID = u.Id,
+                    Username = u.Username,
+                    Money = u.Money,
+                    House = u.House
+                });
+        }
+    }
+}
+```
+In this block the `MethodInfo` of the `FormatDateWithCulture` function is obtained so it can be injected into the dynamic queries. This is necessary because the query generator (`EcsPrimengTableService.PerformDynamicQuery`) needs to know how to apply the function to date columns when using the global filter. The `MethodInfo` works as a reference to the database function that will be executed.
+
+With this done, you will now be able to use the global filter in date data type columns.
+
+> [!CAUTION]  
+> If you are not going to use this feature, remember to disable the `canBeGlobalFiltered` in the `ColumnAttributes` of your backend DTO class for columns of type date, otherwise, even though it will not be filtered, the frontend will underline the match in the date, making it confusing for users.
 
 <br><br>
 
@@ -2764,55 +2925,3 @@ WIP
 ---
 ## 8 Editing ECS PrimeNG table and integrating locally
 WIP
-
-<br><br><br>
-
-
-
-
-
-
-
-### 4.2 Date formating
-From the setup steps for implementing this reusable component, you might remember that there you had to created the database function [04 FormatDateWithCulture.txt](Database%20scripts/04%20FormatDateWithCulture.txt). This is actually not needed, since its only use is for being able to use the golbal filter functionality on columns that have the date type. The global filter tries to search things as a string, so this function makes a conversion of your date to a format that matches the date as you are showing it to the user in the frontend, taking into account the date format, timezone offset and culture that you wish to use. The database function needs to be exposed in the backend (as explained in previous sections) so that when the global filter is used, this function can be called with no issues. If for any reasons you were unable to use this function, the global filtered can be disabled in the date type columns to avoid errors when filtering.
-
-
-### 4.9 Global filter
-The global filter is enabled by default in all columns of your table, except for bool data types and the actions column were this filter will be never applied.
-
-When the user writes a value in the global filter text box, after a brief delay of the user not changing the value, a filter rule will be launched to the table were basically, the global filter will try to filter each individual column perfoming a LIKE '%VALUE_INTRODUCED_BY_USER%', which basically means that any match of that value introduced by the user (doesn't matter in which position of the cell) will be returned. When a value is written to the global filter, at the left of the text box an "X" icon will appear, that when pressed by the user, it will clear the global filter.
-
-Additionally, as seen in the previous image, the global filter will underline with yellow each part of the cell were the value that is introduced by the user matches.
-
-As in the column filter feature, the user has also the option to clear all filters by pressing the clear filters button when it is enabled (it is enabled if at least a column filter, a predifined filter or a global filter is active).
-
-If for any reason, you want to hide the global filter search bar, you can do so by in in your component HTML that is using the table, setting the variable "globalSearchEnabled" to false.
-```html
-<ecs-primeng-table #dt
-    ...
-    [globalSearchEnabled]="false"
-    ...>
-</ecs-primeng-table>
-```
-
-The properties that you can modify in the HTML related to the global filter are the following:
-- **globalSearchEnabled** (boolean): By default true. If true, the global search text box will be shown in the top right of your table. If false, it won't be shown.
-- **globalSearchMaxLength** (number): By default 50. The maximun number of characters that the user can introduce in the global search text box.
-- **globalSearchPlaceholder** (string): by default "Search keyword". This is a placeholder text shown when the user hasn't introduced any value to the global filter yet.
-
-If you wish for a column to ignore the global filter, you can do so by modifying your DTO in the back-end. For the specific column that you wish to ignore the global filter, in the "PrimeNGAttribute" you just have to give a value of false to "canBeGlobalFiltered" as shown in the next example:
-```c#
-[PrimeNGAttribute("Example column", canBeGlobalFiltered: false, ...)]
-public string? ExampleColumn { get; set; }
-```
-
-By doing this, the column won't take into account any global filters that should be applied to it. For the bool data type or columns that are hidden (or that have the "sendColumnAttributes" to false), this property is always false and they will never be affected by the global filter.
-
-> [!NOTE]  
-> The global filter search is case insensitive.
-
-> [!IMPORTANT]  
-> The global filter is very useful for users, but if has a downside. Since it performs a LIKE query per column (with the % at the start and at the end) which is one of the heaviest filters to perform in SQL, the more columns that there are shown at a given time (and that can be global filtered), the more time it will require to update the data shown when the global filter is updated.
-
-> [!CAUTION]
-> For date data types to work properly using the global filter, you need to have properly setup the database function **04 FormatDateWithCulture.sql** explained in previous sections and you also need to have permission of function execution in your database for the user that is going to execute the query. This is needed because said function, transforms the date to a string that can be filtered by. If for any reason you don't want dates to be global filtered, for each individual column that is of type date, you must set in the DTO the "canBeGlobalFiltered" to "false".

@@ -18,7 +18,7 @@ namespace ECS.PrimengTable.Services {
         /// </remarks>
         /// <exception cref="ArgumentException">Thrown when an unsupported match mode is specified.</exception>
         /// <exception cref="ArgumentNullException">Thrown when the property is null.</exception>
-        internal static Expression<Func<T, bool>> CreateTextFilterPredicate<T>(MemberExpression property, string filterValue, MethodInfo stringDateFormatMethod, string matchMode = "contains", string dateFormat = "", string dateTimezone = "", string dateCulture = "") {
+        internal static Expression<Func<T, bool>> CreateTextFilterPredicate<T>(MemberExpression property, string filterValue, MethodInfo? stringDateFormatMethod = null, string matchMode = "contains", string dateFormat = "", string dateTimezone = "", string dateCulture = "") {
             #region PREPARE THE toStringMethod
             Expression toStringMethod; // Prepare the method to convert the property to a string if necessary
             bool isStringProperty = property.Type == typeof(string) || Nullable.GetUnderlyingType(property.Type) == typeof(string); // Check if the property type is a string or nullable string
@@ -31,7 +31,7 @@ namespace ECS.PrimengTable.Services {
                     propertyAccess = Expression.Property(property, "Value");
                 }
                 toStringMethod = Expression.Call(
-                    stringDateFormatMethod,
+                    stringDateFormatMethod!,
                     propertyAccess,
                     Expression.Constant(dateFormat), // Format
                     Expression.Constant(dateTimezone), // Timezone

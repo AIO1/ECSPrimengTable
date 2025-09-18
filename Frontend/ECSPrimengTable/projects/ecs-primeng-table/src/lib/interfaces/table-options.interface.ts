@@ -142,10 +142,10 @@ export interface ITableOptions {
         height?: number;
     };
 
-    /** Configurations related to the global search functionality of the table. */
-    globalSearch?: {
+    /** Configurations related to the global filter functionality of the table. */
+    globalFilter?: {
         /**
-         * Enables or disables the global search input.
+         * Enables or disables the global filter input.
          * 
          * When set to `true`, users can search across all table columns using the global search bar.
          * When `false`, the global search input will not be rendered.
@@ -155,7 +155,7 @@ export interface ITableOptions {
         enabled?: boolean;
 
         /**
-         * Maximum number of characters allowed in the global search input.
+         * Maximum number of characters allowed in the global filter input.
          * 
          * Use this to limit the length of search queries and prevent excessively long input.
          * 
@@ -304,7 +304,7 @@ export const DEFAULT_TABLE_OPTIONS: ITableOptions = {
         fitToContainer: true,
         height: 0
     },
-    globalSearch: {
+    globalFilter: {
         enabled: true,
         maxLength: 20
     },

@@ -99,14 +99,14 @@
 
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <!--GLOBAL FILTER-->
-                    @if (tableOptions.globalSearch?.enabled) {
+                    @if (tableOptions.globalFilter?.enabled) {
                         <p-iconField iconPosition="left" class="ml-auto" [ngClass]="{'p-input-icon-right': globalSearchText}">
                             <p-inputIcon>
                                 <i class="pi pi-search"></i>
                             </p-inputIcon>
                             <input pInputText type="text" 
                                 (input)="dt.filterGlobal($any($event.target).value, 'contains')"  autocomplete="off" 
-                                [maxlength]="tableOptions.globalSearch?.maxLength ?? null" placeholder='Search keyword' [(ngModel)]="globalSearchText"
+                                [maxlength]="tableOptions.globalFilter?.maxLength ?? null" placeholder='Search keyword' [(ngModel)]="globalSearchText"
                                 style="width: 220px;"/>
                             <!-- Right icon (only if there is text) -->
                             @if (globalSearchText) {

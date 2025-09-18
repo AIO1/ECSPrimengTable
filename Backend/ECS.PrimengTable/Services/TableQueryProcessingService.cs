@@ -6,10 +6,10 @@ using System.Reflection;
 
 namespace ECS.PrimengTable.Services {
     internal class TableQueryProcessingService {
-        internal static TablePagedResponseModel PerformDynamicQuery<T>(TableQueryRequestModel inputData, IQueryable<T> baseQuery, MethodInfo stringDateFormatMethod, List<string>? defaultSortColumnName = null, List<ColumnSort>? defaultSortOrder = null) {
+        internal static TablePagedResponseModel PerformDynamicQuery<T>(TableQueryRequestModel inputData, IQueryable<T> baseQuery, MethodInfo? stringDateFormatMethod = null, List<string>? defaultSortColumnName = null, List<ColumnSort>? defaultSortOrder = null) {
             long totalRecordsNotFiltered = 0; // All available records
             long totalRecords = 0; // Number of records after applying filters
-            GetDynamicQueryBase<T>(ref inputData, ref baseQuery, stringDateFormatMethod, ref totalRecordsNotFiltered, ref totalRecords, defaultSortColumnName, defaultSortOrder);
+            GetDynamicQueryBase<T>(ref inputData, ref baseQuery, ref totalRecordsNotFiltered, ref totalRecords, stringDateFormatMethod, defaultSortColumnName, defaultSortOrder);
             int currentPage = inputData.Page; // Get the current page that the user is viewing
             IQueryable<T> pagedItems = PerformPagination(baseQuery, totalRecords, ref currentPage, inputData.PageSize); // Perform the pagination
             List<dynamic> dataResult = GetDynamicSelect(pagedItems, inputData.Columns!); // Limit the columns that are going to be selected
@@ -21,7 +21,7 @@ namespace ECS.PrimengTable.Services {
             };
         }
 
-        internal static void GetDynamicQueryBase<T>(ref TableQueryRequestModel inputData, ref IQueryable<T> baseQuery, MethodInfo stringDateFormatMethod, ref long totalRecordsNotFiltered, ref long totalRecords, List<string>? defaultSortColumnName = null, List<ColumnSort>? defaultSortOrder = null, bool performSort = true, bool performFilters = true) {
+        internal static void GetDynamicQueryBase<T>(ref TableQueryRequestModel inputData, ref IQueryable<T> baseQuery, ref long totalRecordsNotFiltered, ref long totalRecords, MethodInfo? stringDateFormatMethod = null, List<string>? defaultSortColumnName = null, List<ColumnSort>? defaultSortOrder = null, bool performSort = true, bool performFilters = true) {
             if(inputData.Columns != null) {
                 for(int i = 0; i < inputData.Columns.Count; i++) {
                     string column = inputData.Columns[i];
@@ -44,7 +44,7 @@ namespace ECS.PrimengTable.Services {
             }
             totalRecordsNotFiltered = baseQuery.Count(); // Count all the available records (before applying filters)
             if(performFilters) {
-                baseQuery = QueryFilterService.ApplyGlobalFilter(baseQuery, inputData.GlobalFilter, inputData.Columns!, stringDateFormatMethod, inputData.DateFormat, inputData.DateTimezone, inputData.DateCulture); // Apply the global filter
+                baseQuery = QueryFilterService.ApplyGlobalFilter(baseQuery, inputData.GlobalFilter, inputData.Columns!, inputData.DateFormat, inputData.DateTimezone, inputData.DateCulture, stringDateFormatMethod); // Apply the global filter
                 baseQuery = QueryFilterService.ApplyColumnFilters(baseQuery, inputData.Filter, inputData.Columns!, stringDateFormatMethod); // Apply the column filters
             }
             totalRecords = baseQuery.Count(); // Count all the available records (after applying filters)
@@ -75,10 +75,9 @@ namespace ECS.PrimengTable.Services {
         /// <returns>A list of dynamic objects representing the dynamic selection of properties.</returns>
         internal static List<dynamic> GetDynamicSelect<T>(IQueryable<T> query, List<string> columns) {
             PropertyInfo[] properties = typeof(T).GetProperties(); // Get properties of the class T
-            List<string> additionalColumns = properties
+            List<string> additionalColumns = [.. properties
                 .Where(p => p.GetCustomAttribute<ColumnAttributes>()?.SendColumnAttributes == false)
-                .Select(p => p.Name)
-                .ToList();
+                .Select(p => p.Name)];
             IEnumerable<PropertyInfo> selectedProperties = properties.Where(p => columns.Contains(p.Name) || (additionalColumns != null && additionalColumns.Contains(p.Name))); // Filter only the properties that are in the list of columns
             string select = string.Join(", ", selectedProperties.Select(p => p.Name)); // Build the SELECT part of the dynamic query
             return query.Select($"new ({select})").ToDynamicList(); // Build and execute the dynamic query, return the result

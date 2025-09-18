@@ -29,7 +29,7 @@ namespace ECS.PrimengTable.Services {
         public static TablePagedResponseModel PerformDynamicQuery<T>(
             TableQueryRequestModel inputData,
             IQueryable<T> baseQuery,
-            MethodInfo stringDateFormatMethod,
+            MethodInfo? stringDateFormatMethod = null,
             List<string>? defaultSortColumnName = null,
             List<ColumnSort>? defaultSortOrder = null
         ) {
@@ -39,7 +39,7 @@ namespace ECS.PrimengTable.Services {
         public static (bool, byte[]?, string) GenerateExcelReport<T>(
             ExcelExportRequestModel inputData,
             IQueryable<T> baseQuery,
-            MethodInfo stringDateFormatMethod,
+            MethodInfo? stringDateFormatMethod = null,
             List<string>? defaultSortColumnName = null,
             List<ColumnSort>? defaultSortOrder = null,
             string sheetName = "MAIN",

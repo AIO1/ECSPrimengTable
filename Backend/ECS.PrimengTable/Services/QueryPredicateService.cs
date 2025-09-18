@@ -8,7 +8,7 @@ using System.Text.Json;
 
 namespace ECS.PrimengTable.Services {
     internal class QueryPredicateService {
-        internal static void FilterPredicateBuilder<T>(PropertyInfo property, ColumnAttributes attribute, dynamic val, string matchMode, MethodInfo stringDateFormatMethod, bool andPredicateOperator, ref ExpressionStarter<T> combinedPredicate) {
+        internal static void FilterPredicateBuilder<T>(PropertyInfo property, ColumnAttributes attribute, dynamic val, string matchMode, bool andPredicateOperator, ref ExpressionStarter<T> combinedPredicate, MethodInfo? stringDateFormatMethod = null) {
             dynamic filterPredicate = GetColumnFilterPredicate<T>(property.Name, val, attribute.DataType, matchMode, stringDateFormatMethod); // Get the filter predicate for the column
             if(filterPredicate != null) { // If a valid filter predicate is obtained, combine it with the existing predicate using AND or OR
                 if(combinedPredicate.Body.NodeType == ExpressionType.Constant) { // If the combined predicate is initially a constant expression, replace it with the filter predicate
@@ -18,31 +18,21 @@ namespace ECS.PrimengTable.Services {
                 }
             }
         }
-        internal static void FilterPredicateInClauseBuilder<T>(ColumnFilterModel value, PropertyInfo property, ColumnAttributes attribute, MethodInfo stringDateFormatMethod, bool andPredicateOperator, ref ExpressionStarter<T> combinedPredicate) {
+        internal static void FilterPredicateInClauseBuilder<T>(ColumnFilterModel value, PropertyInfo property, ColumnAttributes attribute, bool andPredicateOperator, ref ExpressionStarter<T> combinedPredicate, MethodInfo? stringDateFormatMethod = null) {
             if(value.Value is JsonElement jsonElement && jsonElement.ValueKind == JsonValueKind.Array) {
                 List<object> items = JsonSerializer.Deserialize<List<object>>(jsonElement.GetRawText())!;
                 foreach(object item in items) {
-                    FilterPredicateBuilder(property, attribute, item, "equals", stringDateFormatMethod, andPredicateOperator, ref combinedPredicate);
+                    FilterPredicateBuilder(property, attribute, item, "equals", andPredicateOperator, ref combinedPredicate, stringDateFormatMethod);
                 }
-            } else { // Workaround for .NET 5
-                List<object> items = JsonSerializer.Deserialize<List<object>>(value.Value!.ToString()!);
-                foreach(object item in items) {
-                    FilterPredicateBuilder(property, attribute, item, "equals", stringDateFormatMethod, andPredicateOperator, ref combinedPredicate);
-                }
-            }
+            } 
         }
-        internal static void FilterPredicateNotInClauseBuilder<T>(ColumnFilterModel value, PropertyInfo property, ColumnAttributes attribute, MethodInfo stringDateFormatMethod, bool andPredicateOperator, ref ExpressionStarter<T> combinedPredicate) {
+        internal static void FilterPredicateNotInClauseBuilder<T>(ColumnFilterModel value, PropertyInfo property, ColumnAttributes attribute, bool andPredicateOperator, ref ExpressionStarter<T> combinedPredicate, MethodInfo? stringDateFormatMethod = null) {
             if(value.Value is JsonElement jsonElement && jsonElement.ValueKind == JsonValueKind.Array) {
                 List<object> items = JsonSerializer.Deserialize<List<object>>(jsonElement.GetRawText())!;
                 foreach(object item in items) {
-                    FilterPredicateBuilder(property, attribute, item, "notEquals", stringDateFormatMethod, andPredicateOperator, ref combinedPredicate);
+                    FilterPredicateBuilder(property, attribute, item, "notEquals", andPredicateOperator, ref combinedPredicate, stringDateFormatMethod);
                 }
-            } else { // Workaround for .NET 5
-                List<object> items = JsonSerializer.Deserialize<List<object>>(value.Value!.ToString()!);
-                foreach(object item in items) {
-                    FilterPredicateBuilder(property, attribute, item, "notEquals", stringDateFormatMethod, andPredicateOperator, ref combinedPredicate);
-                }
-            }
+            } 
         }
 
         /// <summary>
@@ -57,14 +47,12 @@ namespace ECS.PrimengTable.Services {
         /// Returns null if the data type is not supported.
         /// </returns>
         /// <exception cref="ArgumentException">Thrown when the filterDataType is not supported.</exception>
-        internal static Expression<Func<T, bool>>? GetGlobalFilterPredicate<T>(string propertyName, string filterValue, DataType filterDataType, MethodInfo stringDateFormatMethod, string dateFormat, string dateTimezone, string dateCulture) {
+        internal static Expression<Func<T, bool>>? GetGlobalFilterPredicate<T>(string propertyName, string filterValue, DataType filterDataType, string dateFormat, string dateTimezone, string dateCulture, MethodInfo? stringDateFormatMethod = null) {
             Expression<Func<T, bool>>? predicate = null; // Initialize the predicate as null
             ParameterExpression parameter = Expression.Parameter(typeof(T), "x"); // Create an expression parameter to represent the generic entity T
             MemberExpression property = Expression.Property(parameter, propertyName); // Get the specific property of the entity using the provided property name
-            if(filterDataType == DataType.Text || filterDataType == DataType.Numeric || filterDataType == DataType.Date || filterDataType == DataType.List) { // Check the filter data type, if it's text, numeric, or date, call method to create a filter predicate
+            if(filterDataType == DataType.Text || filterDataType == DataType.Numeric || (filterDataType == DataType.Date && stringDateFormatMethod != null) || filterDataType == DataType.List) { // Check the filter data type, if it's text, numeric, or date (and we have the stringDateFormatMethod), call method to create a filter predicate
                 predicate = PredicateBuilderService.CreateTextFilterPredicate<T>(property, filterValue, stringDateFormatMethod, "contains", dateFormat, dateTimezone, dateCulture);
-            } else if(filterDataType != DataType.Boolean) { // If the filter data type is not text, numeric, date or boolean, throw an exception
-                throw new ArgumentException("Invalid filterDataType value", nameof(filterDataType));
             }
             return predicate; // Return the predicate (may be null if the data type is not supported)
         }

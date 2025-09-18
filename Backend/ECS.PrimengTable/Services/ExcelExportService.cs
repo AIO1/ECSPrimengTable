@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace ECS.PrimengTable.Services {
     internal class ExcelExportService {
-        internal static (bool, byte[]?, string) GenerateExcelReport<T>(ExcelExportRequestModel inputDataAll, IQueryable<T> baseQuery, MethodInfo stringDateFormatMethod, List<string>? defaultSortColumnName = null, List<ColumnSort>? defaultSortOrder = null, string sheetName = "MAIN", byte pageStack = 250) {
+        internal static (bool, byte[]?, string) GenerateExcelReport<T>(ExcelExportRequestModel inputDataAll, IQueryable<T> baseQuery, MethodInfo? stringDateFormatMethod = null, List<string>? defaultSortColumnName = null, List<ColumnSort>? defaultSortOrder = null, string sheetName = "MAIN", byte pageStack = 250) {
             try {
                 TableQueryRequestModel inputData = new() {
                     Page = inputDataAll.Page,
@@ -39,7 +39,7 @@ namespace ECS.PrimengTable.Services {
                 long totalRecordsNotFiltered = 0; // All available records
                 long totalRecords = 0; // Number of records after applying filters
                 string fieldName;
-                TableQueryProcessingService.GetDynamicQueryBase<T>(ref inputData, ref baseQuery, stringDateFormatMethod, ref totalRecordsNotFiltered, ref totalRecords, defaultSortColumnName, defaultSortOrder, inputDataAll.ApplySorts, inputDataAll.ApplyFilters);
+                TableQueryProcessingService.GetDynamicQueryBase<T>(ref inputData, ref baseQuery, ref totalRecordsNotFiltered, ref totalRecords, stringDateFormatMethod, defaultSortColumnName, defaultSortOrder, inputDataAll.ApplySorts, inputDataAll.ApplyFilters);
                 using(XLWorkbook workbook = new XLWorkbook()) {
                     IXLWorksheet worksheet = workbook.AddWorksheet(sheetName); // Add the new worksheet that will have the data
                     int numberOfColumns = inputData.Columns!.Count;
@@ -99,7 +99,7 @@ namespace ECS.PrimengTable.Services {
                     }
                 }
             } catch(Exception ex) {
-                return (false, null, $"Error al generar el archivo Excel: {ex.Message}");
+                return (false, null, $"Error generating the Excel file: {ex.Message}");
             }
         }
         private static string GetExcelColumnLetter(int columnNumber) {
