@@ -312,7 +312,6 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
   }
 
   viewCreate(viewAlias: string){
-    console.log("length:", this.tableViewsList.length, "max:", this.maxViews);
     if(this.tableViewsList.length >= this.maxViews){
       this.notification.showToast("error","NO MORE VIEWS ALLOWED","You have created the maximum number of allowed views for this table");
       return;

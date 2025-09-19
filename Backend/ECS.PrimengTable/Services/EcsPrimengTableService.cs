@@ -48,24 +48,24 @@ namespace ECS.PrimengTable.Services {
             return ExcelExportService.GenerateExcelReport<T>(inputData, baseQuery, stringDateFormatMethod, defaultSortColumnName, defaultSortOrder, sheetName, pageStack);
         }
 
-
-        public static async Task<List<ViewDataModel>> GetViewsAsync<TEntity>(
+        public static async Task<List<ViewDataModel>> GetViewsAsync<TEntity, TUsername>(
             DbContext context,
-            string username,
+            TUsername username,
             string tableKey
-        ) where TEntity : class, ITableViewEntity, new() {
-            var svc = new TableViewService<TEntity>(context);
+        ) where TEntity : class, ITableViewEntity<TUsername>, new() where TUsername : notnull {
+            var svc = new TableViewService<TEntity, TUsername>(context);
             return await svc.GetViewsAsync(username, tableKey);
         }
 
-        public static async Task SaveViewsAsync<TEntity>(
+        public static async Task SaveViewsAsync<TEntity, TUsername>(
             DbContext context,
-            string username,
+            TUsername username,
             string tableKey,
             List<ViewDataModel> views
-        ) where TEntity : class, ITableViewEntity, new() {
-            var svc = new TableViewService<TEntity>(context);
+        ) where TEntity : class, ITableViewEntity<TUsername>, new() where TUsername : notnull {
+            var svc = new TableViewService<TEntity, TUsername>(context);
             await svc.SaveViewsAsync(username, tableKey, views);
         }
+
     }
 }

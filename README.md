@@ -425,7 +425,7 @@ Don’t worry if some of these concepts are unclear at this point, each feature 
 
 > [!NOTE]  
 > This solution works only to data that is already persisted in the database.
-> It is **not intended** to handle data currently being edited in memory on the front end and not yet saved to the database.
+> It is **not intended** to handle data currently being edited in memory on the frontend and not yet saved to the database.
 
 <br><br>
 
@@ -3024,7 +3024,253 @@ This integration provides users with a seamless way to export their table data i
 
 
 ### 6.13 Setting up views
-WIP
+#### Generic configuration
+Views allow users to persist their table configurations across sessions. This feature is disabled by default but can be enabled when needed.
+
+There are three possible storage strategies:  
+1. **Session storage** – minimal setup required.
+2. **Local storage** – minimal setup required.
+3. **Database storage** – requires additional backend and database configuration.
+
+Regardless of the storage type, configuration is done via the `views` object inside your `ITableOptions`. The available options are:
+- **`saveMode`** *(Default: `TableViewSaveMode.None`)*: Determines where views are stored. Possible values are:
+  - **`TableViewSaveMode.None`**: Views are disabled. The view menu will not be displayed.
+  - **`TableViewSaveMode.SessionStorage`**: Saves the view state in the browser’s `sessionStorage`. Data is cleared when the tab is closed. Not accessible from other devices.
+  - **`TableViewSaveMode.LocalStorage`**: Saves the view state in the browser’s `localStorage`. Persists across browser sessions, but will be lost if the user clears local data. Not accessible from other devices.
+  - **`TableViewSaveMode.DatabaseStorage`**: Saves the view state in a backend database. Requires extra backend/database setup but allows views to be shared across devices.
+- **`saveKey`** *(Default: `undefined`)*: A unique identifier for the table. Required if views are enabled.
+- **`urlGet`** *(Default: `undefined`)*: Backend endpoint for retrieving saved views (only used with `DatabaseStorage`).
+- **`urlSave`** *(Default: `undefined`)*: Backend endpoint for saving views (only used with `DatabaseStorage`).
+
+**Note:** `urlGet` and `urlSave` are ignored unless the `DatabaseStorage` mode is selected.
+
+The **view menu will only be displayed** if:
+- `saveMode` is not `None`.
+- `saveKey` is defined.
+
+An example of your component TypeScript might look like this, assuming that you want to use a `TableViewSaveMode.LocalStorage` save mode: 
+```ts
+import { Component } from '@angular/core';
+import { ECSPrimengTable, ITableOptions, createTableOptions, TableViewSaveMode } from '@eternalcodestudio/primeng-table';
+
+@Component({
+  selector: 'ecs-home',
+  standalone: true,
+  imports: [
+    ECSPrimengTable
+  ],
+  templateUrl: './home.html'
+})
+export class Home {
+  tableOptions: ITableOptions = createTableOptions({
+    urlTableConfiguration: "Test/GetTableConfiguration",
+    urlTableData: "Test/GetTableData",
+    views: {
+      saveMode: TableViewSaveMode.LocalStorage,
+      saveKey: "TEST",
+      // urlGet: "URL to get views", // Uncomment if using databaseStorage
+      // urlSave: "URL to save views" // Uncomment if using databaseStorage
+    }
+  });
+}
+```
+
+And your HTML:
+```html
+<ecs-primeng-table [tableOptions]="tableOptions"/>
+```
+
+<br><br>
+
+
+
+#### Database persistent views
+##### Database setup
+To configure the database persisten views, start off by creating a table in your database to store the views. It is strongly recommended to use the demo script as a starting point: [05 SaveTableViews.sql](Database%20scripts/05%20SaveTableViews.sql).
+
+You can adapt the SQL (for example, change the length of the `username` column or use a different data type such as a GUID). The important column semantics you need to keep are:
+- **`username`**: Identifies the user who owns the view. It can be implemented using `varchar`/`nvarchar` (for textual user identifiers) or `uniqueidentifier` (if you prefer to store user IDs as GUIDs). Choose the type that matches the type used by your backend user identity.
+- **`tableKey`**: Identifies the table the view belongs to. Typically a short string key that uniquely denotes the table.
+- **`viewAlias`**: A name for the saved view (this is introduced by the user).
+- **`viewData`**: A JSON payload containing the serialized view state (columns, filters, sorts, pagination, etc.).
+- **`lastActive`**: A boolean to know if the user marked this view for being loaded in the next table init.
+
+It is important that the combination of `username`, `tableKey` and `viewAlias` must be unique (create a unique constraint or composite unique index) so a user cannot create duplicate view names for the same table. Also consider adding appropriate indexes (for example on `username` and `tableKey`) to keep retrieval performant.
+
+<br><br>
+
+
+
+##### Backend setup
+In the backend you need to create a model that maps to the database table used to store the views. It is recommended, especially if you are using scaffolding, to define the model class as `partial`. This way you can extend it later without modifying the generated code.
+
+The created model class must implement `ITableViewEntity<TUsername>`, where `TUsername` represents the type you want to use for the `username` column (for example, `string` or `GUID`, depending on your database schema).
+
+The interface has the following minimal definition that your model (and database table) must provide:
+```c#
+public interface ITableViewEntity<TUsername> {
+    TUsername Username { get; set; }
+    string TableKey { get; set; }
+    string ViewAlias { get; set; }
+    string ViewData { get; set; }
+    public bool LastActive { get; set; }
+}
+```
+
+An example of how this can be implemented, assuming that your column `username` has been defined as `nvarchar` in your database (and as `string` in your model):
+```c#
+public partial class TableView : ITableViewEntity<string> {
+    // Inherit ITableViewEntity
+}
+```
+
+Once the model is defined, you will need to start off by implementing a repository for your service. The repository that your service accesses could look like this:
+```c#
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
+using ECS.PrimengTable.Models;
+using ECS.PrimengTable.Services;
+
+namespace ECSPrimengTableExample.Repository {
+    public class TestRepository {
+
+        private readonly primengTableReusableComponentContext _context;
+
+        public TestRepository(primengTableReusableComponentContext context) {
+            _context = context;
+        }
+
+        public async Task<List<ViewDataModel>> GetViewsAsync(string username, ViewLoadRequestModel request) {
+            return await EcsPrimengTableService.GetViewsAsync<TableView, string>(
+                _context,
+                username,
+                request.TableViewSaveKey
+            );
+        }
+
+        public async Task SaveViewsAsync(string username, ViewSaveRequestModel request) {
+            await EcsPrimengTableService.SaveViewsAsync<TableView, string>(
+                _context,
+                username,
+                request.TableViewSaveKey,
+                request.Views
+            );
+        }
+    }
+}
+```
+
+Once the repository is done, you must implement the service to handle the logic for retrieving and storing the views. An example of your service to load and save views could be like this:
+```c#
+using ECSPrimengTable.Services;
+using ECSPrimengTableExample.DTOs;
+using ECSPrimengTableExample.Interfaces;
+
+namespace ECSPrimengTableExample.Services {
+    public class TestService : ITestService {
+        private readonly ITestRepository _repo;
+
+        public TestService(ITestRepository repository) {
+            _repo = repository;
+        }
+
+        public async Task<List<ViewDataModel>> GetViews(string username, ViewLoadRequestModel request) {
+            return await _repo.GetViewsAsync(username, request);
+        }
+
+        public async Task SaveViews(string username, ViewSaveRequestModel request) {
+            await _repo.SaveViewsAsync(username, request);
+        }
+    }
+}
+```
+
+Finally, you must add the two endpoints to your controller that consume the previously created service:
+```c#
+[ApiController]
+[Route("[controller]")]
+public class TestController : ControllerBase {
+    private readonly ITestService _service;
+
+    public TestController(ITestService service) {
+        _service = service;
+    }
+
+    [HttpPost("[action]")]
+    public async Task<IActionResult> GetViews([FromBody] ViewLoadRequestModel request) {
+        try {
+            string username = "User test"; // This username should be retrieved from a token. This is just for example purposes and it has been hardcoded
+            return Ok(await _service.GetViews(username, request));
+        } catch(Exception ex) { // Exception Handling: Returns a result with status code 500 (Internal Server Error) and an error message.
+            return StatusCode(StatusCodes.Status500InternalServerError, $"An unexpected error occurred: {ex.Message}");
+        }
+    }
+
+    [HttpPost("[action]")]
+    public async Task<IActionResult> SaveViews([FromBody] ViewSaveRequestModel request) {
+        try {
+            string username = "User test"; // This username should be retrieved from a token. This is just for example purposes and it has been hardcoded
+            await _service.SaveViews(username, request);
+            return Ok("Views saved OK");
+        } catch(Exception ex) { // Exception Handling: Returns a result with status code 500 (Internal Server Error) and an error message.
+            return StatusCode(StatusCodes.Status500InternalServerError, $"An unexpected error occurred: {ex.Message}");
+        }
+    }
+}
+```
+
+> [!TIP]  
+> You can configure the **maximum number of views allowed per table** directly from the backend.
+> 
+> This is done in your **table configuration service**, when calling `EcsPrimengTableService.GetTableConfiguration`.
+>
+> One of its arguments defines the maximum number of views allowed.
+> - If set to `null`, it will fall back to the initialization default value (**10 views**).
+> - If set to a specific number, that value will override the default for that table.
+
+<br><br>
+
+
+
+##### Frontend setup
+To configure the frontend, you need to update the `views` object inside your `ITableOptions`.  
+At minimum, you must set the following options:
+- **`saveMode`**: Set this to **`TableViewSaveMode.DatabaseStorage`**.
+- **`saveKey`**: Define a unique key to identify the table. *(Must be unique across your application)*.
+- **`urlGet`**: The endpoint URL to retrieve the list of saved views.
+- **`urlSave`**: The endpoint URL to persist the views.
+
+An example of a component TypeScript configuration might look like this:
+```ts
+import { Component } from '@angular/core';
+import { ECSPrimengTable, ITableOptions, createTableOptions, TableViewSaveMode } from '@eternalcodestudio/primeng-table';
+
+@Component({
+  selector: 'ecs-home',
+  standalone: true,
+  imports: [
+    ECSPrimengTable
+  ],
+  templateUrl: './home.html'
+})
+export class Home {
+  tableOptions: ITableOptions = createTableOptions({
+    urlTableConfiguration: "Test/GetTableConfiguration",
+    urlTableData: "Test/GetTableData",
+    views: {
+      saveMode: TableViewSaveMode.DatabaseStorage,
+      saveKey: "TEST",
+      urlGet: "Test/GetViews",
+      urlSave: "Test/SaveViews"
+    }
+  });
+}
+```
+
+And your HTML:
+```html
+<ecs-primeng-table [tableOptions]="tableOptions"/>
+```
 
 <br><br><br>
 

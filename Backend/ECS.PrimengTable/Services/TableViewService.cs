@@ -3,17 +3,17 @@ using ECS.PrimengTable.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace ECS.PrimengTable.Services {
-    internal class TableViewService<T> where T : class, ITableViewEntity, new() {
+    internal class TableViewService<T, TUsername> where T : class, ITableViewEntity<TUsername>, new() where TUsername : notnull {
         private readonly DbContext _context;
 
         internal TableViewService(DbContext context) {
             _context = context;
         }
 
-        internal async Task<List<ViewDataModel>> GetViewsAsync(string username, string tableKey) {
+        internal async Task<List<ViewDataModel>> GetViewsAsync(TUsername username, string tableKey) {
             var data = await _context.Set<T>()
                 .AsNoTracking()
-                .Where(s => s.Username == username && s.TableKey == tableKey)
+                .Where(s => s.Username!.Equals(username) && s.TableKey == tableKey)
                 .OrderBy(s => s.ViewAlias)
                 .ToListAsync();
             return data.Select(s => new ViewDataModel {
@@ -23,13 +23,13 @@ namespace ECS.PrimengTable.Services {
             }).ToList();
         }
 
-        internal async Task SaveViewsAsync(string username, string tableKey, List<ViewDataModel> views) {
+        internal async Task SaveViewsAsync(TUsername username, string tableKey, List<ViewDataModel> views) {
             // Begin transaction
             using var transaction = await _context.Database.BeginTransactionAsync();
             try {
                 // Get existing views for this user & table (tracked)
                 var existingViews = await _context.Set<T>()
-                    .Where(t => t.Username == username && t.TableKey == tableKey)
+                    .Where(t => t.Username!.Equals(username) && t.TableKey == tableKey)
                     .ToListAsync();
 
                 // Names of the received views

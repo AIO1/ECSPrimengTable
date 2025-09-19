@@ -2,6 +2,6 @@
 
 namespace Models.PrimengTableReusableComponent;
 
-public partial class TableView : ITableViewEntity {
+public partial class TableView : ITableViewEntity<string> {
     // Inherit ITableViewEntity
 }

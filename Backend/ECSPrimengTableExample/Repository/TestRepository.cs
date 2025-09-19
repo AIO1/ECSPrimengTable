@@ -27,7 +27,7 @@ namespace ECSPrimengTableExample.Repository {
         }
 
         public async Task<List<ViewDataModel>> GetViewsAsync(string username, ViewLoadRequestModel request) {
-            return await EcsPrimengTableService.GetViewsAsync<TableView>(
+            return await EcsPrimengTableService.GetViewsAsync<TableView, string>(
                 _context,
                 username,
                 request.TableViewSaveKey
@@ -35,7 +35,7 @@ namespace ECSPrimengTableExample.Repository {
         }
 
         public async Task SaveViewsAsync(string username, ViewSaveRequestModel request) {
-            await EcsPrimengTableService.SaveViewsAsync<TableView>(
+            await EcsPrimengTableService.SaveViewsAsync<TableView, string>(
                 _context,
                 username,
                 request.TableViewSaveKey,
