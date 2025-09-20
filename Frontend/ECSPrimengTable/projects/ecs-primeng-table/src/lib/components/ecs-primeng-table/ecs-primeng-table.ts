@@ -135,6 +135,9 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
   }
   
   calculateScrollHeight(){
+    if (this.tableOptions.verticalScroll?.cssFormula) {
+      return;
+    }
     if (this.tableOptions.verticalScroll?.fitToContainer && this.tableContainer && this.paginatorContainer && this.headerContainer) {
       const containerRect = this.tableContainer.nativeElement.getBoundingClientRect();
       const paginatorHeight = this.paginatorContainer.nativeElement.offsetHeight;
@@ -142,19 +145,12 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
       const viewportHeight = window.innerHeight;
       const topOffset = containerRect.top + window.scrollY;
       this.tableOptions.verticalScroll.height = (viewportHeight - topOffset - paginatorHeight - headerHeight)-60;
-
-
-
-      /* const containerRect = this.tableContainer.nativeElement.getBoundingClientRect(); // Get the bounding rectangle of the table container
-        const paginatorHeight = this.paginatorContainer.nativeElement.offsetHeight; // Get the height of the paginator container
-        const headerHeight = this.headerContainer.nativeElement.offsetHeight; // Get the height of the header container
-        const viewportHeight = window.innerHeight; // Get the height of the viewport (visible part of the window)
-        const topOffset = containerRect.top + window.scrollY; // Calculate the top offset of the table container relative to the viewport
-        this.tableOptions.verticalScroll.height = `${(viewportHeight - topOffset - paginatorHeight - headerHeight) - 45}px`; // Calculate and set the scrollable height by subtracting offsets and container heights
-      }*/
     }
   }
   get scrollHeightValue(): string {
+    if (this.tableOptions.verticalScroll?.cssFormula) {
+      return this.tableOptions.verticalScroll.cssFormula;
+    }
     const height = this.tableOptions.verticalScroll?.height;
     return height && height > 0 ? `${height}px` : '';
   }

@@ -2778,7 +2778,7 @@ By default, the **copy cell content** feature is enabled.
 When a user holds down the mouse on a cell for a certain duration, the cell’s content is automatically copied to the clipboard.
 
 You can adjust this behavior or disable it completely via the `ITableOptions` configuration in your frontend component.
-- **`copyToClipboardTime`**: Defines the number of seconds the user must hold the mouse button on a cell before its content is copied. Set to `<= 0` to turn off this feature entirely.
+- **`copyToClipboardTime`**: Defines the number of seconds the user must hold the mouse button on a cell before its content is copied to the clipboard. Set to `<= 0` to turn off this feature entirely.
 
 **_Example_**
 
@@ -2809,7 +2809,53 @@ export class Home {
 
 
 ### 6.9 Dynamic height
-WIP
+To keep the **header** and **pagination controls** fixed while enabling vertical scrolling for the table body, you can configure the scroll height through the **`verticalScroll`** object inside the `ITableOptions`.
+- **`fitToContainer`** *(Default: `true`)*: When set to `true`, the height is computed dynamically based on the available container size. This is recommended when the table should automatically adjust on window resize.
+- **`height`** *(Default: `0`)*: Defines a static height in pixels (`px`). This value is only used if neither `fitToContainer` nor `cssFormula` are active.
+- **`cssFormula`** *(Default: `undefined`)*: Provides maximum flexibility by delegating the calculation to the browser. Accepts any valid CSS value for height, such as:  
+  - A fixed value → `"500px"`
+  - A CSS calculation → `"calc(100vh - 200px)"`
+
+The precedence rules that should be taken into account:
+1. If **`cssFormula`** is defined, it always takes priority.
+2. If **`cssFormula`** is not defined and **`fitToContainer`** is `true`, the height is computed dynamically in TypeScript.
+3. If neither of the above apply, the numeric value of **`height`** is used.
+
+**_Example_**
+
+To configure the table so that its height is determined by a CSS formula (e.g., `"calc(100vh - 200px)"`), you can define it in your component’s TypeScript file.
+
+Below is a minimal example assuming the component is named `Home`:
+```ts
+import { Component } from '@angular/core';
+import { ECSPrimengTable, ITableOptions, createTableOptions } from '@eternalcodestudio/primeng-table';
+
+@Component({
+  selector: 'ecs-home',
+  standalone: true,
+  imports: [
+    ECSPrimengTable
+  ],
+  templateUrl: './home.html'
+})
+export class Home {
+  tableOptions: ITableOptions = createTableOptions({
+    urlTableConfiguration: "Test/GetTableConfiguration",
+    urlTableData: "Test/GetTableData",
+    verticalScroll: {
+      // When using cssFormula, fitToContainer should be disabled
+      fitToContainer: false,
+
+      // Apply a CSS formula so the height is resolved by the browser
+      cssFormula: "calc(100vh - 200px)",
+
+      // Alternative: use a fixed numeric height (in pixels).
+      // This will only be applied if cssFormula is not set and fitToContainer is false.
+      // height: 500
+    }
+  });
+}
+```
 
 <br><br>
 

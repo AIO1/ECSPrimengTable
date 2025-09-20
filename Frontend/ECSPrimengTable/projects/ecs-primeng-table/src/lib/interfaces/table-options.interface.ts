@@ -50,11 +50,43 @@ export interface ITableOptions {
      */
     data?: any[];
 
+    /**
+     * Configurations related to options that are at the header of the table.
+     */
     header?: {
+        /**
+         * A collection of `ITableButton` to be shown in the table header.
+         * 
+         * @default []
+         */
         buttons?: ITableButton[];
+
+        /**
+         * When set to `false`, the **clear sorts** button will be hidden.
+         * 
+         * @default true
+         */
         clearSortsEnabled?: boolean;
+
+        /**
+         * Allows customization of the **clear sorts** button icon. You may use any other icons from PrimeNG or third-party providers such as Material Icons or Font Awesome.
+         * 
+         * @default "pi pi-sort-alt-slash"
+         */
         clearSortsIcon?: string;
+
+        /**
+         * When set to `false`, the **clear filters** button will be hidden.
+         * 
+         * @default true
+         */
         clearFiltersEnabled?: boolean;
+
+        /**
+         * Allows customization of the **clear filters** button icon. Other icons from PrimeNG or third-party libraries (e.g., Material Icons, Font Awesome) may also be used.
+         * 
+         * @default "pi pi-filter-slash"
+         */
         clearFiltersIcon?: string;
     };
 
@@ -77,6 +109,12 @@ export interface ITableOptions {
          */
         selectorEnabled?: boolean;
 
+        /**
+         * Can be used to specifiy a different icon to be used by the column selector.
+         * You can replace it with any icon from PrimeNG or other libraries such as Font Awesome or Material Icons.
+         * 
+         * @default "pi pi-pen-to-square"
+         */
         selectorIcon?: string;
 
         /**
@@ -92,26 +130,162 @@ export interface ITableOptions {
      * Configurations related to the rows of the table.
      */
     rows?: {
+        /**
+         * Function to dynamically assign CSS classes to a row.
+         * 
+         * Receives the `rowData` object for the current row and returns:
+         * - A string with a single CSS class name
+         * - An array of class names
+         * - A Set of class names
+         * - An object with class keys and truthy/falsy values
+         * 
+         * The returned classes are applied to the row in addition to any global or default styles.
+         * Useful for changing appearance of a row based on column values.
+         * 
+         * Example:
+         * ```ts
+         * class: (rowData) => {
+         *   const classes = [];
+         *   if (rowData.status === "Unemployed") classes.push("unemployedRow");
+         *   return classes;
+         * }
+         * ```
+         */
         class?: (rowData: any) => string | string[] | Set<string> | { [klass: string]: any };
+
+        /**
+         * Function to dynamically assign inline styles to a row.
+         * 
+         * Receives the `rowData` object for the current row and returns an object
+         * with CSS properties to apply inline. This allows dynamic styling based
+         * on the row's content or values.
+         * 
+         * If not provided, no dynamic styles are applied.
+         * 
+         * Example:
+         * ```ts
+         * style: (rowData) => {
+         *   if (rowData.status === "Full-time") {
+         *     return { fontWeight: "bold", fontStyle: "italic" };
+         *   }
+         *   return {};
+         * }
+         * ```
+         */
         style?: (rowData: any) => { [klass: string]: any };
+
+        /**
+         * Configurations related to the action column for the rows.
+         */
         action?: {
+            /**
+             * A collection of `ITableButton` to be shown by this column to perform actions over rows. At least one button needs to be enable the row actions column.
+             * 
+             * @default []
+             */
             buttons?: ITableButton[];
+
+            /**
+             * The header label for the row actions column.
+             * 
+             * @default "Actions"
+             */
             header?: string;
+
+            /**
+             * If `true`, the column will appear on the right side of the table. Otherwise, it will appear on the left.
+             * 
+             * @default true
+             */
             alignmentRight?: boolean;
+
+            /**
+             * The fixed column width in pixels.
+             * 
+             * @default 150
+             */
             width?: number;
+
+            /**
+             * If `true`, the column remains visible when horizontally scrolling the table.
+             * 
+             * @default true
+             */
             frozen?: boolean;
+
+            /**
+             * If `true`, users can resize the column.
+             * 
+             * @default false
+             */
             resizable?: boolean;
         };
+
+        /**
+         * Configurations related to the row checkbox selector.
+         */
         checkboxSelector?: {
+            /**
+             * If `true`, a new column with checkboxes will be displayed. Users can select or unselect rows using these checkboxes. Additionally an option to filter by this column will be enabled.
+             * 
+             * @default false
+             */
             enabled?: boolean;
+
+            /**
+             * The header label for the checkbox selection column.
+             * 
+             * @default "Selected"
+             */
             header?: string;
+
+            /**
+             * If `true`, the column will appear on the right side of the table. Otherwise, it will appear on the left.
+             * 
+             * @default false
+             */
             alignmentRight?: boolean;
+
+            /**
+             * The fixed column width in pixels.
+             * 
+             * @default 150
+             */
             width?: number;
+
+            /**
+             * If `true`, the column remains visible when horizontally scrolling the table.
+             * 
+             * @default true
+             */
             frozen?: boolean;
+
+            /**
+             * If `true`, users can resize the column.
+             * 
+             * @default false
+             */
             resizable?: boolean;
         };
+
+        /**
+         * Configurations related to the single row selector.
+         */
         singleSelector?: {
+            /**
+             * If set to `true`, users can click a row to select it. You can then subscribe to selection events to execute custom actions.
+             * 
+             * @default false
+             */
             enabled?: boolean;
+
+            /**
+             * When `true`, users must hold **CTRL** and click on a selected row to unselect it. When `false`, users can unselect a row simply by clicking it again.
+             * 
+             * On mobile devices (phones or tablets), the **CTRL** key configuration is ignored. Users can unselect a previously selected row by simply clicking it, as mobile devices do not have a **CTRL** key.
+             * 
+             * @default true
+             */
             metakey?: boolean;
         };
     };
@@ -124,6 +298,8 @@ export interface ITableOptions {
          * When set to `true`, the table will calculate the maximum height dynamically 
          * so that it exactly fits its container. This takes precedence over the `height` property.
          * 
+         * Ignored if a `cssFormula` has been provided.
+         * 
          * @default true
          */
         fitToContainer?: boolean;
@@ -131,8 +307,9 @@ export interface ITableOptions {
         /**
          * Fixed vertical height for the table when `fitToContainer` is `false`.
          * 
-         * - If `fitToContainer` from `verticalScroll` is `true`, this property is ignored.  
-         * - If set to a value `<= 0`, this is ignored and there will be only verticall scroll enabled if `fitToContainer` from `verticalScroll` is `true`.
+         * - If a `cssFormula` has been provided, this property is ignored.
+         * - If `fitToContainer` from `verticalScroll` is `true`, this property is ignored.
+         * - If set to a value `<= 0`, this is ignored.
          * 
          * Use this property to enable vertical scrolling with a fixed height when you do not want 
          * the table to dynamically fit its container.
@@ -140,6 +317,16 @@ export interface ITableOptions {
          * @default 0
          */
         height?: number;
+
+        /**
+         * A CSS string used to define the table's vertical height.
+         * 
+         * Can be a fixed value (e.g., `"500px"`) or a CSS formula (e.g., `"calc(100vh - 200px)"`).
+         * When provided, this value **overrides** both `fitToContainer` and `height`.
+         * 
+         * @default undefined
+         */
+        cssFormula?: string;
     };
 
     /** Configurations related to the global filter functionality of the table. */
@@ -164,6 +351,15 @@ export interface ITableOptions {
         maxLength?: number;
     };
 
+    /**
+     * Predefined filters for table columns.
+     * 
+     * Restricts filter options to a known set of values for a column.
+     * Suitable for columns with a limited number of distinct values.
+     * Supports plain text, tags, icons, and images. Works with `list` data types.
+     * 
+     * @default {}
+     */
     predefinedFilters?: { [key: string]: IPredefinedFilter[] }
 
     /**
@@ -256,6 +452,11 @@ export interface ITableOptions {
         titleAllowUserEdit?: boolean;
     }
 
+    /**
+     * Defines the number of seconds the user must hold the mouse button on a cell before its content is copied to the clipboard. Set to a value <= 0 to turn off this feature entirely
+     * 
+     * @default 0.5
+     */
     copyToClipboardTime?: number;
 }
 
@@ -302,7 +503,8 @@ export const DEFAULT_TABLE_OPTIONS: ITableOptions = {
     },
     verticalScroll: {
         fitToContainer: true,
-        height: 0
+        height: 0,
+        cssFormula: undefined
     },
     globalFilter: {
         enabled: true,
