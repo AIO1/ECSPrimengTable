@@ -216,7 +216,7 @@ This section provides a step-by-step guide on how to integrate the **ECS PrimeNG
 > [!NOTE]  
 > The **ECS PrimeNG Table** package is built for .NET 8, but it should also work seamlessly with newer .NET versions.
 
-If you are already working on a **.NET 8 project (or higher)**, you will need to install the backend compiled package from NuGet (we recommend downloading the latest version):  
+If you are already working on a **.NET 8 project (or higher)**, you will need to install the backend compiled package from NuGet (downloading the latest version is recommended.):  
 [ECS.PrimeNGTable on NuGet](https://www.nuget.org/packages/ECS.PrimeNGTable)
 
 In addition, make sure the following required dependencies are installed:
@@ -247,7 +247,7 @@ With these dependencies in place and the package installed, your backend is read
 If you are already working on an **Angular 20** project, you can check the frontend compiled package on NPM here:  
 [@eternalcodestudio/primeng-table on NPM](https://www.npmjs.com/package/@eternalcodestudio/primeng-table)
 
-To install the package, open a terminal in the root folder of your project and run the following command (we recommend installing the latest version):
+To install the package, open a terminal in the root folder of your project and run the following command (downloading the latest version is recommended.):
 
 ```sh
 npm install @eternalcodestudio/primeng-table
@@ -256,6 +256,7 @@ npm install @eternalcodestudio/primeng-table
 In addition, make sure the following required dependencies are installed in your project:
 - **@angular/common** (>=20.0.0)
 - **@angular/core** (>=20.0.0)
+- **@angular/animations** (>=20.0.0)
 - **primeng** (>=20.0.0)
 - **primeicons** (>=7.0.0)
 
@@ -442,6 +443,42 @@ The **ECS PrimeNG table** component allows you to control how dates are displaye
   - `yyyy` → full year (2025).
   - `HH:mm:ss` → hours, minutes, and seconds in 24-hour format.
   - `zzzz` → time zone name or offset.
+
+  The table below summarizes the symbols you can use when defining the **Format** for dates.
+
+  **Note:** Not all symbols are guaranteed to behave consistently in the front-end, as some may be interpreted differently by Angular or other client-side components. Always test your chosen format in the UI.
+  
+<div align="center">
+
+| Symbol | Meaning | Example |
+|--------|---------|---------|
+| `d`    | Day of the month, no leading zero | 1–31 |
+| `dd`   | Day of the month, with leading zero | 01–31 |
+| `ddd`  | Abbreviated day of the week | Mon, Tue |
+| `dddd` | Full day of the week | Monday, Tuesday |
+| `M`    | Month, no leading zero | 1–12 |
+| `MM`   | Month, with leading zero | 01–12 |
+| `MMM`  | Abbreviated month name | Jan, Feb |
+| `MMMM` | Full month name | January, February |
+| `yy`   | Year, two digits | 25 |
+| `yyyy` | Year, four digits | 2025 |
+| `h`    | Hour in 12-hour format, no leading zero | 1–12 |
+| `hh`   | Hour in 12-hour format, with leading zero | 01–12 |
+| `H`    | Hour in 24-hour format, no leading zero | 0–23 |
+| `HH`   | Hour in 24-hour format, with leading zero | 00–23 |
+| `m`    | Minute, no leading zero | 0–59 |
+| `mm`   | Minute, with leading zero | 00–59 |
+| `s`    | Second, no leading zero | 0–59 |
+| `ss`   | Second, with leading zero | 00–59 |
+| `f`–`fffffff` | Fractional seconds (tenths, hundredths, milliseconds…) | 1 → 0.1s, 123 → 0.123s |
+| `t`    | First character of AM/PM | A or P |
+| `tt`   | Full AM/PM designator | AM, PM |
+| `K`    | Time zone offset (`Z` for UTC or +02:00) | +02:00 |
+| `zzzz`  | Time zone offset with minutes | +02:00 |
+| `zz`   | Time zone offset, hours only | +02 |
+
+</div>
+
 - **Time zone**: This specifies the time zone that will be used to display the date/time.  
   For example, `"+00:00"` is UTC (Coordinated Universal Time). Changing this will adjust the displayed time to the desired zone.
 - **Culture**: This determines the language and formatting conventions for the date, such as month names, day names, and the order of day/month/year. Default `"en-US"` uses English (United States) conventions. Using `"es-ES"` would show month and day names in Spanish, for example.
@@ -771,6 +808,15 @@ Predefined filters also have a special use case for columns of type `list`. In t
 
 
 
+#### 4.3.14 Initial width
+You can define an initial width for table columns in pixels. Setting explicit widths is particularly important for **frozen columns**, as it ensures proper alignment and prevents layout shifts when the table is rendered.
+
+Keep in mind that the initial width **overrides any width saved in views**, so use it carefully with columns that users can resize.
+
+<br><br>
+
+
+
 ### 4.4 Row configurations
 The **ECS PrimeNG Table** allows you to configure various settings that control how each row behaves when displayed to users, as well as the actions associated with them.
 
@@ -1071,7 +1117,9 @@ Rules and limitations of views:
 
 ---
 ## 5 Feature-to-Code mapping
-The purpose of this section is to provide a table that maps the features described earlier to their corresponding technical implementation. Use the table below as a reference to perform this mapping:
+The purpose of this section is to provide a table that maps the features described earlier to their corresponding technical implementation. Use the table below as a reference to perform this mapping.
+
+**Note**: It is also recommended to read the first subsections of Section 6, since they are not directly numbered to match the functional features but still provide useful guidance.
 
 <div align="center">
 
@@ -1092,6 +1140,7 @@ The purpose of this section is to provide a table that maps the features describ
 | Columns | [4.3.11 Sorting](#4311-sorting) | [6.3.11 Sorting](#6311-sorting) |
 | Columns | [4.3.12 Filtering](#4312-filtering) | [6.3.12 Filtering](#6312-filtering) |
 | Columns | [4.3.13 Predefined filters](#4313-predefined-filters) | [6.3.13 Predefined filters](#6313-predefined-filters) |
+| Columns | [4.3.14 Initial width](#4314-initial-width) | [6.3.14 Initial width](#6314-initial-width) |
 | Rows | [4.4.1 Single select](#441-single-select) | [6.4.1 Single select](#641-single-select) |
 | Rows | [4.4.2 Checkbox select](#442-checkbox-select) | [6.4.2 Checkbox select](#642-checkbox-select) |
 | Rows | [4.4.3 Dynamic styling](#443-dynamic-styling) | [6.4.3 Dynamic styling](#643-dynamic-styling) |
@@ -1114,6 +1163,20 @@ The purpose of this section is to provide a table that maps the features describ
 ---
 ## 6 Technical overview
 The goal of this section is to provide a technical overview of the **ECS PrimeNG table**. It dives into the configuration options and implementation details, giving developers a clear understanding of how the table works under the hood. This section helps you grasp the mechanics, and integrate the table efficiently into your projects.
+
+<br><br>
+
+### Table startup flow and rendering limitations
+The **ECS PrimeNG Table**, when loaded in a component, follows the sequence below (unless you defer the startup process):
+```
+Component is loaded.
+└─> Fetch table configuration.
+    └─> Load views (if enabled) and preload a view if previously selected by the user.
+        └─> First data retrieval.
+```
+
+> [!CAUTION]
+> If you are using Angular SSR, note that this component currently only supports **client-side rendering (CSR)**. Attempting to use Server-Side Rendering (SSR) or static rendering will result in errors.
 
 <br><br>
 
@@ -1177,7 +1240,7 @@ For every **ECS PrimeNG table** you want to use, even when displaying simple dat
   - **Component:** Import the `ECSPrimengTable` in the component that will display the table.
   - **Template:** Use the `<ecs-primeng-table>` element in the component's HTML and configure the minimal required properties.
 
-In this section, we will focus on creating a table that displays simple data without row actions or other advanced features.
+This section focuses on creating a table that displays simple data without row actions or other advanced features.
 
 <br><br>
 
@@ -1204,7 +1267,7 @@ public class TestDto {
 	public bool House { get; set; }
 }
 ```
-From the above DTO, we have the basics for a table with three visible columns and a fourth column (`RowID`) that is hidden from end-users but available in the front-end fo us.
+From the above DTO, the basics for a table are defined with three visible columns and a fourth column (`RowID`) that is hidden from end-users but available in the front-end.
 
 Some important points about this example DTO:
 - Every property intended as a column has a `ColumnAttributes` decorator. This signals to **ECS PrimeNG table** that it should include this property as a column. Properties without this decorator are ignored and will not appear in the table.
@@ -1479,7 +1542,7 @@ export class Home {
 > [!CAUTION]
 > It is important that the variable you use as `tableOptions` is initialized using `createTableOptions`. This ensures that the table is created with the necessary base configuration, preventing errors or unexpected behaviour.
 
-In this component, we only define the paths to your API endpoints. It is assumed that the ECS PrimeNG table component has already been provided with the base URL of your API in the http service injection.
+In this component, only the paths to the API endpoints are defined. It is assumed that the ECS PrimeNG table component has already been provided with the base URL of the API in the HTTP service injection.
 
 In your component's HTML, the table can be displayed as follows:
 ```html
@@ -2191,6 +2254,18 @@ examplePredfinedFilter: IPredefinedFilter[] = [
     }
 ];
 ```
+
+<br><br>
+
+
+
+#### 6.3.14 Initial width
+You can specify an initial width for a column by configuring the following property in the `ColumnAttributes` of your DTO class:
+- **`initialWidth`**: The initial width of the column in pixels.
+
+This is **strongly recommended for frozen columns** to ensure proper alignment and prevent layout shifts.
+
+For non-frozen columns, use it with caution: if the user can resize the column, the width saved in the view will be overridden by the `initialWidth`, which may lead to confusion.
 
 <br><br>
 

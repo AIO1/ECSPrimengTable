@@ -5,6 +5,6 @@ export const serverRoutes: ServerRoute[] = [
   { path: 'home', renderMode: RenderMode.Client },
 
   // FALLBACK
-  { path: '', renderMode: RenderMode.Prerender },
-  { path: '**', renderMode: RenderMode.Prerender }
+  { path: '', renderMode: RenderMode.Client },
+  { path: '**', renderMode: RenderMode.Client }
 ];
