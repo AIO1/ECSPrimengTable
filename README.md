@@ -798,6 +798,8 @@ The dropdown includes a **global search bar** and allows the user to select **on
 
 Predefined filters also have a special use case for columns of type `list`. In this case, all elements in the column are separated by `;`, allowing multiple items of your list to be displayed simultaneously applying the defined format.
 
+Additionally, predefined filters can be configured to be clickable. When clicked, you can access both the row data and all the information of the predefined filter item that was selected.
+
 > [!TIP]
 > You can combine formats in predefined filters. For example, you could display an **image** and **plain text** together.
 <p align="center">
@@ -2257,6 +2259,66 @@ examplePredfinedFilter: IPredefinedFilter[] = [
 
 <br><br>
 
+
+
+##### Associating actions
+A predefined filter can have an associated action so that when the user clicks on it, an action is performed.
+
+This action will contain the row data and the information of the predefined item that has been clicked.
+
+To associate an action to a predefined filter, you need to define in the `IPredefinedFilter` entry the following property:
+- **`action`**: The action to execute when the predefined filter is clicked.
+
+The `action` property is a function with the following signature:
+```ts
+action?: (rowData: any, option: IPredefinedFilter) => void;
+```
+
+This means that when the user clicks on the filter, the function will receive:
+- **rowData**: The data of the row where the filter is applied.
+- **option**: The complete predefined filter item that was clicked, giving you access to its name, value, style, and any other properties defined in `IPredefinedFilter`.
+
+**_Example_**
+
+Suppose you have the following possible values in a column that you wish to represent as plain text:
+- Ok
+- Warning
+- Critical
+
+And the value `Critical` has an associated action.
+
+Your `IPredefinedFilter` list in TypeScript could look like this:
+```ts
+examplePredfinedFilter: IPredefinedFilter[] = [
+    {
+        value: "backendValueForOK",
+        name: "OK",
+        displayName: true
+    }, {
+        value: "backendValueForWarning",
+        name: "Warning",
+        displayName: true
+    }, {
+        value: "backendValueForCritical",
+        name: "Critical",
+        displayName: true,
+        action: (rowData, option) => {
+          // The action to be performed on click.
+          //
+          // Use `rowData` to access data from the row where the predefined filter was clicked.
+          // Example: `rowData.rowID` to access the `rowID` of the row.
+          //
+          // `option` is a IPredefinedFilter that will contain the information for `Critical`.
+          // This means that if you do `option.value` it will give you `"backendValueForCritical"`.
+        }
+    }
+];
+```
+
+> [!TIP]
+> Not all `IPredefinedFilter` items of the array, need to have an associated action.
+
+<br><br>
 
 
 #### 6.3.14 Initial width

@@ -9,7 +9,7 @@
         <p-table #dt_viewsDialog [value]="tableViews_menuItems" [scrollable]="true" size="small" showGridlines stripedRows scrollHeight="400px" [tableStyle]="{'min-width': '25rem'}">
             <ng-template #caption>
                 <div style="display: flex; justify-content: flex-end; align-items: center; width: 100%;">
-                    <p-button icon="pi pi-plus" label="New view" severity="success" (click)="showViewEditor()" pTooltip="New view" tooltipPosition="top" [showDelay]="700"/>
+                    <p-button icon="pi pi-plus" label="New view" (click)="showViewEditor()" pTooltip="New view" tooltipPosition="top" [showDelay]="700"/>
                 </div>
             </ng-template>
             <ng-template #header>

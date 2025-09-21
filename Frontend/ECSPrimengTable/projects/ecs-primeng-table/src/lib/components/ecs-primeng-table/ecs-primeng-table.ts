@@ -676,10 +676,6 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
     return `${numbItemsSelected} items selected`; // Return the number of selected items concatenated with the predefined text
   }
 
-  handleButtonsClick(action: (rowData: any) => void, rowData: any = null): void {
-    this.tableService.handleButtonsClick(action, rowData);
-  }
-
   /**
    * Checks if the provided column metadata matches a specific style of the predefined filters 
    * that need to be applied to an item on a row.

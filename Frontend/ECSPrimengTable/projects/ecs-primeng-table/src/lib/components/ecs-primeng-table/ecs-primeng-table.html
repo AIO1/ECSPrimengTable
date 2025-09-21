@@ -31,7 +31,7 @@
                     style="text-align: center; vertical-align: middle;" pFrozenColumn [frozen]="tableOptions.rows?.action?.frozen ?? false"
                     [alignFrozen]="getFrozenColumnAlignAsText(tableOptions.rows?.action?.alignmentRight ? FrozenColumnAlign.Right : FrozenColumnAlign.Left)">
                     @for (button of tableOptions.rows?.action?.buttons; track button; let last = $last) {
-                        <ecs-table-button [button]="button" [rowData]="rowData" [isActionButton]="true" [isLastActionButton]="last" (clicked)="handleButtonsClick($event, rowData)"/>
+                        <ecs-table-button [button]="button" [rowData]="rowData" [isActionButton]="true" [isLastActionButton]="last"/>
                     }
                 </td>
             }
@@ -133,7 +133,7 @@
                     @if ((tableOptions.header?.buttons?.length ?? 0) > 0) {
                         <td style="display: flex; justify-content: center; align-items: center;">
                             @for (button of tableOptions.header?.buttons; track $index) {
-                                <ecs-table-button [button]="button" [rowData]="null" (clicked)="handleButtonsClick($event, null)"/>
+                                <ecs-table-button [button]="button" [rowData]="null"/>
                             }
                         </td>
                     }
@@ -192,7 +192,7 @@
                                                         </ng-template>
                                                         <ng-template let-option pTemplate="item">
                                                             <div style="display: inline-block; vertical-align: middle;">
-                                                                <ecs-table-predefined-filters [option]="option" [col]="col"/>
+                                                                <ecs-table-predefined-filters [option]="option" [col]="col" [selectable]="false" [rowData]="null"/>
                                                             </div>
                                                         </ng-template>
                                                 </p-multiSelect>

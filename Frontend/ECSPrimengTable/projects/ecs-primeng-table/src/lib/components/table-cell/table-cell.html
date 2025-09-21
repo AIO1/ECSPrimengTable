@@ -14,20 +14,20 @@
                 [tooltipDisabled]="!col.dataTooltipShow"
                 [showDelay]="700"
                 tooltipPosition="top">
-                <ecs-table-predefined-filters [option]="option" [col]="col"/>
+                <ecs-table-predefined-filters [option]="option" [col]="col" [selectable]="true" [rowData]="rowData"/>
             </div>
           }
         }
       } @else {
         @if (getPredfinedFilterMatch(col, value); as option) {
-          <div 
+          <div style="display: inline-block;"
             [pTooltip]="col.dataTooltipCustomColumnSource && col.dataTooltipCustomColumnSource.length > 0 
               ? rowData[col.dataTooltipCustomColumnSource] 
               : value"
             [tooltipDisabled]="!col.dataTooltipShow"
             [showDelay]="700"
             tooltipPosition="top">
-            <ecs-table-predefined-filters [option]="option" [col]="col"/>
+            <ecs-table-predefined-filters [option]="option" [col]="col" [selectable]="true" [rowData]="rowData"/>
           </div>
         }
       }

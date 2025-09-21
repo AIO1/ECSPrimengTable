@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { HttpHeaders, HttpResponse } from '@angular/common/http';
 import { ECSPrimengTableHttpService, ECSPrimengTableNotificationService } from '../../services';
-import { IColumnMetadata, IExcelExportRequest, ITableConfiguration, ITablePagedResponse, ITableView, ITableViewData } from '../../interfaces';
+import { IColumnMetadata, IExcelExportRequest, IPredefinedFilter, ITableConfiguration, ITablePagedResponse, ITableView, ITableViewData } from '../../interfaces';
 import { CellOverflowBehaviour, FrozenColumnAlign, TableViewSaveMode } from '../../enums';
 import { ITableQueryRequest } from '../../interfaces/table-query-request.interface';
 import { MenuItem } from 'primeng/api';
@@ -79,6 +79,12 @@ export class ECSPrimengTableService {
   handleButtonsClick(action: (rowData: any) => void, rowData: any = null): void {
     if (action) { // If the button has an assigned action
       action(rowData); // Perform the action
+    }
+  }
+
+  handlePredefinedFilterClick(action: (rowData: any, option: IPredefinedFilter) => void, rowData: any = null, option: IPredefinedFilter): void {
+    if (action) { // If the button has an assigned action
+      action(rowData, option); // Perform the action
     }
   }
 

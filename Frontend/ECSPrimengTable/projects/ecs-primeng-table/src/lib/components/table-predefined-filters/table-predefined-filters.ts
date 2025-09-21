@@ -2,6 +2,7 @@ import { Component, Input } from '@angular/core';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TagModule } from 'primeng/tag';
+import { ECSPrimengTableService } from '../ecs-primeng-table/ecs-primeng-table.service';
 
 @Component({
   selector: 'ecs-table-predefined-filters',
@@ -14,10 +15,13 @@ import { TagModule } from 'primeng/tag';
 })
 export class TablePredefinedFilters {
   constructor(
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private tableService: ECSPrimengTableService
   ) {}
   @Input() option: any;
   @Input() col: any;
+  @Input() selectable: boolean = false;
+  @Input() rowData: any;
   /**
    * Converts a blob from the database to a safe URL that can be used to display an image.
    *
@@ -39,5 +43,11 @@ export class TablePredefinedFilters {
   getBlobIconAsUrl(blob: Blob): SafeUrl {
     let objectURL = `data:image/jpeg;base64,${blob}`; // Create a base64 encoded string from the blob data
     return this.sanitizer.bypassSecurityTrustUrl(objectURL); // Bypass Angular's security mechanisms to create a SafeUrl
+  }
+
+  handleClick() {
+    if (this.option.action) {
+      this.tableService.handlePredefinedFilterClick(this.option.action, this.rowData, this.option);
+    }
   }
 }

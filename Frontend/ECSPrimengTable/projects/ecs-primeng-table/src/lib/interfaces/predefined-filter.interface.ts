@@ -80,4 +80,11 @@ export interface IPredefinedFilter {
      * **_Do not modify this property manually._**
      */
     imageBlobFetchError?: boolean;
+
+    /**
+     * Optional. The action to execute when the predefined filter is clicked.
+     * @param rowData The row data object of the clicked row.
+     * @param option The IPredefinedFilter data of the predefined element clicked.
+     */
+    action?: (rowData: any, option: IPredefinedFilter) => void;
 }
