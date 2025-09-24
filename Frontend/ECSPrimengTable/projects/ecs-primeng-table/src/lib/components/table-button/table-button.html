@@ -1,6 +1,6 @@
-@if(!(button.conditionFailHide && currentCondition())){
+@if(!(button.conditionFailHide && (button.enabledCondition?.(rowData) ?? false))){
   <p-button
-    [disabled]="currentCondition()"
+    [disabled]="!(button.enabledCondition?.(rowData) ?? true)"
     [rounded]="button.rounded || false"
     [iconPos]="button.iconPos || 'left'"
     [raised]="button.raised || false"

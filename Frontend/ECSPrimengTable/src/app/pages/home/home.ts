@@ -35,7 +35,7 @@ export class Home implements OnInit {
       action: (rowData) => {
         this.sharedService.showToast("warn","Clicked on delete row",`The record ID is\n\n${rowData.rowID}\n\nThis button only appears if a condition is met. Remember that a backend validation should be done anyways because users can tamper with the exposed variables in the frontend.`);
       },
-      condition: (rowData) => (rowData.canBeDeleted === true)
+      enabledCondition: (rowData) => (rowData.canBeDeleted === true)
     }, {
       icon: 'pi pi-file-edit',
       tooltip: 'Edit record',

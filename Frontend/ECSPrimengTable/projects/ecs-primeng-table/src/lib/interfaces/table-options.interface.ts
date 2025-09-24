@@ -266,6 +266,15 @@ export interface ITableOptions {
              * @default false
              */
             resizable?: boolean;
+
+            /**
+             * Function that determines whether the checkbox should be enabled or not.
+             * @param rowData The row data object.
+             * @returns True if the checkbox should be enabled; false otherwise.
+             * 
+             * @default undefined
+             */
+            enabledCondition?: (rowData: any) => boolean;
         };
 
         /**
@@ -494,7 +503,8 @@ export const DEFAULT_TABLE_OPTIONS: ITableOptions = {
             alignmentRight: false,
             width: 150,
             frozen: true,
-            resizable: false
+            resizable: false,
+            enabledCondition: undefined
         },
         singleSelector: {
             enabled: false,

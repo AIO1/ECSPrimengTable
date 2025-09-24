@@ -860,11 +860,12 @@ You can associate actions when a user selects or unselects a row using the check
 
 
 The **checkbox select column** has this additional customizable options:
-- **Header title:** Default is `"Selected"`  
-- **Alignment:** Default is left  
-- **Width:** Default is `150px`  
-- **Frozen column:** Default is `true`  
-- **Resizable by user:** Default is `false`  
+- **Header title:** Default is `"Selected"`.
+- **Alignment:** Default is left.
+- **Width:** Default is `150px`.
+- **Frozen column:** Default is `true`.
+- **Resizable by user:** Default is `false`.
+- **Enabled condition:** A condition that can be given to determine if the checkbox is enabled or not.
 
 <p align="center">
   <img width="311" height="362" alt="Checkbox row select example" src="https://github.com/user-attachments/assets/0e387896-6569-46f0-96cb-9f9f68536932" />
@@ -910,7 +911,7 @@ The customizable properties for action buttons are:
 - **Variant**: The default is a normal button, but you can also have buttons that are text or outlined.
 - **Color**: The button color.
 - **Style**: Additional styles to add to the button.
-- **Condition**: Allows disabling the button if a specific condition is not met.
+- **Enabled condition**: Allows disabling the button if a specific condition is not met.
 - **Hide if condition not met**: By default if a specified condition is not met, the button will be disabled, but you can also hide it completely instead.
 - **Action**: The function or operation to execute when the button is clicked.
 - **Tooltip**: The text to be displayed when hovering the button.
@@ -2415,6 +2416,9 @@ In your component's `ITableOptions` configuration, inside the `rows` property, u
 - **`width`** *(Default: `150`)*: The fixed column width in pixels.
 - **`frozen`** *(Default: `true`)*: If `true`, the column remains visible when horizontally scrolling the table.
 - **`resizable`** *(Default: `false`)*: If `true`, users can resize the column.
+- **`enabledCondition`**: Optional. A function that determines whether the checkbox should be enabled for a given row.
+  - **`rowData`** parameter: The row data object.
+  - Returns `true` if the button checkbox be enabled; `false` otherwise.
 
 You can subscribe to changes in row checkbox selection using:
 - **`onRowCheckboxChange`**: Triggered whenever a row checkbox is selected or unselected. The emitted object has the following structure:
@@ -2458,7 +2462,8 @@ export class Home {
         // alignmentRight: false, // Uncomment to change the location of the column
         // width: 150, // Uncomment to change column width in px
         // frozen: true, // Uncomment to change frozen status
-        // resizable: false // Uncomment to change column resize behaviour
+        // resizable: false, // Uncomment to change column resize behaviour
+        // enabledCondition: (rowData) => (rowData.canBeDeleted === true) // Uncomment to evaluate if the checkbox should be enabled in a row
       }
     }
   });
@@ -2577,7 +2582,7 @@ The available properties are:
 - **variant**: Optional. Specifies the variant of the button. Can be `null` (default), `"text"`, or `"outlined"`.
 - **color**: Optional. The CSS class to apply for button styling. Example: `"p-button-success"` or `"custom-class"`.
 - **style**: Optional. Additional inline CSS styles for the button.
-- **condition**: Optional. A function that determines whether the button should be displayed for a given row.
+- **enabledCondition**: Optional. A function that determines whether the button should be displayed for a given row.
   - **rowData** parameter: The row data object (null for header buttons).
   - Returns `true` if the button should be visible; `false` otherwise.
 - **conditionFailHide**: Optional. Controls behavior when `condition` returns false.
@@ -2652,7 +2657,7 @@ export class Home {
         // Example: Open a confirmation modal before deleting the record.
         // Use rowData.rowID to identify the record in the backend.
       },
-      condition: (rowData) => (rowData.canBeDeleted === true)
+      enabledCondition: (rowData) => (rowData.canBeDeleted === true)
     }, {
       icon: 'pi pi-file-edit',
       tooltip: 'Edit record',

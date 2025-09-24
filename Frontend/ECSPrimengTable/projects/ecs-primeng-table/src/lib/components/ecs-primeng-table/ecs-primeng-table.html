@@ -58,6 +58,7 @@
             style="text-align: center; vertical-align: middle;" pFrozenColumn [frozen]="tableOptions.rows?.checkboxSelector?.frozen ?? false" 
             [alignFrozen]="getFrozenColumnAlignAsText(tableOptions.rows?.checkboxSelector?.alignmentRight ? FrozenColumnAlign.Right : FrozenColumnAlign.Left)">
             <p-checkbox 
+                [disabled]="!(tableOptions.rows?.checkboxSelector?.enabledCondition?.(rowData) ?? true)"
                 [binary]="true"
                 [ngModel]="isRowCheckboxSelected(rowData.rowID)"
                 (onChange)="onRowChekboxChange($event, rowData.rowID)"/>

@@ -55,7 +55,7 @@ export interface ITableButton {
      * @param rowData The row data object. Null for header buttons.
      * @returns True if the button should be visible; false otherwise.
      */
-    condition?: (rowData: any) => boolean;
+    enabledCondition?: (rowData: any) => boolean;
 
     /**
      * Optional. Controls behavior when `condition` returns false.

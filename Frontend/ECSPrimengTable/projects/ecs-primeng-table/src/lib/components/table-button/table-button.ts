@@ -24,10 +24,6 @@ export class TableButton {
   @Input() isActionButton: boolean = false;
   @Input() isLastActionButton: boolean = false;
 
-  currentCondition(): boolean {
-    return (this.button.condition?.(this.rowData));
-  }
-
   handleClick() {
     if (this.button.action) {
       this.tableService.handleButtonsClick(this.button.action, this.rowData);
