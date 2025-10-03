@@ -50,4 +50,11 @@ export class TablePredefinedFilters {
       this.tableService.handlePredefinedFilterClick(this.option.action, this.rowData, this.option);
     }
   }
+
+  getTagStyle(option: any) {
+    return {
+        ...option.tagStyle,
+        'vertical-align': 'middle'
+    };
+  }
 }

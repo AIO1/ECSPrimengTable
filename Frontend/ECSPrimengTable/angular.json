@@ -17,16 +17,15 @@
         "build": {
           "builder": "@angular/build:application",
           "options": {
+            "outputPath": "dist/ECSPrimengTable",
+            "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": [
               "zone.js"
             ],
             "tsConfig": "tsconfig.app.json",
-            "inlineStyleLanguage": "scss",
-            "assets": [],
-            "styles": [
-              "src/styles.scss"
-            ]
+            "assets": ["src/favicon.ico", "src/assets"],
+            "styles": ["src/styles.scss"]
           },
           "configurations": {
             "production": {
@@ -77,6 +76,9 @@
       "architect": {
         "build": {
           "builder": "@angular/build:ng-packagr",
+          "options": {
+            "project": "projects/ecs-primeng-table/ng-package.json"
+          },
           "configurations": {
             "production": {
               "tsConfig": "projects/ecs-primeng-table/tsconfig.lib.prod.json"

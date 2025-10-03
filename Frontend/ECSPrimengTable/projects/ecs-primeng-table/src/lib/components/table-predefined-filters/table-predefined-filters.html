@@ -8,7 +8,7 @@
   }
   @if (!option?.imageBlob && option?.imageBlobSourceEndpoint) {
     <p-skeleton size="28px"
-                style="vertical-align: middle;"/>
+                [style]="{'vertical-align': 'middle'}"/>
   }
   @if (option?.imageBlob) {
     <img alt="image"
@@ -23,7 +23,7 @@
         style="vertical-align: middle;"/>
   }
   @if (option?.displayTag === true) {
-    <p-tag [style]="option.tagStyle" style="vertical-align: middle;" [value]="option.name"/>
+    <p-tag [style]="getTagStyle(option)" [value]="option.name"/>
   }
   @if (option?.displayName === true) {
     <span>{{ option.name }}</span>
