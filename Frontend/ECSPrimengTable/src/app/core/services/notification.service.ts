@@ -4,7 +4,7 @@ import { SharedService } from './shared.service';
 
 @Injectable({ providedIn: 'root' })
 export class NotificationService extends ECSPrimengTableNotificationService {
-  constructor(private sharedService: SharedService) {  // Inyecta tu SharedService
+  constructor(private readonly sharedService: SharedService) {
     super();
   }
   showToast(

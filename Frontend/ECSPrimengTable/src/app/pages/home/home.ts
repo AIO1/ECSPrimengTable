@@ -12,7 +12,7 @@ import { IEmploymentStatus } from './employment-status.interface';
   templateUrl: './home.html'
 })
 export class Home implements OnInit {
-  constructor(private sharedService: SharedService){}
+  constructor(private readonly sharedService: SharedService){}
   @ViewChild('dt') dt!: ECSPrimengTable; // Get the reference to the object table
 
   headerActionButtons: ITableButton[] = [

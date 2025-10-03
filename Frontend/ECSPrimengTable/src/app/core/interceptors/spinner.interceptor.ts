@@ -6,7 +6,7 @@ import { SpinnerService } from '../services/spinner.service';
 
 @Injectable()
 export class SpinnerInterceptor implements HttpInterceptor {
-  constructor(private spinnerService: SpinnerService) {}
+  constructor(private readonly spinnerService: SpinnerService) {}
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     const showSpinner = req.headers.get('X-Show-Spinner') !== 'false';
     if (showSpinner) {

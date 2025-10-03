@@ -6,7 +6,7 @@ import { SharedService } from './shared.service';
 
 @Injectable({ providedIn: 'root' })
 export class HttpService extends ECSPrimengTableHttpService {
-  constructor(private sharedService: SharedService) {
+  constructor(private readonly sharedService: SharedService) {
     super();
   }
 

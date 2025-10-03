@@ -5,7 +5,7 @@ import { BehaviorSubject } from 'rxjs';
 })
 export class SpinnerService {
   private requestCount = 0;
-  private spinnerSubject = new BehaviorSubject<boolean>(false);
+  private readonly spinnerSubject = new BehaviorSubject<boolean>(false);
   spinner$ = this.spinnerSubject.asObservable();
 
   private hideTimeout: any; 

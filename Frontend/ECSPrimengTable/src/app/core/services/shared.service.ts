@@ -11,7 +11,7 @@ import { Constants, log } from '../../../constants';
   providedIn: 'root'
 })
 export class SharedService {
-  constructor(private messageService: MessageService, private http: HttpClient, private router: Router, private sanitizer: DomSanitizer) {}
+  constructor(private readonly messageService: MessageService, private readonly http: HttpClient, private readonly router: Router, private readonly sanitizer: DomSanitizer) {}
   // #region showToast
     /**
      * Shows a customizable toast message. Can also close all toast messages before showing the current one.

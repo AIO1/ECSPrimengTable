@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { ToastModule } from 'primeng/toast';
 import { DialogModule } from 'primeng/dialog';
@@ -18,7 +18,7 @@ import { SpinnerService } from './core/services/spinner.service';
 export class App {
   isSpinnerVisible: boolean = false;
   isUserAdmin = false;
-  constructor(private spinnerService: SpinnerService) {
+  constructor(private readonly spinnerService: SpinnerService) {
     this.spinnerService.spinner$.subscribe(visible => {
       setTimeout(() => {
         this.isSpinnerVisible = visible;

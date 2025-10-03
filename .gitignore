@@ -405,3 +405,4 @@ sonar-project.*
 
 package-lock.json
 Frontend/primengtablereusablecomponent/package.json
+/Frontend/ECSPrimengTable/.scannerwork
