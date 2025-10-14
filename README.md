@@ -993,6 +993,9 @@ An example of the **pagination and record count**:
 > [!CAUTION]
 > Avoid allowing very high numbers of items per page, as this may reduce performance.
 
+> [!CAUTION]
+> Max allowed items per page is 255.
+
 <br><br>
 
 
@@ -2910,6 +2913,9 @@ namespace ECSPrimengTableExample.Services {
 }
 ```
 
+> [!CAUTION]
+> Because the items per page internally uses byte, the max allowed items per page is 255.
+
 <br><br>
 
 
@@ -3465,13 +3471,34 @@ And your HTML:
 
 
 ---
-## 7 Component reference
-WIP
+## 7 Backend component reference
+This section describes the backend utilities provided by the `ECS.PrimengTable` library.
+
+It includes service methods, data models (DTOs), enums, interfaces and attributes used to support the ECS PrimeNG table frontend.
+
+<br><br>
+
+
+
+### 7.1 Services
+#### 7.1.1 EcsPrimengTableService
+**Namespace:** `ECS.PrimengTable.Services`  
+**Accessibility:** `public`  
+**Type:** `static class`
+
+Main public entry point of the `ECS.PrimengTable` library. This class exposes all methods intended for external consumption, including table configuration, dynamic queries, user views, and Excel export.
 
 <br><br><br>
 
 
 
 ---
-## 8 Editing ECS PrimeNG table and integrating locally
+## 8 Frontend component reference
+
+<br><br><br>
+
+
+
+---
+## 9 Editing ECS PrimeNG table and integrating locally
 WIP

@@ -4,20 +4,36 @@ using System.Reflection;
 
 namespace ECS.PrimengTable.Services;
 
+/// <summary>
+/// Provides internal logic for generating and validating table configuration models.
+/// This service handles column metadata extraction via reflection and ensures consistency
+/// in pagination and column visibility rules across the library.
+/// </summary>
+/// <remarks>
+/// This class is intended for internal use only and should not be accessed directly.
+/// External consumers should use <see cref="EcsPrimengTableService"/> instead.
+/// </remarks>
 internal static class TableConfigurationService {
+
     /// <summary>
-    /// Retrieves metadata for each property of the provided class <typeparamref name="T"/>
-    /// based on the presence of the <see cref="PrimeNGAttributes"/> attribute.
+    /// Generates a <see cref="TableConfigurationModel"/> based on the metadata of the specified type <typeparamref name="T"/>.
+    /// Inspects all properties of the given type and extracts column configuration using <see cref="ColumnAttributes"/>.
     /// </summary>
-    /// <typeparam name="T">The type of the class for which to retrieve column metadata.</typeparam>
+    /// <remarks>
+    /// Properties of <typeparamref name="T"/> that lack <see cref="ColumnAttributes"/> will be skipped,
+    /// and a warning message will be printed to the console.  
+    /// Columns marked with <c>SendColumnAttributes = false</c> will also be ignored.
+    /// </remarks>
+    /// <typeparam name="T">The class type representing the data model for which to generate the table configuration.</typeparam>
+    /// <param name="allowedItemsPerPage"> Optional list of allowed pagination sizes. Defaults to <see cref="TableConfigurationDefaults.AllowedItemsPerPage"/>.</param>
+    /// <param name="dateFormat"> Optional date format string used for display. Defaults to <see cref="TableConfigurationDefaults.DateFormat"/> </param>
+    /// <param name="dateTimezone"> Optional timezone string used for date formatting. Defaults to <see cref="TableConfigurationDefaults.DateTimezone"/>. </param>
+    /// <param name="dateCulture"> Optional culture string for date localization. Defaults to <see cref="TableConfigurationDefaults.DateCulture"/>. </param>
+    /// <param name="maxViews"> Optional maximum number of views allowed for a table. Defaults to <see cref="TableConfigurationDefaults.MaxViews"/>. </param>
+    /// <param name="convertFieldToLower"> Indicates whether the first letter of each property name should be converted to lowercase in the output model. Defaults to <c>true</c>. </param>
     /// <returns>
-    /// A list of <see cref="ColumnMetadataModel"/> objects representing
-    /// the metadata for each property in the class.
+    /// A <see cref="TableConfigurationModel"/> containing the table metadata derived from the annotated properties of the specified type.
     /// </returns>
-    /// <exception cref="ArgumentException">
-    /// Thrown when the <see cref="PrimeNGAttributes"/> attribute is missing for a property.
-    /// The exception message includes the name of the property that is missing attributes.
-    /// </exception>
     internal static TableConfigurationModel GetTableConfiguration<T>(int[]? allowedItemsPerPage = null, string? dateFormat = null, string? dateTimezone = null, string? dateCulture = null, byte? maxViews = null, bool convertFieldToLower = true) {
         allowedItemsPerPage ??= TableConfigurationDefaults.AllowedItemsPerPage;
         dateFormat ??= TableConfigurationDefaults.DateFormat;
@@ -32,7 +48,7 @@ internal static class TableConfigurationService {
                 Console.WriteLine($"[WARN] The column '{property.Name}' is missing its ColumnAttributes. Skipping.");
                 continue;
             }
-            if(!colAtt.SendColumnAttributes) { // If we don't to send the column
+            if(!colAtt.SendColumnAttributes) { // If the column doesn't need to be sent
                 continue;
             }
             string propertyName = convertFieldToLower
@@ -76,15 +92,18 @@ internal static class TableConfigurationService {
     }
 
     /// <summary>
-    /// Validates the items per page size and the presence of columns for filtering.
+    /// Validates the provided pagination and column configuration for a table.
+    /// Ensures that the specified number of items per page and visible columns
+    /// match the allowed configuration defined in the system.
     /// </summary>
-    /// <param name="itemsPerPage">The number of items to display per page.</param>
-    /// <param name="columns">A list of column names to be included in the filtering.</param>
+    /// <param name="itemsPerPage">Number of items to display per page.</param>
+    /// <param name="columns">List of column names currently selected or displayed. Can be null.</param>
+    /// <param name="allowedItemsPerPage">Optional array of allowed items-per-page values for validation.</param>
     /// <returns>
-    ///   <c>true</c> if the items per page is within the allowed values and columns are provided; otherwise, <c>false</c>.
+    /// <c>true</c> if the provided configuration is valid; otherwise, <c>false</c>.
     /// </returns>
     internal static bool ValidateItemsPerPageAndCols(byte itemsPerPage, List<string>? columns, int[]? allowedItemsPerPage = null) {
-        allowedItemsPerPage ??= TableConfigurationDefaults.AllowedItemsPerPage;
+        allowedItemsPerPage ??= TableConfigurationDefaults.AllowedItemsPerPage; // If no allowedItemsPerPage was given get from table configurations default
         if(!allowedItemsPerPage.Contains(itemsPerPage)) { // If the items per page is not within the allowed items per page array values
             return false;
         }
