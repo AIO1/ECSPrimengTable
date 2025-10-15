@@ -911,8 +911,9 @@ The customizable properties for action buttons are:
 - **Variant**: The default is a normal button, but you can also have buttons that are text or outlined.
 - **Color**: The button color.
 - **Style**: Additional styles to add to the button.
-- **Enabled condition**: Allows disabling the button if a specific condition is not met.
-- **Hide if condition not met**: By default if a specified condition is not met, the button will be disabled, but you can also hide it completely instead.
+- **Visible condition**: Allows completely hiding the button if a specific condition is not met. Other conditions (`Enabled condition` and `Hide if condition not met`) are ignored when the button is not visible.
+- **Enabled condition**: Allows disabling the button if a specific condition is not met. Evaluated only when the button is visible.
+- **Hide if condition not met**: By default, if the specified `enabled condition` is not met, the button will be disabled, but you can choose to hide it completely instead. Ignored when the button is not visible.
 - **Action**: The function or operation to execute when the button is clicked.
 - **Tooltip**: The text to be displayed when hovering the button.
 
@@ -2585,12 +2586,18 @@ The available properties are:
 - **variant**: Optional. Specifies the variant of the button. Can be `null` (default), `"text"`, or `"outlined"`.
 - **color**: Optional. The CSS class to apply for button styling. Example: `"p-button-success"` or `"custom-class"`.
 - **style**: Optional. Additional inline CSS styles for the button.
-- **enabledCondition**: Optional. A function that determines whether the button should be displayed for a given row.
-  - **rowData** parameter: The row data object (null for header buttons).
-  - Returns `true` if the button should be visible; `false` otherwise.
-- **conditionFailHide**: Optional. Controls behavior when `condition` returns false.
-  - If `true`, the button will be hidden when the condition is not met.
-  - If `false` or `undefined`, the button will remain visible but disabled.
+- **visibleCondition**: Optional. A function that determines whether the button should be visible for a given row.  
+  - **rowData** parameter: The row data object (null for header buttons).  
+  - Returns `true` if the button should be visible; `false` otherwise.  
+  - When this returns `false`, the button will not be rendered and all other conditions (`enabledCondition`, `conditionFailHide`) are ignored.
+- **enabledCondition**: Optional. A function that determines whether the button should be enabled for a given row.  
+  - **rowData** parameter: The row data object (null for header buttons).  
+  - Returns `true` if the button should be enabled; `false` otherwise.  
+  - Ignored if `visibleCondition` returns `false`.
+- **conditionFailHide**: Optional. Controls behavior when `enabledCondition` returns `false`.  
+  - If `true`, the button will be hidden when the condition is not met.  
+  - If `false` or `undefined`, the button will remain visible but disabled.  
+  - Ignored if `visibleCondition` returns `false`.
 - **action**: Optional. The action to execute when the button is clicked.
   - **rowData** parameter: The row data object of the clicked row (null for header buttons).
 - **tooltip**: Optional. Tooltip text to display when the user hovers over the button.
