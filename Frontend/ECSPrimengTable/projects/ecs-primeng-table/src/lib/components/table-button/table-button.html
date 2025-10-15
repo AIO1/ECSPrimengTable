@@ -1,4 +1,4 @@
-@if(!(button.conditionFailHide && (button.enabledCondition?.(rowData) ?? false))){
+@if((button.enabledCondition?.(rowData) ?? true) || !button.conditionFailHide){
   <p-button
     [disabled]="!(button.enabledCondition?.(rowData) ?? true)"
     [rounded]="button.rounded || false"
