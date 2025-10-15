@@ -1,4 +1,4 @@
-CREATE TABLE primengtablereusablecomponent.dbo.TableViews (
+CREATE TABLE dbo.TableViews (
 	ID uniqueidentifier DEFAULT newid() NOT NULL,
 	dateCreated datetime2(0) DEFAULT getutcdate() NOT NULL,
 	dateUpdated datetime2(0) DEFAULT getutcdate() NOT NULL,
