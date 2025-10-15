@@ -1,4 +1,4 @@
-CREATE TABLE dbo.TableViews (
+CREATE TABLE primengtablereusablecomponent.dbo.TableViews (
 	ID uniqueidentifier DEFAULT newid() NOT NULL,
 	dateCreated datetime2(0) DEFAULT getutcdate() NOT NULL,
 	dateUpdated datetime2(0) DEFAULT getutcdate() NOT NULL,
@@ -6,6 +6,7 @@ CREATE TABLE dbo.TableViews (
 	tableKey nvarchar(255) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 	viewAlias nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 	viewData nvarchar(MAX) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+	lastActive bit DEFAULT 0 NOT NULL,
 	CONSTRAINT TableSaveStates_PK PRIMARY KEY (ID),
 	CONSTRAINT TableSaveStates_data_UNIQUE UNIQUE (username,tableKey,viewAlias)
 );

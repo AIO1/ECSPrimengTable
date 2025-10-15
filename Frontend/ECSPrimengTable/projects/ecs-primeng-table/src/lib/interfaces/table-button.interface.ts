@@ -51,16 +51,27 @@ export interface ITableButton {
     style?: string;
 
     /**
-     * Optional. Function that determines whether the button should be displayed for a given row.
+     * Optional. Function that determines whether the button should be visible for a given row.
      * @param rowData The row data object. Null for header buttons.
      * @returns True if the button should be visible; false otherwise.
+     */
+    visibleCondition?: (rowData: any) => boolean;
+
+    /**
+     * Optional. Function that determines whether the button should be displayed for a given row.
+     * 
+     * Ignored if `visibleCondition` returns false.
+     * @param rowData The row data object. Null for header buttons.
+     * @returns True if the button should be enabled; false otherwise.
      */
     enabledCondition?: (rowData: any) => boolean;
 
     /**
-     * Optional. Controls behavior when `condition` returns false.
-     * - If `true`, the button will be hidden when the condition is not met.
-     * - If `false` or `undefined`, the button will remain visible but disabled.
+     * Optional. Controls behavior when `enabledCondition` returns false.
+     * - If `true`, the button will be hidden when the 'enabledCondition' is not met.
+     * - If `false` or `undefined`, the button will remain visible but disabled if 'enabledCondition' is not met.
+     * 
+     * Ignored if `visibleCondition` returns false.
      */
     conditionFailHide?: boolean;
 

@@ -134,7 +134,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
     this.calculateScrollHeight();
   }
   
-  calculateScrollHeight(){
+  private calculateScrollHeight(){
     if (this.tableOptions.verticalScroll?.cssFormula) {
       return;
     }
@@ -156,24 +156,40 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
   }
 
   /**
-   * Used to update the data of a table externally outside the component.
+   * Updates the table data and, if needed, retrieves the initial table configuration from an external source.
+   * 
+   * Also allows resetting the table to its original state before any user manipulations.
    *
+   * @param {boolean} [resetTableView=false] Optional.
+   * - `true`: resets the table state before loading data.
+   * - `false`: refreshes data using the current configuration (and retrieves initial configuration if necessary).
+   *
+   * **_Behavior_**
+   * - The table is automatically set to `isActive = true`.
+   * - If the initial configuration has not been fetched, it will fetch it and then update the data.
+   * - If the initial configuration is already fetched, it will just update the data.
+   * - If `resetTableView` is true and the configuration is already initialized, the table will be reset to its original state before updating the data.
    */
-  updateData(): void {
-    this.tableOptions.isActive = true; // Indicate that the table is now enabled to perform actions
-    if (!this.initialConfigurationFetched) {
-      this.fetchTableConfiguration();
-    } else {
-      this.fetchTableData(this.tableLazyLoadEventInformation);
+  updateData(resetTableView: boolean = false): void {
+    this.tableOptions.isActive = true; // Enable table actions: the table is now active and can perform updates
+    if (!this.initialConfigurationFetched || resetTableView) { // If initial configuration hasn't been fetched yet or a reset is explicitly requested
+      if(this.initialConfigurationFetched && resetTableView) { // Reset the table only if it was already initialized and a reset is explicitly requested
+        this.resetTableView(); // Reset table state (filters, pagination, sorting, etc.) and then refresh data
+      } else { // We only need to get the table configuration without reseting the view
+        this.fetchTableConfiguration(); // Fetch the initial table configuration before updating data
+      }
+    } else { // Table is already initialized and no reset requested, just refresh the data
+      this.fetchTableData(this.tableLazyLoadEventInformation); // Update table rows using the last lazy load event
     }
   }
 
-  canFetchData(): boolean {
+  private canFetchData(): boolean {
     return !!this.tableOptions.isActive
       && !!this.tableOptions.urlTableConfiguration?.trim()
       && !!this.tableOptions.urlTableData?.trim();
   }
-  fetchTableConfiguration(resetTableView: boolean = false): void {
+
+  private fetchTableConfiguration(resetTableView: boolean = false): void {
     if(!this.canFetchData()){
       return;
     }
@@ -239,8 +255,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
     return true; // All checks passed, views are enabled
   }
 
-  
-  fetchTableViews(): void {
+  private fetchTableViews(): void {
     if(!this.tableViewsEnabled()){
       this.fetchTableData(this.tableLazyLoadEventInformation);
       return;

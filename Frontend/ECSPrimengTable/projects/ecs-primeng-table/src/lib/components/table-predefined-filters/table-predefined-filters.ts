@@ -53,8 +53,8 @@ export class TablePredefinedFilters {
 
   getTagStyle(option: any) {
     return {
-        ...option.tagStyle,
-        'vertical-align': 'middle'
+      ...option.tagStyle,
+      'vertical-align': 'middle'
     };
   }
 }
