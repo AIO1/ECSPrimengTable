@@ -88,6 +88,27 @@ namespace ECS.PrimengTable.Services {
             return TableQueryProcessingService.PerformDynamicQuery<T>(inputData, baseQuery, stringDateFormatMethod, defaultSortColumnName, defaultSortOrder);
         }
 
+        /// <summary>
+        /// Generates an Excel report from the provided query and export configuration.
+        /// The method executes the dynamic query pipeline (filters, sorting, pagination), selects the requested columns,
+        /// and writes the results into an Excel workbook which is returned as a byte array.
+        /// </summary>
+        /// <typeparam name="T">The entity type being queried and exported.</typeparam>
+        /// <param name="inputDataAll">Export request model containing pagination, sorting, filtering and column selection options.</param>
+        /// <param name="baseQuery">The base <see cref="IQueryable{T}"/> to apply dynamic operations on.</param>
+        /// <param name="stringDateFormatMethod">Optional reflection method used to apply a specific date formatting function to string date columns.</param>
+        /// <param name="defaultSortColumnName">Optional list of column names to use for sorting when no explicit sort is provided in the input.</param>
+        /// <param name="defaultSortOrder">Optional list of sort directions (<see cref="ColumnSort"/>) matching the default columns.</param>
+        /// <param name="sheetName">Name of the worksheet to create in the workbook. Defaults to "MAIN".</param>
+        /// <param name="pageStack">Number of records to process per internal pagination batch (memory page). Defaults to 250.</param>
+        /// <returns>
+        /// A tuple with:
+        /// <list type="bullet">
+        /// <item><description><c>bool</c> — true if the Excel generation succeeded; false otherwise.</description></item>
+        /// <item><description><c>byte[]?</c> — the generated Excel file as a byte array, or null if generation failed.</description></item>
+        /// <item><description><c>string</c> — status message or error description related to the export process.</description></item>
+        /// </list>
+        /// </returns>
         public static (bool, byte[]?, string) GenerateExcelReport<T>(
             ExcelExportRequestModel inputData,
             IQueryable<T> baseQuery,

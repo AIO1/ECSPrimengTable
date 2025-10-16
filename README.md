@@ -3483,6 +3483,9 @@ This section describes the backend utilities provided by the `ECS.PrimengTable` 
 
 It includes service methods, data models (DTOs), enums, interfaces and attributes used to support the ECS PrimeNG table frontend.
 
+> [!NOTE]  
+> Only **public methods and types intended for external use** are documented here. Internal helpers, private methods, and internal-only classes are not covered.
+
 <br><br>
 
 
@@ -3490,10 +3493,159 @@ It includes service methods, data models (DTOs), enums, interfaces and attribute
 ### 7.1 Services
 #### 7.1.1 EcsPrimengTableService
 **Namespace:** `ECS.PrimengTable.Services`  
-**Accessibility:** `public`  
 **Type:** `static class`
 
 Main public entry point of the `ECS.PrimengTable` library. This class exposes all methods intended for external consumption, including table configuration, dynamic queries, user views, and Excel export.
+
+<br><br>
+
+
+
+##### 7.1.1.1 ValidateItemsPerPageAndCols
+**Namespace:** `ECS.PrimengTable.Services`  
+**Type:** `static bool`
+
+<br>
+
+**_Summary_**  
+Validates the provided pagination and column configuration for a table.  
+Ensures that the specified number of items per page and visible columns match the allowed configuration defined in the system.
+```C#
+public static bool ValidateItemsPerPageAndCols(
+    byte itemsPerPage,
+    List<string>? columns,
+    int[]? allowedItemsPerPage = null
+)
+```
+
+<br>
+
+**_Parameters_**
+| Name | Type | Description |
+|-|-|-|
+| `itemsPerPage` | `byte` | Number of items to display per page. |
+| `columns` | `List<string>?` | List of column names currently selected or displayed. Can be null. |
+| `allowedItemsPerPage` | `int[]?` | Optional array of allowed items-per-page values for validation. |
+
+<br>
+
+**_Returns_**
+| Type | Description |
+|-|-|
+| `bool` | `true` if the provided configuration is valid; otherwise, `false` |
+
+<br><br>
+
+
+
+##### 7.1.1.2 GetTableConfiguration
+**Namespace:** `ECS.PrimengTable.Services`  
+**Type:** `static TableConfigurationModel`
+
+<br>
+
+**_Summary_**  
+Generates a `TableConfigurationModel` based on the metadata of the specified type `T`.  
+Inspects all properties of the given type and extracts column configuration using `ColumnAttributes`.
+
+<br>
+
+**_Remarks_**  
+Properties of `T` that lack `ColumnAttributes` will be skipped, and a warning message will be printed to the console.  
+Columns marked with `SendColumnAttributes = false` will also be ignored.
+```C#
+public static TableConfigurationModel GetTableConfiguration<T>(
+    int[]? allowedItemsPerPage = null,
+    string? dateFormat = null,
+    string? dateTimezone = null,
+    string? dateCulture = null,
+    byte? maxViews = null,
+    bool convertFieldToLower = true
+)
+```
+
+<br>
+
+**_Type Parameters_**
+| Name | Description |
+|-|-|
+| `T` | The class type representing the data model for which to generate the table configuration. |
+
+<br>
+
+**_Parameters_**
+| Name | Type | Description |
+|-|-|-|
+| `allowedItemsPerPage` | `int[]?` | Optional list of allowed pagination sizes. Defaults to `TableConfigurationDefaults.AllowedItemsPerPage`. |
+| `dateFormat` | `string?` | Optional date format string used for display. Defaults to `TableConfigurationDefaults.DateFormat`. |
+| `dateTimezone` | `string?` | Optional timezone string used for date formatting. Defaults to `TableConfigurationDefaults.DateTimezone`. |
+| `dateCulture` | `string?` | Optional culture string for date localization. Defaults to `TableConfigurationDefaults.DateCulture`. |
+| `maxViews` | `byte?` | Optional maximum number of views allowed for a table. Defaults to `TableConfigurationDefaults.MaxViews`. |
+| `convertFieldToLower` | `bool` | Indicates whether the first letter of each property name should be converted to lowercase in the output model. Defaults to `true`. |
+
+<br>
+
+**_Returns_**
+| Type | Description |
+|-|-|
+| `TableConfigurationModel` | Contains the table metadata derived from the annotated properties of the specified type. |
+
+<br><br>
+
+
+
+##### 7.1.1.3 PerformDynamicQuery
+**Namespace:** `ECS.PrimengTable.Services`  
+**Type:** `static TablePagedResponseModel`
+
+<br>
+
+**_Summary_**  
+Executes a full dynamic query pipeline on the provided base query, including filtering, sorting, pagination, and column projection, returning a paged and structured table response.
+
+<br>
+
+**_Remarks_**  
+This method orchestrates the query building process by delegating to helper methods such as `GetDynamicQueryBase`, `PerformPagination`, and `GetDynamicSelect`.
+```C#
+public static TablePagedResponseModel PerformDynamicQuery<T>(
+    TableQueryRequestModel inputData,
+    IQueryable<T> baseQuery,
+    MethodInfo? stringDateFormatMethod = null,
+    List<string>? defaultSortColumnName = null,
+    List<ColumnSort>? defaultSortOrder = null
+)
+```
+
+<br>
+
+**_Type Parameters_**
+| Name | Description |
+|-|-|
+| `T` | The entity type being queried. |
+
+<br>
+
+**_Parameters_**
+| Name | Type | Description |
+|-|-|-|
+| `inputData` | `TableQueryRequestModel` | The input model containing filters, sorting, and pagination parameters. |
+| `baseQuery` | `IQueryable<T>` | The base query to apply dynamic operations on. |
+| `stringDateFormatMethod` | `MethodInfo?` | Optional reflection method used to apply a specific date formatting function to string date columns. |
+| `defaultSortColumnName` | `List<string>?` | Optional list of column names to use for sorting when no explicit sort is provided in `inputData`. |
+| `defaultSortOrder` | `List<ColumnSort>?` | Optional list of sort directions (`ColumnSort`) matching the default columns. |
+
+<br>
+
+**_Returns_**
+| Type | Description |
+|-|-|
+| `TablePagedResponseModel` | Contains the filtered, sorted, paginated, and projected data, along with total record counts for both filtered and unfiltered datasets and the current page information. |
+
+<br><br>
+
+
+WIP
 
 <br><br><br>
 
@@ -3501,6 +3653,7 @@ Main public entry point of the `ECS.PrimengTable` library. This class exposes al
 
 ---
 ## 8 Frontend component reference
+WIP
 
 <br><br><br>
 
