@@ -1,6 +1,6 @@
 {
   "name": "@eternalcodestudio/primeng-table",
-  "version": "20.0.11",
+  "version": "20.0.12",
   "description": "ECS reusable Angular PrimeNG table component with advanced server-side filters. Designed to offload filtering logic to any backend API.",
   "author": "ECS (Eternal CODE Studio)",
   "license": "MIT",
