@@ -7,7 +7,28 @@ using System.Reflection;
 using System.Text.Json;
 
 namespace ECS.PrimengTable.Services {
+
+    /// <summary>
+    /// Provides static helper methods for dynamically building LINQ predicate expressions
+    /// used to filter query results based on user-provided table filters and match modes.
+    /// </summary>
     internal class QueryPredicateService {
+
+        /// <summary>
+        /// Builds and combines a filter predicate for a given property based on the provided value and match mode.
+        /// </summary>
+        /// <remarks>
+        /// This method generates a new predicate for the specified column and merges it into the 
+        /// current combined predicate using the specified logical operator.
+        /// </remarks>
+        /// <typeparam name="T">The entity type being filtered.</typeparam>
+        /// <param name="property">The property to filter on.</param>
+        /// <param name="attribute">Metadata describing the column (data type, formatting, etc.).</param>
+        /// <param name="val">The value to compare against.</param>
+        /// <param name="matchMode">The comparison mode (e.g. "equals", "contains", "startsWith").</param>
+        /// <param name="andPredicateOperator">If true, combines with AND; otherwise, combines with OR.</param>
+        /// <param name="combinedPredicate">The cumulative predicate expression being built.</param>
+        /// <param name="stringDateFormatMethod">Optional method used for string date conversion, if applicable.</param>
         internal static void FilterPredicateBuilder<T>(PropertyInfo property, ColumnAttributes attribute, dynamic val, string matchMode, bool andPredicateOperator, ref ExpressionStarter<T> combinedPredicate, MethodInfo? stringDateFormatMethod = null) {
             dynamic filterPredicate = GetColumnFilterPredicate<T>(property.Name, val, attribute.DataType, matchMode, stringDateFormatMethod); // Get the filter predicate for the column
             if(filterPredicate != null) { // If a valid filter predicate is obtained, combine it with the existing predicate using AND or OR
@@ -18,6 +39,21 @@ namespace ECS.PrimengTable.Services {
                 }
             }
         }
+
+        /// <summary>
+        /// Builds and combines multiple "IN" filter predicates for a given property.
+        /// </summary>
+        /// <remarks>
+        /// Deserializes the provided JSON array and creates an equality predicate for each element,
+        /// combining them into the main predicate using the specified logical operator.
+        /// </remarks>
+        /// <typeparam name="T">The entity type being filtered.</typeparam>
+        /// <param name="value">The filter model containing the array of values to match.</param>
+        /// <param name="property">The property to filter on.</param>
+        /// <param name="attribute">Metadata describing the column (data type, formatting, etc.).</param>
+        /// <param name="andPredicateOperator">If true, combines with AND; otherwise, combines with OR.</param>
+        /// <param name="combinedPredicate">The cumulative predicate expression being built.</param>
+        /// <param name="stringDateFormatMethod">Optional method used for string date conversion, if applicable.</param>
         internal static void FilterPredicateInClauseBuilder<T>(ColumnFilterModel value, PropertyInfo property, ColumnAttributes attribute, bool andPredicateOperator, ref ExpressionStarter<T> combinedPredicate, MethodInfo? stringDateFormatMethod = null) {
             if(value.Value is JsonElement jsonElement && jsonElement.ValueKind == JsonValueKind.Array) {
                 List<object> items = JsonSerializer.Deserialize<List<object>>(jsonElement.GetRawText())!;
@@ -26,6 +62,21 @@ namespace ECS.PrimengTable.Services {
                 }
             } 
         }
+
+        /// <summary>
+        /// Builds and combines multiple "NOT IN" filter predicates for a given property.
+        /// </summary>
+        /// <remarks>
+        /// Deserializes the provided JSON array and creates a "not equals" predicate for each element,
+        /// combining them into the main predicate using the specified logical operator.
+        /// </remarks>
+        /// <typeparam name="T">The entity type being filtered.</typeparam>
+        /// <param name="value">The filter model containing the array of values to exclude.</param>
+        /// <param name="property">The property to filter on.</param>
+        /// <param name="attribute">Metadata describing the column (data type, formatting, etc.).</param>
+        /// <param name="andPredicateOperator">If true, combines with AND; otherwise, combines with OR.</param>
+        /// <param name="combinedPredicate">The cumulative predicate expression being built.</param>
+        /// <param name="stringDateFormatMethod">Optional method used for string date conversion, if applicable.</param>
         internal static void FilterPredicateNotInClauseBuilder<T>(ColumnFilterModel value, PropertyInfo property, ColumnAttributes attribute, bool andPredicateOperator, ref ExpressionStarter<T> combinedPredicate, MethodInfo? stringDateFormatMethod = null) {
             if(value.Value is JsonElement jsonElement && jsonElement.ValueKind == JsonValueKind.Array) {
                 List<object> items = JsonSerializer.Deserialize<List<object>>(jsonElement.GetRawText())!;

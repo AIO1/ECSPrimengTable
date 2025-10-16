@@ -9,7 +9,7 @@ A solution created by Alex Ibrahim Ojea that enhances the PrimeNG table with adv
 <br><br><br>
 
 
-
+---
 ## Introduction
 Hello! My name is Alex Ibrahim Ojea.
 
@@ -36,7 +36,21 @@ This is an example of the final solution:
 <br><br><br>
 
 
+---
+## Improving documentation readability  
+For a clearer reading experience on GitHub, it is recommended to first **collapse the file tree** (by clicking on the icon in the top-left corner).  
+Then, select the **Outline** button in the top-right corner to display an index containing all sections of the documentation.  
 
+Following these steps provides a more convenient way to navigate and review the documentation.
+<p align="center">
+    <img width="1899" height="965" alt="image" src="https://github.com/user-attachments/assets/822794d2-dab7-4b49-bbdc-703bf4c094ca" />
+</p>
+
+<br><br><br>
+
+
+
+---
 ## 1 Required software
 To run this project, you will need:
 - [Visual Studio Code](https://code.visualstudio.com/Download) – for frontend development.
@@ -51,9 +65,6 @@ To run this project, you will need:
 
 ---
 ## 2 Setup the environment to try the demo
-
-
-
 ### 2.1 Database (MSSQL)
 This example has been set up using **MSSQL**. Other database engines should work with some modifications, but this guide only covers MSSQL.
 First, create a new database named `primengtablereusablecomponent`. The database should have a schema named `dbo`. You can use a different database or schema name, but you will need to adapt the backend and database scripts accordingly.
@@ -3481,19 +3492,720 @@ And your HTML:
 ## 7 Backend component reference
 This section describes the backend utilities provided by the `ECS.PrimengTable` library.
 
-It includes service methods, data models (DTOs), enums, interfaces and attributes used to support the ECS PrimeNG table frontend.
+It includes service methods, data models, enums, interfaces and attributes used to support the ECS PrimeNG table frontend.
+
+> [!NOTE]  
+> Only **public methods and types intended for external use** are documented here. Internal helpers, private methods, and internal-only classes are not covered.
 
 <br><br>
 
 
 
-### 7.1 Services
-#### 7.1.1 EcsPrimengTableService
-**Namespace:** `ECS.PrimengTable.Services`  
-**Accessibility:** `public`  
-**Type:** `static class`
+### 7.1 Enums
+#### 7.1.1 CellOverflowBehaviour
+**Namespace:** `ECS.PrimengTable.Enums`  
 
-Main public entry point of the `ECS.PrimengTable` library. This class exposes all methods intended for external consumption, including table configuration, dynamic queries, user views, and Excel export.
+<br>
+
+**_Summary_**  
+Specifies how the content of a table cell should behave when it overflows its container.
+
+<br>
+
+**_Values_**
+| Name | Value | Description |
+|-|-|-|
+| `Hidden` | 0 | Overflowing content will be hidden and clipped. |
+| `Wrap` | 1 | Overflowing content will wrap to the next line within the cell. |
+
+<br><br>
+
+
+
+#### 7.1.2 ColumnSort
+**Namespace:** `ECS.PrimengTable.Enums`  
+
+<br>
+
+**_Summary_**  
+Specifies the sorting direction for a table column.
+
+<br>
+
+**_Values_**
+| Name | Value | Description |
+|-|-|-|
+| `Descending` | 0 | Sort the column in descending order. |
+| `Ascending` | 1 | Sort the column in ascending order. |
+
+<br><br>
+
+
+
+#### 7.1.3 DataAlignHorizontal
+**Namespace:** `ECS.PrimengTable.Enums`  
+
+<br>
+
+**_Summary_**  
+Specifies the horizontal alignment of content within a table cell.
+
+<br>
+
+**_Values_**
+| Name | Value | Description |
+|-|-|-|
+| `Left` | 0 | Align content to the left side of the cell. |
+| `Center` | 1 | Align content to the center of the cell. |
+| `Right` | 2 | Align content to the right side of the cell. |
+
+<br><br>
+
+
+
+#### 7.1.4 DataAlignVertical
+**Namespace:** `ECS.PrimengTable.Enums`  
+
+<br>
+
+**_Summary_**  
+Specifies the vertical alignment of content within a table cell.
+
+<br>
+
+**_Values_**
+| Name | Value | Description |
+|-|-|-|
+| `Top` | 0 | Align content to the top of the cell. |
+| `Middle` | 1 | Align content to the middle of the cell. |
+| `Bottom` | 2 | Align content to the bottom of the cell. |
+
+<br><br>
+
+
+
+#### 7.1.5 DataType
+**Namespace:** `ECS.PrimengTable.Enums`  
+
+<br>
+
+**_Summary_**  
+Represents the data type of a table column or cell.
+
+<br>
+
+**_Values_**
+| Name | Value | Description |
+|-|-|-|
+| `Text` | 0 | Textual data. |
+| `Numeric` | 1 | Numeric data. |
+| `Boolean` | 2 | Boolean data (true/false). |
+| `Date` | 3 | Date or datetime data. |
+| `List` | 4 | Special type representing a list of strings separated by ";" used for advanced predefined filter functionality. |
+
+<br><br>
+
+
+
+#### 7.1.6 FrozenColumnAlign
+**Namespace:** `ECS.PrimengTable.Enums`  
+
+<br>
+
+**_Summary_**  
+Specifies the alignment of a frozen column in the table.
+
+<br>
+
+**_Values_**
+| Name | Value | Description |
+|-|-|-|
+| `None` | 0 | No frozen alignment. |
+| `Left` | 1 | Frozen column aligned to the left. |
+| `Right` | 2 | Frozen column aligned to the right. |
+
+<br><br>
+
+
+
+### 7.2 Attributes
+#### 7.2.1 ColumnAttributes
+**Namespace:** `ECS.PrimengTable.Attributes`  
+**Usage:** Applied to properties to define their table column behavior in ECS PrimeNG tables.  
+
+<br>
+
+**_Summary_**  
+Marks a property to define its table column behavior in ECS PrimeNG tables. Includes header, data type, alignment, filtering, sorting, resizing, visibility, tooltip, and frozen column behavior.
+
+<br>
+
+**_Configurable properties (Parameters)_**  
+| Property | Type | Default | Description |
+|-|-|-|-|
+| `canBeFiltered` | `bool` | `true` | If true, the column can be filtered. |
+| `canBeGlobalFiltered` | `bool` | `true` | If true, data can be globally filtered. Disabled for Boolean columns. |
+| `canBeHidden` | `bool` | `true` | If true, the column can be hidden by the user. |
+| `canBeReordered` | `bool` | `true` | If true, the column can be reordered by the user. |
+| `canBeResized` | `bool` | `true` | If true, the column can be resized by the user. |
+| `canBeSorted` | `bool` | `true` | If true, the column can be sorted. |
+| `cellOverflowBehaviour` | [`CellOverflowBehaviour`](#711-celloverflowbehaviour) | `Hidden` | Defines how cell content behaves when it overflows. |
+| `cellOverflowBehaviourAllowUserEdit` | `bool` | `true` | If true, user can modify overflow behavior. Disabled for Boolean columns. |
+| `columnDescription` | `string` | `""` | Optional description displayed via an icon in the column header. |
+| `dataAlignHorizontal` | [`DataAlignHorizontal`](#713-dataalignhorizontal) | `Center` | Horizontal alignment of the data in the column. |
+| `dataAlignHorizontalAllowUserEdit` | `bool` | `true` | Indicates if the user can modify the horizontal alignment. |
+| `dataAlignVertical` | [`DataAlignVertical`](#714-dataalignvertical) | `Middle` | Vertical alignment of the data in the column. |
+| `dataAlignVerticalAllowUserEdit` | `bool` | `true` | Indicates if the user can modify the vertical alignment. |
+| `dataTooltipCustomColumnSource` | `string` | `""` | Optional column name to fetch custom tooltip content. |
+| `dataTooltipShow` | `bool` | `true` | If true, displays cell content as tooltip on hover. |
+| `dataType` | [`DataType`](#715-datatype) | `Text` | The type of data in the column, used for filtering and formatting. |
+| `filterPredefinedValuesName` | `string` | `""` | Name used in TypeScript to store predefined filter values. |
+| `frozenColumnAlign` | [`FrozenColumnAlign`](#716-frozencolumnalign) | `None` | Indicates if the column is frozen and its alignment. |
+| `header` | `string` | `""` | The name displayed for the column in the table. |
+| `initialWidth` | `double` | `0` | Initial width of the column in pixels. If <=0 and frozen, defaults to 100. |
+| `sendColumnAttributes` | `bool` | `true` | If true, column attributes will be sent automatically in dynamic queries. |
+| `startHidden` | `bool` | `false` | If true, the column starts hidden (only if `canBeHidden` is true). |
+
+<br><br>
+
+
+
+### 7.3 Interfaces
+#### 7.3.1 ITableViewEntity<TUsername>
+**Namespace:** `ECS.PrimengTable.Interfaces`  
+**Usage:** Implemented by entities that are displayed in ECS PrimeNG table views.
+
+<br>
+
+**_Summary_**  
+Defines the properties required for an entity to be displayed in a table view.
+
+<br>
+
+**_Type Parameters_**
+| Name | Description |
+|-|-|
+| `TUsername` | The type representing the username for the entity. Can be `string`, `Guid`, or any custom user identifier type. |
+
+<br>
+
+**_Properties_**
+| Property | Type | Description |
+|-|-|-|
+| `LastActive` | `bool` | Value indicating whether this view was the last active one for the user. |
+| `TableKey` | `string` | The unique key identifying the table. |
+| `Username` | `TUsername` | The username (or identifier) of the user who owns this table view. |
+| `ViewAlias` | `string` | The alias of the view (friendly name). |
+| `ViewData` | `string` | The serialized view data as a string. Used to store column order, visibility, filters, etc. |
+
+<br><br>
+
+
+
+### 7.4 Models
+#### 7.4.1 ColumnFilterModel
+**Namespace:** `ECS.PrimengTable.Models`  
+
+Represents the configuration of a filter applied to a table column.  
+This model defines the value, the matching mode, and the logical operator used for filtering.
+
+<br>
+
+**_Properties_**
+| Property | Type | Description |
+|-|-|-|
+| `MatchMode` | `string` | The match mode to apply when filtering the column. Examples: `"equals"`, `"contains"`, `"startsWith"`, `"endsWith"`. |
+| `Operator` | `string` | The logical operator to combine this filter with others. Examples: `"AND"`, `"OR"`. |
+| `Value` | `any` | The value used to filter the column. Can be of any type depending on the column's data type (string, number, date, etc.). |
+
+<br><br>
+
+
+
+#### 7.4.2 ColumnMetadataModel
+**Namespace:** `ECS.PrimengTable.Models`  
+
+Represents the metadata of a table column.  
+Contains information about the field, header, type, alignment, visibility, filtering, sorting, resizing, tooltip, frozen columns, overflow behavior, and initial width.
+
+<br>
+
+**_Properties_**
+| Property | Type | Description |
+|-|-|-|
+| `CanBeFiltered` | `bool` | Gets or sets a value indicating whether the column can be filtered. |
+| `CanBeGlobalFiltered` | `bool` | Gets or sets a value indicating whether the column can be globally filtered. |
+| `CanBeHidden` | `bool` | Gets or sets a value indicating whether the column can be hidden. |
+| `CanBeReordered` | `bool` | Gets or sets a value indicating whether the column can be reordered. |
+| `CanBeResized` | `bool` | Gets or sets a value indicating whether the column can be resized. |
+| `CanBeSorted` | `bool` | Gets or sets a value indicating whether the column can be sorted. |
+| `CellOverflowBehaviour` | [`CellOverflowBehaviour`](#711-celloverflowbehaviour) | Gets or sets a value indicating how cell content behaves when it overflows. |
+| `CellOverflowBehaviourAllowUserEdit` | `bool` | Gets or sets a value indicating whether the user can modify overflow behavior. |
+| `ColumnDescription` | `string` | Gets or sets the column description. |
+| `DataAlignHorizontal` | [`DataAlignHorizontal`](#713-dataalignhorizontal) | Gets or sets the alignment of the data in the column ("left", "center", or "right"). |
+| `DataAlignHorizontalAllowUserEdit` | `bool` | Gets or sets a value indicating whether the horizontal alignment can be modified by the user. |
+| `DataAlignVertical` | [`DataAlignVertical`](#714-dataalignvertical) | Gets or sets the vertical alignment of the data in the column. |
+| `DataAlignVerticalAllowUserEdit` | `bool` | Gets or sets a value indicating whether the vertical alignment can be modified by the user. |
+| `DataTooltipCustomColumnSource` | `string` | Gets or sets the column name to fetch custom tooltip content. |
+| `DataTooltipShow` | `bool` | Gets or sets a value indicating whether the column displays cell content as tooltip on hover. |
+| `DataType` | [`DataType`](#715-datatype) | Gets or sets the data type of the column. |
+| `Field` | `string` | Gets or sets the field associated with the column. |
+| `FilterPredefinedValuesName` | `string` | Gets or sets the name used in TypeScript to store predefined filter values. |
+| `FrozenColumnAlign` | [`FrozenColumnAlign`](#716-frozencolumnalign) | Gets or sets the alignment of a frozen column. |
+| `Header` | `string` | Gets or sets the header that will be displayed for the column in the table. |
+| `InitialWidth` | `double` | Gets or sets the initial width of the column. |
+| `SendColumnAttributes` | `bool` | Gets or sets a value indicating whether column attributes will be sent automatically in dynamic queries. |
+| `StartHidden` | `bool` | Gets or sets a value indicating whether the column starts hidden (if it can be hidden). |
+
+<br><br>
+
+
+
+#### 7.4.3 ColumnSortModel
+**Namespace:** `ECS.PrimengTable.Models`  
+
+Represents the base sorting configuration for a table column.  
+This model defines the field to sort by and the order of sorting (ascending or descending).
+
+<br>
+
+**_Properties_**
+| Property | Type | Description |
+|-|-|-|
+| `Field` | `string` | The field associated with the column to be sorted. |
+| `Order` | `int` | The order of the sorting. Example values: `1` for ascending, `-1` for descending. |
+
+<br><br>
+
+
+#### 7.4.4 ExcelExportRequestModel
+**Namespace:** `ECS.PrimengTable.Models`  
+**Inherits:** [`TableQueryRequestModel`](#747-tablequeryrequestmodel)  
+
+Represents a request to export table data to Excel.  
+Includes options to specify whether all columns should be exported and whether active filters and sorts should be applied.
+
+<br>
+
+**_Properties_**
+| Property | Type | Description |
+|-|-|-|
+| `AllColumns` | `bool` | If true, all columns will be included in the export, regardless of visibility. |
+| `ApplyFilters` | `bool` | If true, applies the currently active filters when exporting data. |
+| `ApplySorts` | `bool` | If true, applies the currently active sorts when exporting data. |
+| `Filename` | `string` | The name of the Excel file to be generated. |
+
+<br><br>
+
+
+
+#### 7.4.5 TableConfigurationModel
+**Namespace:** `ECS.PrimengTable.Models`  
+
+Represents the configuration of a table including column metadata, pagination, and date formatting.
+
+<br>
+
+**_Properties_**
+| Property | Type | Description |
+|-|-|-|
+| `AllowedItemsPerPage` | `int[]` | Allowed number of items per page for pagination. |
+| `ColumnsInfo` | [`List<ColumnMetadataModel>`](#742-columnmetadatamodel) | Metadata for each column in the table. |
+| `DateCulture` | `string` | Culture used for date localization in the table. |
+| `DateFormat` | `string` | Date format string used for displaying dates in the table. |
+| `DateTimezone` | `string` | Timezone used for date formatting in the table. |
+| `MaxViews` | `byte` | Maximum number of views allowed for a table configuration. |
+
+<br><br>
+
+
+
+#### 7.4.6 TablePagedResponseModel
+**Namespace:** `ECS.PrimengTable.Models`  
+
+Represents a paged response for a table query, including page info, total records, and the data itself.
+
+<br>
+
+**_Properties_**
+| Property | Type | Description |
+|-|-|-|
+| `Data` | `dynamic` | The actual data returned by the query to display in the table. |
+| `Page` | `int` | The current page number of the response. |
+| `TotalRecords` | `long` | Total number of records in the data set after filtering (if any). |
+| `TotalRecordsNotFiltered` | `long` | Total number of records in the data set before applying any filters. |
+
+<br><br>
+
+
+
+#### 7.4.7 TableQueryRequestModel
+**Namespace:** `ECS.PrimengTable.Models`  
+
+Represents a table query request, including pagination, sorting, filtering, and optional column selection.
+
+<br>
+
+**_Properties_**
+| Property | Type | Description |
+|----------|------|-------------|
+| `Columns` | `string[]?` | Optional list of columns to retrieve in the query. |
+| `DateCulture` | `string` | Culture string used for date localization. |
+| `DateFormat` | `string` | Date format string used for date values in the query. |
+| `DateTimezone` | `string` | Timezone string used for date formatting. |
+| `Filter` | [`Record<string, ColumnFilterModel[]>`](#741-columnfiltermodel) | Dictionary of column filters. The key is the column field name, and the value is a list of filters applied to that column. |
+| `GlobalFilter` | `string?` | Optional global filter applied to all columns. |
+| `Page` | `int` | The page number to retrieve (1-based index). |
+| `PageSize` | `byte` | Number of items per page. |
+| `Sort` | [`ColumnSortModel[]?`](#743-columnsortmodel) | List of sorting configurations to apply to the table columns. |
+
+<br><br>
+
+
+
+#### 7.4.8 ViewDataModel
+**Namespace:** `ECS.PrimengTable.Models`  
+
+Represents the view data for a table, including its alias, serialized data, and whether it is the last active view.
+
+<br>
+
+**_Properties_**
+| Property | Type | Description |
+|----------|------|-------------|
+| `LastActive` | `bool` | Indicates whether this view was the last active view. |
+| `ViewAlias` | `string` | Alias used to identify the view. |
+| `ViewData` | `string` | Serialized data for the view. |
+
+<br><br>
+
+
+
+#### 7.4.9 ViewLoadRequestModel
+**Namespace:** `ECS.PrimengTable.Models`  
+
+Represents a request to load a saved table view using its key.
+
+<br>
+
+**_Properties_**
+| Property | Type | Description |
+|----------|------|-------------|
+| `TableViewSaveKey` | `string` | Key identifying the saved table view to load. |
+
+<br><br>
+
+
+
+#### 7.4.10 ViewSaveRequestModel
+**Namespace:** `ECS.PrimengTable.Models`  
+**Inherits:** [`ViewLoadRequestModel`](#749-viewloadrequestmodel)  
+
+Represents a request to save one or multiple table views.
+
+<br>
+
+**_Properties_**
+| Property | Type | Description |
+|----------|------|-------------|
+| `Views` | [`List<ViewDataModel>`](#748-viewdatamodel) | List of table views to be saved. |
+
+<br><br>
+
+
+
+### 7.5 Services
+#### 7.5.1 ValidateItemsPerPageAndCols
+**Namespace:** `ECS.PrimengTable.Services`  
+**Type:** `static bool`
+
+<br>
+
+**_Summary_**  
+Validates the provided pagination and column configuration for a table.  
+Ensures that the specified number of items per page and visible columns match the allowed configuration defined in the system.
+```C#
+public static bool ValidateItemsPerPageAndCols(
+    byte itemsPerPage,
+    List<string>? columns,
+    int[]? allowedItemsPerPage = null
+)
+```
+
+<br>
+
+**_Parameters_**
+| Name | Type | Description |
+|-|-|-|
+| `itemsPerPage` | `byte` | Number of items to display per page. |
+| `columns` | `List<string>?` | List of column names currently selected or displayed. Can be null. |
+| `allowedItemsPerPage` | `int[]?` | Optional array of allowed items-per-page values for validation. |
+
+<br>
+
+**_Returns_**
+| Type | Description |
+|-|-|
+| `bool` | `true` if the provided configuration is valid; otherwise, `false` |
+
+<br><br>
+
+
+
+#### 7.5.2 GetTableConfiguration
+**Namespace:** `ECS.PrimengTable.Services`  
+**Type:** `static TableConfigurationModel`
+
+<br>
+
+**_Summary_**  
+Generates a `TableConfigurationModel` based on the metadata of the specified type `T`.  
+Inspects all properties of the given type and extracts column configuration using `ColumnAttributes`.
+
+<br>
+
+**_Remarks_**  
+Properties of `T` that lack `ColumnAttributes` will be skipped, and a warning message will be printed to the console.  
+Columns marked with `SendColumnAttributes = false` will also be ignored.
+```C#
+public static TableConfigurationModel GetTableConfiguration<T>(
+    int[]? allowedItemsPerPage = null,
+    string? dateFormat = null,
+    string? dateTimezone = null,
+    string? dateCulture = null,
+    byte? maxViews = null,
+    bool convertFieldToLower = true
+)
+```
+
+<br>
+
+**_Type Parameters_**
+| Name | Description |
+|-|-|
+| `T` | The class type representing the data model for which to generate the table configuration. |
+
+<br>
+
+**_Parameters_**
+| Name | Type | Description |
+|-|-|-|
+| `allowedItemsPerPage` | `int[]?` | Optional list of allowed pagination sizes. Defaults to `TableConfigurationDefaults.AllowedItemsPerPage`. |
+| `dateFormat` | `string?` | Optional date format string used for display. Defaults to `TableConfigurationDefaults.DateFormat`. |
+| `dateTimezone` | `string?` | Optional timezone string used for date formatting. Defaults to `TableConfigurationDefaults.DateTimezone`. |
+| `dateCulture` | `string?` | Optional culture string for date localization. Defaults to `TableConfigurationDefaults.DateCulture`. |
+| `maxViews` | `byte?` | Optional maximum number of views allowed for a table. Defaults to `TableConfigurationDefaults.MaxViews`. |
+| `convertFieldToLower` | `bool` | Indicates whether the first letter of each property name should be converted to lowercase in the output model. Defaults to `true`. |
+
+<br>
+
+**_Returns_**
+| Type | Description |
+|-|-|
+| [`TableConfigurationModel`](#745-tableconfigurationmodel) | Contains the table metadata derived from the annotated properties of the specified type. |
+
+<br><br>
+
+
+
+#### 7.5.3 PerformDynamicQuery
+**Namespace:** `ECS.PrimengTable.Services`  
+**Type:** `static TablePagedResponseModel`
+
+<br>
+
+**_Summary_**  
+Executes a full dynamic query pipeline on the provided base query, including filtering, sorting, pagination, and column projection, returning a paged and structured table response.
+
+<br>
+
+**_Remarks_**  
+This method orchestrates the query building process by delegating to helper methods such as `GetDynamicQueryBase`, `PerformPagination`, and `GetDynamicSelect`.
+```C#
+public static TablePagedResponseModel PerformDynamicQuery<T>(
+    TableQueryRequestModel inputData,
+    IQueryable<T> baseQuery,
+    MethodInfo? stringDateFormatMethod = null,
+    List<string>? defaultSortColumnName = null,
+    List<ColumnSort>? defaultSortOrder = null
+)
+```
+
+<br>
+
+**_Type Parameters_**
+| Name | Description |
+|-|-|
+| `T` | The entity type being queried. |
+
+<br>
+
+**_Parameters_**
+| Name | Type | Description |
+|-|-|-|
+| `inputData` | [`TableQueryRequestModel`](#747-tablequeryrequestmodel) | The input model containing filters, sorting, and pagination parameters. |
+| `baseQuery` | `IQueryable<T>` | The base query to apply dynamic operations on. |
+| `stringDateFormatMethod` | `MethodInfo?` | Optional reflection method used to apply a specific date formatting function to string date columns. |
+| `defaultSortColumnName` | `List<string>?` | Optional list of column names to use for sorting when no explicit sort is provided in `inputData`. |
+| `defaultSortOrder` | [`List<ColumnSort>?`](#712-columnsort) | Optional list of sort directions (`ColumnSort`) matching the default columns. |
+
+<br>
+
+**_Returns_**
+| Type | Description |
+|-|-|
+| [`TablePagedResponseModel`](#746-tablepagedresponsemodel) | Contains the filtered, sorted, paginated, and projected data, along with total record counts for both filtered and unfiltered datasets and the current page information. |
+
+<br><br>
+
+
+
+#### 7.5.4 GenerateExcelReport  
+**Namespace:** `ECS.PrimengTable.Services`  
+**Type:** `static (bool, byte[]?, string)`
+
+<br>
+
+**_Summary_**  
+Generates an Excel report from the provided query and export configuration.  
+The method executes the dynamic query pipeline (filters, sorting, pagination), selects the requested columns, and writes the results into an Excel workbook, which is returned as a byte array.
+
+<br>
+
+**_Remarks_**  
+This method acts as a high-level entry point for Excel export operations.  
+It delegates the core logic to `ExcelExportService.GenerateExcelReport`, which handles query execution, pagination, and Excel file generation.
+```C#
+public static (bool success, byte[]? reportFile, string statusMessage) GenerateExcelReport<T>(
+    ExcelExportRequestModel inputData,
+    IQueryable<T> baseQuery,
+    MethodInfo? stringDateFormatMethod = null,
+    List<string>? defaultSortColumnName = null,
+    List<ColumnSort>? defaultSortOrder = null,
+    string sheetName = "MAIN",
+    byte pageStack = 250
+)
+```
+
+<br>
+
+**_Type Parameters_**  
+| Name | Description |  
+|-|-|  
+| `T` | The entity type being queried and exported. |  
+
+<br>
+
+**_Parameters_**  
+| Name | Type | Description |  
+|-|-|-|  
+| `inputData` | [`ExcelExportRequestModel`](#744-excelexportrequestmodel) | Export request model containing pagination, sorting, filtering, and column selection options. |  
+| `baseQuery` | `IQueryable<T>` | The base query to apply dynamic operations on. |  
+| `stringDateFormatMethod` | `MethodInfo?` | Optional reflection method used to apply a specific date formatting function to string date columns. |  
+| `defaultSortColumnName` | `List<string>?` | Optional list of column names to use for sorting when no explicit sort is provided. |  
+| `defaultSortOrder` | [`List<ColumnSort>?`](#712-columnsort) | Optional list of sort directions (`ColumnSort`) matching the default columns. |  
+| `sheetName` | `string` | Name of the worksheet to create in the workbook. Defaults to `"MAIN"`. |  
+| `pageStack` | `byte` | Number of records to process per internal pagination batch (memory page). Defaults to `250`. |  
+
+<br>
+
+**_Returns_**  
+Returns a tuple with the following elements:  
+| Name | Type | Description |  
+|-|-|-|  
+| `success` | `bool` | `true` if the Excel generation succeeded; `false` otherwise. |  
+| `reportFile` | `byte[]?` | The generated Excel file as a byte array, or `null` if generation failed. |  
+| `statusMessage` | `string` | Status message or error description related to the export process. |
+
+<br><br>
+
+
+
+#### 7.5.5 GetViewsAsync  
+**Namespace:** `ECS.PrimengTable.Services`  
+**Type:** `static async Task<List<ViewDataModel>>`
+
+<br>
+
+**_Summary_**  
+Retrieves all saved views for the specified user and table.  
+This method acts as a high-level entry point to obtain personalized table configurations stored for each user.
+```C#
+public static async Task<List<ViewDataModel>> GetViewsAsync<TEntity, TUsername>(
+    DbContext context,
+    TUsername username,
+    string tableKey
+)
+```
+
+<br>
+
+**_Type Parameters_**  
+| Name | Description |  
+|-|-|  
+| `TEntity` | The entity type implementing `ITableViewEntity<TUsername>`. |  
+| `TUsername` | The username type used to identify the user. |  
+
+<br>
+
+**_Parameters_**  
+| Name | Type | Description |  
+|-|-|-|  
+| `context` | `DbContext` | The database context used to access the stored views. |  
+| `username` | `TUsername` | The username whose saved views will be retrieved. |  
+| `tableKey` | `string` | The key identifying the table configuration for which views are stored. |  
+
+<br>
+
+**_Returns_**  
+| Type | Description |  
+|-|-|  
+| [`Task<List<ViewDataModel>>`](#748-viewdatamodel) | A list of user-defined table views stored for the specified table. |  
+
+<br><br>
+
+
+
+#### 7.5.6 SaveViewsAsync  
+**Namespace:** `ECS.PrimengTable.Services`  
+**Type:** `static async Task`
+
+<br>
+
+**_Summary_**  
+Saves or updates the provided list of views for the specified user and table.  
+Existing views are updated, new ones are added, and any views not included in the provided list are deleted.
+
+<br>
+
+**_Remarks_**  
+The operation is transactional. If any exception occurs during processing, all pending changes are rolled back to preserve data integrity.  
+```C#
+public static async Task SaveViewsAsync<TEntity, TUsername>(
+    DbContext context,
+    TUsername username,
+    string tableKey,
+    List<ViewDataModel> views
+)
+```
+
+<br>
+
+**_Type Parameters_**  
+| Name | Description |  
+|-|-|  
+| `TEntity` | The entity type implementing `ITableViewEntity<TUsername>`. |  
+| `TUsername` | The username type used to identify the user. |  
+
+<br>
+
+**_Parameters_**  
+| Name | Type | Description |  
+|-|-|-|  
+| `context` | `DbContext` | The database context used to perform insert, update, and delete operations. |  
+| `username` | `TUsername` | The username for which the views will be saved. |  
+| `tableKey` | `string` | The key identifying the table configuration related to the views. |  
+| `views` | [`List<ViewDataModel>`](#748-viewdatamodel) | The list of views to be saved or updated. |  
 
 <br><br><br>
 
@@ -3501,6 +4213,7 @@ Main public entry point of the `ECS.PrimengTable` library. This class exposes al
 
 ---
 ## 8 Frontend component reference
+WIP
 
 <br><br><br>
 
