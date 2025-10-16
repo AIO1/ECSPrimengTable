@@ -88,7 +88,32 @@ namespace ECS.PrimengTable.Services {
             return TableQueryProcessingService.PerformDynamicQuery<T>(inputData, baseQuery, stringDateFormatMethod, defaultSortColumnName, defaultSortOrder);
         }
 
-        public static (bool, byte[]?, string) GenerateExcelReport<T>(
+        /// <summary>
+        /// Generates an Excel report from the provided query and export configuration.
+        /// The method executes the dynamic query pipeline (filters, sorting, pagination), selects the requested columns,
+        /// and writes the results into an Excel workbook which is returned as a byte array.
+        /// </summary>
+        /// <remarks>
+        /// This method acts as a high-level entry point for Excel export operations.  
+        /// It delegates the core logic to <c>ExcelExportService.GenerateExcelReport</c>, which handles query execution, pagination, and Excel file generation.
+        /// </remarks>
+        /// <typeparam name="T">The entity type being queried and exported.</typeparam>
+        /// <param name="inputData">Export request model containing pagination, sorting, filtering and column selection options.</param>
+        /// <param name="baseQuery">The base <see cref="IQueryable{T}"/> to apply dynamic operations on.</param>
+        /// <param name="stringDateFormatMethod">Optional reflection method used to apply a specific date formatting function to string date columns.</param>
+        /// <param name="defaultSortColumnName">Optional list of column names to use for sorting when no explicit sort is provided in the input.</param>
+        /// <param name="defaultSortOrder">Optional list of sort directions (<see cref="ColumnSort"/>) matching the default columns.</param>
+        /// <param name="sheetName">Name of the worksheet to create in the workbook. Defaults to "MAIN".</param>
+        /// <param name="pageStack">Number of records to process per internal pagination batch (memory page). Defaults to 250.</param>
+        /// <returns>
+        /// A tuple containing:
+        /// <list type="bullet">
+        /// <item><description><c>success</c> — true if the Excel generation succeeded; false otherwise.</description></item>
+        /// <item><description><c>reportFile</c> — the generated Excel file as a byte array, or null if generation failed.</description></item>
+        /// <item><description><c>statusMessage</c> — status message or error description related to the export process.</description></item>
+        /// </list>
+        /// </returns>
+        public static (bool success, byte[]? reportFile, string statusMessage) GenerateExcelReport<T>(
             ExcelExportRequestModel inputData,
             IQueryable<T> baseQuery,
             MethodInfo? stringDateFormatMethod = null,
@@ -100,6 +125,15 @@ namespace ECS.PrimengTable.Services {
             return ExcelExportService.GenerateExcelReport<T>(inputData, baseQuery, stringDateFormatMethod, defaultSortColumnName, defaultSortOrder, sheetName, pageStack);
         }
 
+        /// <summary>
+        /// Retrieves all saved views for the specified user and table.
+        /// </summary>
+        /// <typeparam name="TEntity">The entity type implementing <see cref="ITableViewEntity{TUsername}"/>.</typeparam>
+        /// <typeparam name="TUsername">The username type used to identify the user.</typeparam>
+        /// <param name="context">The <see cref="DbContext"/> used to access the database.</param>
+        /// <param name="username">The username whose views are being retrieved.</param>
+        /// <param name="tableKey">The table key identifying the table configuration.</param>
+        /// <returns>A list of <see cref="ViewDataModel"/> objects representing the saved views.</returns>
         public static async Task<List<ViewDataModel>> GetViewsAsync<TEntity, TUsername>(
             DbContext context,
             TUsername username,
@@ -109,6 +143,18 @@ namespace ECS.PrimengTable.Services {
             return await svc.GetViewsAsync(username, tableKey);
         }
 
+        /// <summary>
+        /// Saves or updates the provided views for the specified user and table. Existing views are updated, new ones are added, and views not included in the provided list are deleted.
+        /// </summary>
+        /// <remarks>
+        /// The operation is transactional. If any exception occurs during processing, all pending changes are rolled back to preserve data integrity.
+        /// </remarks>
+        /// <typeparam name="TEntity">The entity type implementing <see cref="ITableViewEntity{TUsername}"/>.</typeparam>
+        /// <typeparam name="TUsername">The username type used to identify the user.</typeparam>
+        /// <param name="context">The <see cref="DbContext"/> used to access the database.</param>
+        /// <param name="username">The username for which the views will be saved.</param>
+        /// <param name="tableKey">The table key identifying the table configuration.</param>
+        /// <param name="views">A list of <see cref="ViewDataModel"/> objects to be saved or updated.</param>
         public static async Task SaveViewsAsync<TEntity, TUsername>(
             DbContext context,
             TUsername username,
@@ -118,6 +164,5 @@ namespace ECS.PrimengTable.Services {
             var svc = new TableViewService<TEntity, TUsername>(context);
             await svc.SaveViewsAsync(username, tableKey, views);
         }
-
     }
 }

@@ -1,20 +1,26 @@
-﻿/// <summary>
-/// Represents the base filter configuration for a table column.
-/// </summary>
-namespace ECS.PrimengTable.Models {
+﻿namespace ECS.PrimengTable.Models {
+
+    /// <summary>
+    /// Represents the configuration of a filter applied to a table column.
+    /// This model defines the value, the matching mode, and the logical operator used for filtering.
+    /// </summary>
     public class ColumnFilterModel {
+
         /// <summary>
-        /// Gets or sets the value of the filter.
+        /// The value used to filter the column.
+        /// Can be any type depending on the column's data type (string, number, date, etc.).
         /// </summary>
         public dynamic? Value { get; set; }
 
         /// <summary>
-        /// Gets or sets the match mode for the filter.
+        /// The match mode to apply when filtering the column.
+        /// Examples: "equals", "contains", "startsWith", "endsWith".
         /// </summary>
         public string MatchMode { get; set; } = null!;
 
         /// <summary>
-        /// Gets or sets the operator for the filter.
+        /// The logical operator to combine this filter with others.
+        /// Examples: "AND", "OR".
         /// </summary>
         public string Operator { get; set; } = null!;
     }

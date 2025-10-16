@@ -1,25 +1,27 @@
 ﻿namespace ECS.PrimengTable.Models {
+
     /// <summary>
-    /// Represents the structure of the response returned by a PrimeNG table POST request.
+    /// Represents a paged response for a table query, including page info, total records, and the data itself.
     /// </summary>
     public class TablePagedResponseModel {
+
         /// <summary>
-        /// Gets or sets the current page number.
+        /// The current page number of the response.
         /// </summary>
         public int Page { get; set; }
 
         /// <summary>
-        /// Gets or sets the total number of records available from filter.
+        /// Total number of records in the data set after filtering (if any).
         /// </summary>
         public long TotalRecords { get; set; }
 
         /// <summary>
-        /// Gets or sets the total number of records available (without filters).
+        /// Total number of records in the data set before applying any filters.
         /// </summary>
         public long TotalRecordsNotFiltered { get; set; }
 
         /// <summary>
-        /// Gets or sets dynamic data representing the response content.
+        /// The actual data returned by the query to display in the table.
         /// </summary>
         public dynamic Data { get; set; } = null!;
     }

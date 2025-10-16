@@ -5,8 +5,38 @@ using System.Globalization;
 using System.Reflection;
 
 namespace ECS.PrimengTable.Services {
+    /// <summary>
+    /// Provides internal logic for generating Excel reports from dynamic table queries.
+    /// This service executes the query pipeline, retrieves data and formats it into a structured Excel file using ClosedXML.
+    /// </summary>
+    /// <remarks>
+    /// This class is intended for internal use only and should not be accessed directly.
+    /// External consumers should use <see cref="EcsPrimengTableService"/> instead.
+    /// </remarks>
     internal class ExcelExportService {
-        internal static (bool, byte[]?, string) GenerateExcelReport<T>(ExcelExportRequestModel inputDataAll, IQueryable<T> baseQuery, MethodInfo? stringDateFormatMethod = null, List<string>? defaultSortColumnName = null, List<ColumnSort>? defaultSortOrder = null, string sheetName = "MAIN", byte pageStack = 250) {
+
+        /// <summary>
+        /// Generates an Excel report from the provided query and export configuration.
+        /// The method executes the dynamic query pipeline (filters, sorting, pagination), selects the requested columns,
+        /// and writes the results into an Excel workbook which is returned as a byte array.
+        /// </summary>
+        /// <typeparam name="T">The entity type being queried and exported.</typeparam>
+        /// <param name="inputDataAll">Export request model containing pagination, sorting, filtering and column selection options.</param>
+        /// <param name="baseQuery">The base <see cref="IQueryable{T}"/> to apply dynamic operations on.</param>
+        /// <param name="stringDateFormatMethod">Optional reflection method used to apply a specific date formatting function to string date columns.</param>
+        /// <param name="defaultSortColumnName">Optional list of column names to use for sorting when no explicit sort is provided in the input.</param>
+        /// <param name="defaultSortOrder">Optional list of sort directions (<see cref="ColumnSort"/>) matching the default columns.</param>
+        /// <param name="sheetName">Name of the worksheet to create in the workbook. Defaults to "MAIN".</param>
+        /// <param name="pageStack">Number of records to process per internal pagination batch (memory page). Defaults to 250.</param>
+        /// <returns>
+        /// A tuple containing:
+        /// <list type="bullet">
+        /// <item><description><c>success</c> — true if the Excel generation succeeded; false otherwise.</description></item>
+        /// <item><description><c>reportFile</c> — the generated Excel file as a byte array, or null if generation failed.</description></item>
+        /// <item><description><c>statusMessage</c> — status message or error description related to the export process.</description></item>
+        /// </list>
+        /// </returns>
+        internal static (bool success, byte[]? reportFile, string statusMessage) GenerateExcelReport<T>(ExcelExportRequestModel inputDataAll, IQueryable<T> baseQuery, MethodInfo? stringDateFormatMethod = null, List<string>? defaultSortColumnName = null, List<ColumnSort>? defaultSortOrder = null, string sheetName = "MAIN", byte pageStack = 250) {
             try {
                 TableQueryRequestModel inputData = new() {
                     Page = inputDataAll.Page,
@@ -18,12 +48,13 @@ namespace ECS.PrimengTable.Services {
                     DateFormat = inputDataAll.DateFormat,
                     DateTimezone = inputDataAll.DateTimezone,
                     DateCulture = inputDataAll.DateCulture
-                };
-                DateTime reportDate = DateTime.UtcNow;
-                string reportDateFormatted = reportDate.ToString("dd-MMM-yyyy hh:mm:ss", CultureInfo.GetCultureInfo("en-US"));
-                TableConfigurationModel columnsInfo = EcsPrimengTableService.GetTableConfiguration<T>(convertFieldToLower: false); // Get columns information for the table
-
-                if(inputDataAll.AllColumns) { // If we have to export all the columns
+                }; // Build a TableQueryRequestModel from the provided export input
+                if(!inputDataAll.ApplySorts) {
+                    inputData.Sort = [];
+                }
+                string reportDateFormatted = DateTime.UtcNow.ToString("dd-MMM-yyyy hh:mm:ss", CultureInfo.GetCultureInfo("en-US")); // Generate timestamp for the report
+                TableConfigurationModel columnsInfo = EcsPrimengTableService.GetTableConfiguration<T>(convertFieldToLower: false); // Retrieve table configuration (column metadata)
+                if(inputDataAll.AllColumns) { // If exporting all columns, include all column fields from the configuration
                     inputData.Columns = columnsInfo.ColumnsInfo
                         .Select(column => column.Field)
                         .ToList();
@@ -35,63 +66,21 @@ namespace ECS.PrimengTable.Services {
                             var propName = char.ToUpperInvariant(column[0]) + column.Substring(1);
                             return item.GetType().GetProperty(propName)?.GetValue(item);
                         })
-                    );
-                long totalRecordsNotFiltered = 0; // All available records
-                long totalRecords = 0; // Number of records after applying filters
-                string fieldName;
-                TableQueryProcessingService.GetDynamicQueryBase<T>(ref inputData, ref baseQuery, ref totalRecordsNotFiltered, ref totalRecords, stringDateFormatMethod, defaultSortColumnName, defaultSortOrder, inputDataAll.ApplySorts, inputDataAll.ApplyFilters);
-                using(XLWorkbook workbook = new XLWorkbook()) {
+                    ); // Prepare property accessors for dynamic value extraction
+                long totalRecordsNotFiltered = 0; // Initialize counter of total available records
+                long totalRecords = 0; // Initialize counter of filtered record count
+                string fieldName; // Used to track the name of the current column
+                TableQueryProcessingService.GetDynamicQueryBase<T>(ref inputData, ref baseQuery, ref totalRecordsNotFiltered, ref totalRecords, stringDateFormatMethod, defaultSortColumnName, defaultSortOrder, true, inputDataAll.ApplyFilters); // Execute dynamic query pipeline (filter, sort, etc.)
+                using(XLWorkbook workbook = new()) { // Create Excel workbook
                     IXLWorksheet worksheet = workbook.AddWorksheet(sheetName); // Add the new worksheet that will have the data
-                    int numberOfColumns = inputData.Columns!.Count;
-                    for(int col = 0; col < numberOfColumns; col++) {
-                        fieldName = inputData.Columns[col];
-                        worksheet.Cell(2, col + 1).Value = columnsInfo.ColumnsInfo.First(c => c.Field == fieldName).Header.ToString();
+                    int numberOfColumns = inputData.Columns!.Count; // Get the number of columns
+                    for(int col = 0; col < numberOfColumns; col++) { // Loop through all the columns
+                        fieldName = inputData.Columns[col]; // Get the name of the column
+                        worksheet.Cell(2, col + 1).Value = columnsInfo.ColumnsInfo.First(c => c.Field == fieldName).Header.ToString(); // Write the name of the column
                     }
-                    inputData.PageSize = pageStack; // We will change the stack of records to get per page into memory before writing to Excel
-                    int currentPage = -1; // To count the page we are at in the while loop
-                    int loopStartPage = -1; // Used to determine when we have to get out of the loop
-                    int currentRow = 3; // The row we must write the data to
-                    while(true) {
-                        loopStartPage = currentPage;
-                        currentPage++;
-                        IQueryable<T> pagedItems = TableQueryProcessingService.PerformPagination(baseQuery, totalRecords, ref currentPage, inputData.PageSize); // Perform the pagination
-                        if(currentPage == loopStartPage) { // If there are no more pages left exit the for loop
-                            break;
-                        }
-                        List<dynamic> dataResult = TableQueryProcessingService.GetDynamicSelect(pagedItems, inputData.Columns!); // Limit the columns that are going to be selected
-                        for(int row = 0; row < dataResult.Count; row++) { // Loop through each row
-                            for(int col = 0; col < numberOfColumns; col++) { // Loop through each column
-                                fieldName = inputData.Columns[col];
-                                dynamic? cellValue = propertyAccessors[fieldName](dataResult[row]);
-                                DataType dataType = columnsInfo.ColumnsInfo.First(c => c.Field == fieldName).DataType;
-                                if(row == 0 && dataType == DataType.Date) {
-                                    worksheet.Column(col + 1).Style.NumberFormat.Format = "dd-mmm-yyyy hh:mm:ss";
-                                }
-                                if(cellValue == null) {
-                                    worksheet.Cell(currentRow, col + 1).Value = "";
-                                } else {
-                                    worksheet.Cell(currentRow, col + 1).Value = dataType switch {
-                                        DataType.Text => cellValue.ToString(),
-                                        DataType.Numeric => Convert.ToDouble(cellValue),
-                                        DataType.Date when cellValue is DateTime => cellValue,
-                                        DataType.Boolean => Convert.ToBoolean(cellValue),
-                                        _ => cellValue
-                                    };
-                                }
-                            }
-                            currentRow++; // Move to the next row to write
-                        }
-                    }
-                    worksheet.Range($"A1:{GetExcelColumnLetter(numberOfColumns)}1").Merge().Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
-                    worksheet.Cell(1, 1).Value = $"Report date: {reportDateFormatted}";
-                    currentRow = Math.Max(1, currentRow - 1);
-                    IXLRange range = worksheet.Range($"A1:{GetExcelColumnLetter(numberOfColumns)}{currentRow}"); // Get the range to add borders
-                    range.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-                    range.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
-                    worksheet.Range($"A2:{GetExcelColumnLetter(numberOfColumns)}2").SetAutoFilter(); // Add autofilter
-                    worksheet.Row(2).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center; // Center horizontally the title
-                    worksheet.SheetView.FreezeRows(2);
-                    worksheet.Columns().AdjustToContents();
+                    int currentRow = 3; // The row we must write the data to, strating on row 3
+                    WriteExportDataToWorksheet<T>(worksheet, baseQuery, inputData, columnsInfo, propertyAccessors, totalRecords, pageStack, ref currentRow); // Execute the logic to wirte all data to the Excel worksheet
+                    ApplyExportFormatting(worksheet, reportDateFormatted, numberOfColumns, currentRow); // Apply the export format
                     using(MemoryStream memoryStream = new()) {
                         workbook.SaveAs(memoryStream);
                         memoryStream.Seek(0, SeekOrigin.Begin); // Move the pointer to the begining of the stream
@@ -102,14 +91,94 @@ namespace ECS.PrimengTable.Services {
                 return (false, null, $"Error generating the Excel file: {ex.Message}");
             }
         }
-        private static string GetExcelColumnLetter(int columnNumber) {
-            var columnLetter = new System.Text.StringBuilder();
-            while(columnNumber > 0) {
-                int modulo = (columnNumber - 1) % 26;
-                columnLetter.Insert(0, Convert.ToChar(65 + modulo));
-                columnNumber = (columnNumber - modulo) / 26;
+
+        /// <summary>
+        /// Writes paginated query results into the given Excel worksheet.
+        /// Fetches data page by page from the IQueryable source, applies the column mapping,
+        /// and fills each cell with the properly formatted value.
+        /// </summary>
+        /// <typeparam name="T">Type of the entity to export.</typeparam>
+        /// <param name="worksheet">Target Excel worksheet where data will be written.</param>
+        /// <param name="baseQuery">The base query used to retrieve data from the database.</param>
+        /// <param name="inputData">Query configuration containing filters, columns, and pagination info.</param>
+        /// <param name="columnsInfo">Metadata of the columns, including data types and headers.</param>
+        /// <param name="propertyAccessors">Dictionary of compiled property accessors for dynamic value retrieval.</param>
+        /// <param name="totalRecords">Total number of records that match the filters.</param>
+        /// <param name="pageStack">Number of records to load per iteration.</param>
+        /// <param name="currentRow">Reference to the current worksheet row index (used to continue writing).</param>
+        private static void WriteExportDataToWorksheet<T>(IXLWorksheet worksheet, IQueryable<T> baseQuery, TableQueryRequestModel inputData, TableConfigurationModel columnsInfo, Dictionary<string, Func<object, object?>> propertyAccessors, long totalRecords, byte pageStack, ref int currentRow) {
+            inputData.PageSize = pageStack; // Set how many records to process per page (chunk size)
+            int currentPage = -1; // Track the current page index
+            int loopStartPage = -1; // Used to detect when pagination is finished
+            int numberOfColumns = inputData.Columns!.Count; // Total number of columns to write                           
+            Dictionary<string, DataType> columnTypeLookup = columnsInfo.ColumnsInfo.ToDictionary(c => c.Field, c => c.DataType); // Build lookup dictionary: Field -> DataType
+            while(true) { // Continue fetching pages until no more records are returned
+                loopStartPage = currentPage; // Save current page index before fetching
+                currentPage++; // Move to next page
+                IQueryable<T> pagedItems = TableQueryProcessingService.PerformPagination(
+                    baseQuery, totalRecords, ref currentPage, inputData.PageSize); // Get paged results (PerformPagination will update currentPage if there are no more pages)
+                if(currentPage == loopStartPage) { // Exit loop if there are no more records to process
+                    break; 
+                }
+                List<dynamic> dataResult = TableQueryProcessingService.GetDynamicSelect(
+                    pagedItems, inputData.Columns!); // Select dynamic data limited to the requested columns
+                for(int row = 0; row < dataResult.Count; row++) { // Loop through each record (row)
+                    for(int col = 0; col < numberOfColumns; col++) { // Loop through each field (column)
+                        string fieldName = inputData.Columns[col]; // Get field name
+                        DataType dataType = columnTypeLookup[fieldName]; // Resolve the column data type
+                        dynamic? cellValue = propertyAccessors[fieldName](dataResult[row]); // Get property value
+                        if(row == 0 && dataType == DataType.Date) { // Apply Excel date format only once per column (on first row)
+                            worksheet.Column(col + 1).Style.NumberFormat.Format = "dd-mmm-yyyy hh:mm:ss"; // Apply the date format
+                        }
+                        if(cellValue == null) { // If current cell value is null
+                            worksheet.Cell(currentRow, col + 1).Value = ""; // Set the cell value in the Excel to empty
+                        } else { // If current cell value has data, write cell value in Excel based on type
+                            worksheet.Cell(currentRow, col + 1).Value = dataType switch {
+                                DataType.Text => cellValue.ToString(),
+                                DataType.Numeric => Convert.ToDouble(cellValue),
+                                DataType.Date when cellValue is DateTime => cellValue,
+                                DataType.Boolean => Convert.ToBoolean(cellValue),
+                                _ => cellValue
+                            };
+                        }
+                    }
+                    currentRow++; // Move to the next worksheet row
+                }
             }
-            return columnLetter.ToString();
+        }
+
+        /// <summary>
+        /// Applies final formatting to the worksheet for export (borders, autofilter, title row, etc.).
+        /// </summary>
+        private static void ApplyExportFormatting(IXLWorksheet worksheet, string reportDateFormatted, int numberOfColumns, int currentRow) {
+            worksheet.Range($"A1:{GetExcelColumnLetter(numberOfColumns)}1").Merge().Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left; // Merge title row and set alignment
+            worksheet.Cell(1, 1).Value = $"Report date: {reportDateFormatted}"; // Write the format date
+            currentRow = Math.Max(1, currentRow - 1);
+            IXLRange range = worksheet.Range($"A1:{GetExcelColumnLetter(numberOfColumns)}{currentRow}"); // Get the range to add borders
+            range.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+            range.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+
+            // Setup autofilter and freeze header row
+            worksheet.Range($"A2:{GetExcelColumnLetter(numberOfColumns)}2").SetAutoFilter();
+            worksheet.Row(2).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            worksheet.SheetView.FreezeRows(2);
+
+            worksheet.Columns().AdjustToContents(); // Auto-fit columns
+        }
+
+        /// <summary>
+        /// Converts a 1-based column number into its corresponding Excel column letter (e.g., 1 -> "A", 27 -> "AA").
+        /// </summary>
+        /// <param name="columnNumber">1-based column index.</param>
+        /// <returns>The Excel column letter representation for the given column number.</returns>
+        private static string GetExcelColumnLetter(int columnNumber) {
+            var columnLetter = new System.Text.StringBuilder(); // StringBuilder to efficiently build the result
+            while(columnNumber > 0) { // Continue looping until the column number is reduced to 0
+                int modulo = (columnNumber - 1) % 26; // Get remainder to determine the current letter (A-Z)
+                columnLetter.Insert(0, Convert.ToChar(65 + modulo)); // Convert remainder to uppercase ASCII letter (A=65)
+                columnNumber = (columnNumber - modulo) / 26; // Reduce the column number for the next iteration
+            }
+            return columnLetter.ToString(); // Return the resulting Excel column string (e.g., "A", "AA", "ZZ")
         }
     }
 }
