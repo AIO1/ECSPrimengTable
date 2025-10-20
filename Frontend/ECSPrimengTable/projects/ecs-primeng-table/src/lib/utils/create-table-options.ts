@@ -27,10 +27,10 @@ function deepMerge<T>(target: T, source: Partial<T>): T {
  * Create table options based on defaults, with optional overrides.
  */
 export function createTableOptions(overrides: Partial<ITableOptions> = {}): ITableOptions {
-  const defaultsCopy = JSON.parse(JSON.stringify(DEFAULT_TABLE_OPTIONS)); // clona solo datos
+  const defaultsCopy = JSON.parse(JSON.stringify(DEFAULT_TABLE_OPTIONS)); // clone only data
   const merged = deepMerge(defaultsCopy as any, overrides);
 
-  // reasignar funciones si existen en overrides
+  // Reasign function if they exist in override
   if (overrides.rows?.style) merged.rows.style = overrides.rows.style;
   if (overrides.rows?.class) merged.rows.class = overrides.rows.class;
 

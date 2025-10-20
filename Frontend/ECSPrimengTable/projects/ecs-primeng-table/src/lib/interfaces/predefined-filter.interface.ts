@@ -1,9 +1,10 @@
 /**
- * Represents a predefined filter value for a column in **ECS PrimeNG tables**.
+ * Represents a predefined filter value for a column in **ECS PrimeNG table**.
  * 
  * Allows displaying a value as text, tag, icon or image (from URL or blob) with optional styles and colors.
  */
 export interface IPredefinedFilter {
+    
     /**
      * The underlying value of the cell. Must match the data returned from the backend for proper filtering and mapping.
      * 

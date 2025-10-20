@@ -99,14 +99,14 @@ export class ECSPrimengTableService {
           styles['overflow'] = 'hidden';
         break;
 
-        case CellOverflowBehaviour.Ellipsis:
+        /*case CellOverflowBehaviour.Ellipsis:
           styles['white-space'] = 'nowrap';
           styles['overflow'] = 'hidden';
           styles['text-overflow'] = 'ellipsis';
           styles['width'] = '100%';
           styles['min-width'] = '100%';
           styles['max-width'] = '100%';
-        break;
+        break;*/
         /*
           display: block;
   width: 100%;  

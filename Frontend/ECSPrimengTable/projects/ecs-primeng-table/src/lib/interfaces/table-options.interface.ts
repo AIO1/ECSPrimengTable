@@ -469,6 +469,7 @@ export interface ITableOptions {
     copyToClipboardTime?: number;
 }
 
+/** Default configuration options for ECS Primeng table */
 export const DEFAULT_TABLE_OPTIONS: ITableOptions = {
     isActive: true,
     data: [],

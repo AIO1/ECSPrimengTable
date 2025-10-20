@@ -2,6 +2,7 @@
  * Interface representing a table action button, applicable for both header and row buttons.
  */
 export interface ITableButton {
+    
     /**
      * Optional. The icon to display on the button.
      * Should be a valid icon name from PrimeNG, Material Icons, Font Awesome, or similar libraries.
