@@ -4213,7 +4213,281 @@ public static async Task SaveViewsAsync<TEntity, TUsername>(
 
 ---
 ## 8 Frontend component reference
-WIP
+This section describes the frontend utilities provided by the `@eternalcodestudio/primeng-table` Angular library.
+
+It includes enums, interfaces, utilities, services, and components used to configure and render the ECS PrimeNG Table in the frontend.
+
+> [!NOTE]  
+> Only **public exports and APIs intended for external use** are documented here. Internal helpers, private methods, and internal-only modules are not covered.
+
+<br><br>
+
+
+
+### 8.1 Enums
+#### 8.1.1 CellOverflowBehaviour  
+**_Summary_**  
+Defines how content that overflows a table cell is displayed.  
+Specifies the visual behavior of cell content when it exceeds the cell’s width.
+
+<br>
+
+**_Values_**
+| Name | Value | Description |
+|-|-|-|
+| `Hidden` | 0 | The overflowing content is clipped and not visible. |
+| `Wrap` | 1 | The content wraps onto multiple lines to fit within the cell. |
+
+<br><br>
+
+
+#### 8.1.2 DataAlignHorizontal  
+**_Summary_**  
+Defines the horizontal alignment of content within a table cell.  
+Specifies how the content inside a cell is positioned horizontally relative to the cell's width.
+
+<br>
+
+**_Values_**
+| Name | Value | Description |
+|-|-|-|
+| `Left` | 0 | Content is aligned to the left side of the cell. |
+| `Center` | 1 | Content is aligned to the center of the cell. |
+| `Right` | 2 | Content is aligned to the right side of the cell. |
+
+<br><br>
+
+
+
+#### 8.1.3 DataAlignVertical  
+**_Summary_**  
+Enum representing the vertical alignment of content within a table cell.  
+Determines how the content inside a cell is positioned vertically relative to the cell's height.
+
+<br>
+
+**_Values_**
+| Name | Value | Description |
+|-|-|-|
+| `Top` | 0 | Align content to the top of the cell. |
+| `Middle` | 1 | Align content to the vertical middle of the cell. |
+| `Bottom` | 2 | Align content to the bottom of the cell. |
+
+<br><br>
+
+
+
+#### 8.1.4 DataType  
+**_Summary_**  
+Enum representing the different types of data a table column can hold.  
+Used to determine how values should be rendered, formatted, and filtered in the table component.
+
+<br>
+
+**_Values_**
+| Name | Value | Description |
+|-|-|-|
+| `Text` | 0 | Plain text string values. |
+| `Numeric` | 1 | Numeric values, e.g., integers or decimals. |
+| `Boolean` | 2 | Boolean values (true/false). |
+| `Date` | 3 | Date or datetime values. |
+| `List` | 4 | List of values, stored as a string separated by a delimiter (";"). |
+
+<br><br>
+
+
+
+#### 8.1.5 FrozenColumnAlign  
+**_Summary_**  
+Enum representing the alignment of frozen columns in a table.  
+Used to determine if a column should be frozen, and if so, on which side of the table it should appear.
+
+<br>
+
+**_Values_**
+| Name | Value | Description |
+|-|-|-|
+| `Noone` | 0 | The column is not frozen. |
+| `Left` | 1 | The column is frozen on the left side of the table. |
+| `Right` | 2 | The column is frozen on the right side of the table. |
+
+<br><br>
+
+
+
+#### 8.1.6 TableViewSaveMode  
+**_Summary_**  
+Represents the mode used to save the state or configuration of a table view.  
+Determines where and how the table’s view settings (such as column order, filters, and sorting) are persisted.
+
+<br>
+
+**_Values_**
+| Name | Value | Description |
+|-|-|-|
+| `None` | 0 | Views are disabled. |
+| `SessionStorage` | 1 | Save the table view state in the browser’s sessionStorage (cleared when the tab is closed). |
+| `LocalStorage` | 2 | Save the table view state in the browser’s localStorage (persists across sessions). |
+| `DatabaseStorage` | 3 | Save the table view state in a backend database (requires server support). |
+
+<br><br>
+
+
+### 8.2 Interfaces
+#### 8.2.1 IColumnMetadata  
+**_Summary_**  
+Represents the metadata for a table column.  
+Provides configuration options for column behavior, appearance, and user interaction within the ECS PrimeNG Table.
+
+<br>
+
+**_Properties_**
+| Property | Type | Description |
+|-|-|-|
+| `canBeFiltered` | `boolean` | Determines if the column can be filtered. |
+| `canBeGlobalFiltered` | `boolean` | Determines if the column can be included in global filtering. |
+| `canBeHidden` | `boolean` | Determines if the column can be hidden. |
+| `canBeReordered` | `boolean` | Determines if the column can be reordered by the user. |
+| `canBeResized` | `boolean` | Determines if the column can be resized by the user. |
+| `cellOverflowBehaviour` | [`CellOverflowBehaviour`](#811-celloverflowbehaviour) | Specifies how overflowing content is handled within the cell. |
+| `cellOverflowBehaviourAllowUserEdit` | `boolean` | Indicates whether the cell overflow behavior can be modified by the user. |
+| `columnDescription` | `string` | Description or tooltip text for the column. |
+| `dataAlignHorizontal` | [`DataAlignHorizontal`](#812-dataalignhorizontal) | The horizontal alignment of the column content. |
+| `dataAlignHorizontalAllowUserEdit` | `boolean` | Indicates whether the horizontal alignment can be modified by the user. |
+| `dataAlignVertical` | [`DataAlignVertical`](#813-dataalignvertical) | The vertical alignment of the column content. |
+| `dataAlignVerticalAllowUserEdit` | `boolean` | Indicates whether the vertical alignment can be modified by the user. |
+| `dataTooltipCustomColumnSource` | `string` | Custom source for the tooltip content, if applicable. |
+| `dataTooltipShow` | `boolean` | Determines if a tooltip should be shown for the column data. |
+| `dataType` | [`DataType`](#814-datatype) | The type of data contained in the column. |
+| `field` | `string` | The key or identifier for the column's data field. |
+| `filterPredefinedValuesName` | `string` | Name of predefined filter values, if any. |
+| `frozenColumnAlign` | [`FrozenColumnAlign`](#815-frozencolumnalign) | Alignment for frozen columns (left or right). |
+| `header` | `string` | The display name of the column header. |
+| `initialWidth` | `number` | Initial width of the column in pixels. |
+| `startHidden` | `boolean` | Determines if the column should initially be hidden. |
+
+<br><br>
+
+
+#### 8.2.2 IPredefinedFilter  
+**_Summary_**  
+Represents a predefined filter value for a column in **ECS PrimeNG table**.  
+Allows displaying a value as text, tag, icon, or image (from URL or Blob) with optional styles and colors.
+
+<br>
+
+**_Properties_**
+| Property | Type | Description |
+|-|-|-|
+| `action?` | `(rowData: any, option: IPredefinedFilter) => void` | Optional. The action to execute when the predefined filter is clicked. `rowData` is the row data object, `option` is the clicked predefined filter. |
+| `displayName?` | `boolean` | Set to `true` to display the `name` as text in the cell. |
+| `displayTag?` | `boolean` | Set to `true` to display the `name` as a tag in the cell. |
+| `icon?` | `string` | The icon to display for this value. Can use icons from PrimeNG, Font Awesome, Material Icons, etc. |
+| `iconColor?` | `string` | Optional color to apply to the icon. Example: `"red"` or `"#00ff00"`. |
+| `iconStyle?` | `string` | Optional CSS style string to apply to the icon. Example: `"font-size: 1.5rem; margin-right: 0.5rem"`. |
+| `imageBlob?` | `Blob` | The image to display from a Blob object. |
+| `imageBlobFetchError?` | `boolean` | **Internal.** Indicates that fetching the Blob from `imageBlobSourceEndpoint` failed. **Do not modify manually.** |
+| `imageBlobSourceEndpoint?` | `string` | If using a Blob and it is not provided directly, the backend endpoint to fetch the Blob from. |
+| `imageURL?` | `string` | The image to display directly from a URL. |
+| `name?` | `string` | The text displayed in the frontend for this filter value. Used when `displayName` is `true` or when displaying a tag. |
+| `tagStyle?` | `{ [key: string]: string }` | Optional CSS style object to apply to the tag. Example: `{ background: 'rgb(255,0,0)', color: 'white' }`. |
+| `value` | `string \| number` | The underlying value of the cell. Must match the backend data for proper filtering. For text/tag, recommended to match `name`. |
+
+<br><br>
+
+
+
+#### 8.2.3 ITableButton  
+**_Summary_**  
+Interface representing a table action button, applicable for both header and row buttons.
+
+<br>
+
+**_Properties_**
+| Property | Type | Description |
+|-|-|-|
+| `action?` | `(rowData: any) => void` | Optional. The action to execute when the button is clicked. `rowData` is the clicked row data, or null for header buttons. |
+| `color?` | `string` | Optional. The CSS class to apply for button styling. Example: `"p-button-success"` or `"custom-class"`. |
+| `conditionFailHide?` | `boolean` | Optional. Controls behavior when `enabledCondition` returns false. If `true`, the button will be hidden; if `false` or `undefined`, it will remain visible but disabled. Ignored if `visibleCondition` returns false. |
+| `enabledCondition?` | `(rowData: any) => boolean` | Optional. Determines whether the button should be enabled for a given row. Ignored if `visibleCondition` returns false. |
+| `icon?` | `string` | Optional. The icon to display on the button. Should be a valid icon name from PrimeNG, Material Icons, Font Awesome, or similar libraries. |
+| `iconPos?` | `string` | Optional. The position of the icon relative to the button label. Defaults to `"left"`. Possible values: `"left"`, `"right"`, `"top"`, `"bottom"`. |
+| `label?` | `string` | Optional. The text label displayed on the button. |
+| `raised?` | `boolean` | Optional. If true, adds a shadow to indicate elevation. Defaults to false. |
+| `rounded?` | `boolean` | Optional. If true, the button will be round. Defaults to false. |
+| `style?` | `string` | Optional. Additional inline CSS styles for the button. |
+| `tooltip?` | `string` | Optional. Tooltip text to display when the user hovers over the button. |
+| `visibleCondition?` | `(rowData: any) => boolean` | Optional. Determines whether the button should be visible for a given row. Null for header buttons. |
+
+<br><br>
+
+
+
+#### 8.2.4 ITableOptions  
+**_Summary_**  
+Configuration options for **ECS PrimeNG table**. Includes settings for table activation, data fetching, header, columns, and rows.
+
+<br>
+
+**_Properties_**  
+> [!NOTE]  
+> All properties have default values, which are automatically set when using the `createTableOptions` utility. You can override any of these defaults by specifying your custom table option values.  
+
+| Property | Parent | Type | Default | Description |
+|-|-|-|-|-|
+| `copyToClipboardTime` |  | `number` | `0.5` | Defines the number of seconds the user must hold the mouse button on a cell before its content is copied to the clipboard. Set to a value <= 0 to turn off this feature entirely. |
+| `columns` |  | `object` | N/A | Configurations related to the columns of the table. |
+| `selectorEnabled` | `columns` | `boolean` | `true` | Enables or disables the column selector feature. When `true`, a button appears in the top-left corner, opening a modal that lets users show/hide columns, adjust cell overflow behavior, and change horizontal/vertical alignment per column. When `false`, the selector button is not available. |
+| `selectorIcon` | `columns` | `string` | `"pi pi-pen-to-square"` | Icon used for the column selector button. Can be replaced with any PrimeNG, Font Awesome, or Material Icon. |
+| `shown` | `columns` | `IColumnMetadata[]` | `[]` | Array of columns that must be displayed in the table, including non-selectable and user-selected columns. |
+| `data` |  | `any[]` | `[]` | The array of data to be displayed in the table. Each item should represent a row and match the table's column structure. |
+| `excelReport` |  | `object` | N/A | Configurations for exporting the table data to Excel. |
+| `defaultTitle` | `excelReport` | `string` | `"Report"` | Default title shown in the Excel export modal when preparing the export. If empty and `titleAllowUserEdit` is `false`, the export button is disabled. |
+| `titleAllowUserEdit` | `excelReport` | `boolean` | `true` | Determines whether the user can edit the title of the Excel file in the export modal. If `true`, editable; if `false`, title is fixed to `defaultTitle`. |
+| `url` | `excelReport` | `string` | `undefined` | Endpoint URL of the API to perform the Excel export. If undefined, Excel export functionality is disabled. |
+| `globalFilter` |  | `object` | N/A | Configurations related to the global filter functionality of the table. |
+| `enabled` | `globalFilter` | `boolean` | `true` | Enables or disables the global filter input. If `true`, users can search across all columns; if `false`, the global search input is not rendered. |
+| `maxLength` | `globalFilter` | `number` | `20` | Maximum number of characters allowed in the global filter input, to limit search query length. |
+| `header` |  | `object` | N/A | Configurations related to options that are at the header of the table. |
+| `buttons` | `header` | `ITableButton[]` | `[]` | A collection of buttons to be shown in the table header. |
+| `clearFiltersEnabled` | `header` | `boolean` | `true` | When `false`, the clear filters button will be hidden. |
+| `clearFiltersIcon` | `header` | `string` | `"pi pi-filter-slash"` | Allows customization of the clear filters button icon. |
+| `clearSortsEnabled` | `header` | `boolean` | `true` | When `false`, the clear sorts button will be hidden. |
+| `clearSortsIcon` | `header` | `string` | `"pi pi-sort-alt-slash"` | Allows customization of the clear sorts button icon. |
+| `isActive` |  | `boolean` | `true` | Controls whether the table is active. When `true`, the table fetches configuration, columns, and data on init. When `false`, it does not automatically fetch or update data, allowing manual manipulations without triggering updates. |
+| `predefinedFilters` |  | `{ [key: string]: IPredefinedFilter[] }` | `{}` | Predefined filters for table columns. Restricts filter options to a known set of values per column, suitable for columns with limited distinct values. Supports plain text, tags, icons, and images, and works with `list` data types. |
+| `rows` |  | `object` | N/A | Configurations related to the rows of the table. |
+| `action` | `rows` | `object` | N/A | Configurations related to the action column for the rows. |
+| `alignmentRight` | `rows` => `action` | `boolean` | `true` | If `true`, the column will appear on the right side of the table; otherwise, it will appear on the left. |
+| `buttons` | `rows` => `action` | `ITableButton[]` | `[]` | Collection of `ITableButton` to be shown in the row actions column. At least one button must be defined to enable the column. |
+| `frozen` | `rows` => `action` | `boolean` | `true` | If `true`, the column remains visible when horizontally scrolling the table. |
+| `header` | `rows` => `action` | `string` | `"Actions"` | The header label for the row actions column. |
+| `resizable` | `rows` => `action` | `boolean` | `false` | If `true`, users can resize the column. |
+| `width` | `rows` => `action` | `number` | `150` | The fixed column width in pixels. |
+| `checkboxSelector` | `rows` | `object` | N/A | Configurations related to the row checkbox selector. |
+| `alignmentRight` | `rows` => `checkboxSelector` | `boolean` | `false` | If `true`, the column will appear on the right side of the table. Otherwise, it will appear on the left. |
+| `enabled` | `rows` => `checkboxSelector` | `boolean` | `false` | If `true`, a new column with checkboxes will be displayed. Users can select/unselect rows, and an option to filter by this column will be enabled. |
+| `enabledCondition` | `rows` => `checkboxSelector` | `(rowData: any) => boolean` | `undefined` | Function that determines whether the checkbox should be enabled for a given row. |
+| `frozen` | `rows` => `checkboxSelector` | `boolean` | `true` | If `true`, the column remains visible when horizontally scrolling the table. |
+| `header` | `rows` => `checkboxSelector` | `string` | `"Selected"` | The header label for the checkbox selection column. |
+| `resizable` | `rows` => `checkboxSelector` | `boolean` | `false` | If `true`, users can resize the column. |
+| `width` | `rows` => `checkboxSelector` | `number` | `150` | The fixed column width in pixels. |
+| `class` | `rows` | `(rowData: any) => string \| string[] \| Set<string> \| { [klass: string]: any }` | N/A | Function to dynamically assign CSS classes to a row based on its data. Returns a string, array, Set, or object of class names that are applied in addition to default styles. Useful for highlighting or styling rows conditionally. |
+| `singleSelector` | `rows` | `object` | N/A | Configurations related to the single row selector. |
+| `enabled` | `rows` => `singleSelector` | `boolean` | `false` | If set to `true`, users can click a row to select it. You can then subscribe to selection events to execute custom actions. |
+| `metakey` | `rows` => `singleSelector` | `boolean` | `true` | When `true`, users must hold **CTRL** and click on a selected row to unselect it. When `false`, users can unselect a row simply by clicking it again. On mobile devices, **CTRL** is ignored, users can unselect rows by simply clicking them. |
+| `style` | `rows` | `(rowData: any) => { [property: string]: any }` | N/A | Function to dynamically assign inline styles to a row. Receives the `rowData` object and returns an object with CSS properties to apply inline. Allows styling rows dynamically based on their content or values. If not provided, no dynamic styles are applied. |
+| `urlTableConfiguration` |  | `string` | `undefined` | Endpoint URL to fetch the table configuration. It is fetched **once** when the table initializes and must return an `ITableConfiguration` object containing column definitions, timezone, and other settings. If set to `undefined` or if `isActive` is `false`, the table will not fetch configuration automatically. |
+| `urlTableData` |  | `string` | `undefined` | Endpoint URL to fetch the table data. This endpoint is called **whenever the user filters, paginates, or sorts** the table. It must return an `ITablePagedResponse` object containing the paginated data. If set to `undefined` or if `isActive` is `false`, the table will not fetch or update data automatically. |
+| `verticalScroll` | | `object` | N/A | Configurations related to the vertical scroll of the table. |
+| `cssFormula` | `verticalScroll` | `string` | `undefined` | A CSS string used to define the table’s vertical height. Can be a fixed value (e.g., `"500px"`) or a CSS formula (e.g., `"calc(100vh - 200px)"`). When provided, this value **overrides** both `fitToContainer` and `height`. |
+| `fitToContainer` | `verticalScroll` | `boolean` | `true` | Automatically adjusts the table’s height to fit its container. When `true`, the table dynamically calculates its maximum height. Ignored if a `cssFormula` is provided. |
+| `height` | `verticalScroll` | `number` | `0` | Fixed vertical height for the table when `fitToContainer` is `false`. Ignored if a `cssFormula` is provided or if `fitToContainer` is `true`. Enables vertical scrolling with a fixed height when a dynamic fit is not desired. |
+| `views` | | `object` | N/A | Configurations related to saved table views. |
+| `saveKey` | `views` | `string` | `undefined` | Key used to identify the table when saving and retrieving its views. Each table should have a unique key to avoid conflicts between tables. If `undefined`, the table will not save or load any views. |
+| `saveMode` | `views` | `TableViewSaveMode` | `TableViewSaveMode.None` | Determines how the table views are saved. Options: `None` (no saving), `SessionStorage` (cleared when tab closes), `LocalStorage` (persistent), or `DatabaseStorage` (saved via backend using `urlGet` and `urlSave`). |
+| `urlGet` | `views` | `string` | `undefined` | Endpoint URL to fetch saved views from the database. Only used if `saveMode` is `TableViewSaveMode.DatabaseStorage`. The `saveKey` is sent to identify the correct table views. |
+| `urlSave` | `views` | `string` | `undefined` | Endpoint URL to save table views to the database. Only used if `saveMode` is `TableViewSaveMode.DatabaseStorage`. The `saveKey` is sent to identify the correct table views. |
 
 <br><br><br>
 

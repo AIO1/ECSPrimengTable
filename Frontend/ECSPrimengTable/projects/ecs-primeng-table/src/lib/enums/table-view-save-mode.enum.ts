@@ -6,7 +6,7 @@
  * sorting) are persisted.
  */
 export enum TableViewSaveMode {
-    /** Do not save the table view state. */
+    /** Views are disabled. */
     None,
 
     /** Save the table view state in the browser's sessionStorage (cleared on tab close). */

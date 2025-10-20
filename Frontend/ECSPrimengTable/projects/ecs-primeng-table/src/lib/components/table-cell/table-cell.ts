@@ -4,7 +4,7 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { TooltipModule } from 'primeng/tooltip';
 import { dataAlignHorizontalAsText, dataAlignVerticalAsText, highlightText } from '../../utils';
 import { IColumnMetadata, IPredefinedFilter } from '../../interfaces';
-import { SafeHtml } from '@angular/platform-browser';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { TablePredefinedFilters } from "../table-predefined-filters/table-predefined-filters";
 @Component({
   selector: 'ecs-table-cell',
@@ -18,7 +18,8 @@ import { TablePredefinedFilters } from "../table-predefined-filters/table-predef
 })
 export class TableCell {
   constructor(
-    private datePipe: DatePipe
+    private datePipe: DatePipe,
+    private sanitizer: DomSanitizer
   ) {}
   @Input() col: any;
   @Input() rowData: any;
@@ -107,7 +108,7 @@ export class TableCell {
     return this.predefinedFiltersCollection?.[columnKeyName] || []; // Return the predefined filter values or an empty array if the option name does not exist
   }
 
-    highlightText(cellValue: any, colMetadata: IColumnMetadata, globalSearchText: string | null): SafeHtml {
-        return highlightText(cellValue, colMetadata, globalSearchText);
-    }
+  highlightText(cellValue: any, colMetadata: IColumnMetadata, globalSearchText: string | null): SafeHtml {
+      return highlightText(cellValue, colMetadata, globalSearchText, this.sanitizer);
+  }
 }
