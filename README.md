@@ -38,7 +38,7 @@ This is an example of the final solution:
 
 ---
 ## Improving documentation readability  
-For a clearer reading experience on GitHub, it is recommended to first **collapse the file tree** (by clicking on the icon in the top-left corner).  
+For a clearer reading experience on GitHub, it is recommended to first navigate to the [README](README.md) file path and then **collapse the file tree** (by clicking on the icon in the top-left corner).  
 Then, select the **Outline** button in the top-right corner to display an index containing all sections of the documentation.  
 
 Following these steps provides a more convenient way to navigate and review the documentation.
@@ -1124,10 +1124,32 @@ In the modal, users can manage table views and create new ones. For each view, t
 - **Change the view alias**
 - **Delete the view**
 
-Rules and limitations of views:  
+Rules and limitations of views:
 - There can't be two views in the same table with the same alias.  
 - By default, a table can have up to 10 views (configurable if needed).  
 - **Load on startup**: If checked for a view, it will automatically apply the next time the table loads. Only one view can have this enabled at a time.
+
+<br><br>
+
+
+
+### 4.14 Configurable dynamic column exclusion
+In certain scenarios, you may want to allow users to access all available columns, while in others it might be necessary to restrict or hide specific ones.  
+This feature enables you to **dynamically exclude columns** from both display and export operations, based on backend or configuration rules.
+
+Column exclusion can be configured independently for:
+- **Table visualization** (which columns the user can see)
+- **Excel exports** (which columns are included in exported data)
+
+Some example use cases are as follows:
+- A client with a **limited license or lower-tier plan** should not have access to some premium data columns.
+- A column contains **sensitive information** (e.g., cost breakdowns, or audit data) that should be hidden for specific user roles or external users.
+- Certain columns are only **relevant in specific modules or contexts** and can be hidden elsewhere to simplify the UI.
+- **Localization or compliance requirements:** hiding columns for users in specific regions due to legal or privacy constraints.
+
+> [!TIP]  
+> While column exclusions can be configured differently for the table display and export operations, it is generally recommended to keep them consistent across both for a coherent user experience.  
+> The option to define separate exclusions is available to accommodate special or exceptional scenarios where different visibility rules are required.
 
 <br><br><br>
 
@@ -1171,6 +1193,7 @@ The purpose of this section is to provide a table that maps the features describ
 | Table | [4.11 Changing the data endpoint dinamically](#411-changing-the-data-endpoint-dinamically) | [6.11 Changing the data endpoint dinamically](#611-changing-the-data-endpoint-dinamically) |
 | Excel report | [4.12 Excel report](#412-excel-report) | [6.12 Configuring Excel reports](#612-configuring-excel-reports) |
 | Views | [4.13 Views](#413-views) | [6.13 Setting up views](#613-setting-up-views) |
+| Columns | [4.14 Configurable dynamic column exclusion](#414-configurable-dynamic-column-exclusion) | [6.14 Configurable dynamic column exclusion](#614-configurable-dynamic-column-exclusion) |
 
 </div>
 
@@ -1349,6 +1372,8 @@ internal class TableConfigurationDefaults {
 }
 ```
 
+<br>
+
 **_Example_**
 
 Below is a minimal working example showing how to implement the **table configuration endpoint** and its corresponding service assuming that you use the `TableConfigurationDefaults`. There is no need for the repository since there is no data access needed in this endpoint.
@@ -1441,6 +1466,8 @@ The `EcsPrimengTableService.PerformDynamicQuery()` method performs the following
 > - **Performance**: Ensure that the `IQueryable` uses `AsNoTracking()` since no entity tracking is needed. This also improves performance.
 > - **Reusability**: Define a private method in the service that builds the base `IQueryable`. This allows reusing the same query for both the **table data endpoint** and features like **Excel export**, ensuring data consistency.
 
+<br>
+
 **_Example_**
 
 Below is a simplified setup showing how to implement the **table data endpoint**, its service, and repository.
@@ -1490,7 +1517,7 @@ namespace ECSPrimengTableExample.Services {
             if(!EcsPrimengTableService.ValidateItemsPerPageAndCols(inputData.PageSize, inputData.Columns)) { // Validate the items per page size and columns
                 return (false, null!);
             }
-            return (true,EcsPrimengTableService.PerformDynamicQuery(inputData, GetBaseQuery());
+            return (true, EcsPrimengTableService.PerformDynamicQuery(inputData, GetBaseQuery()));
         }
 
         private IQueryable<TestDto> GetBaseQuery() {
@@ -1664,6 +1691,8 @@ Additionally, it is crucial to **declare whether a column is nullable**. If this
 An enum named `DataType` is available, which defines the five possible data types you can associate with a column.
 
 To set the data type, simply define it in the `dataType` property of the `ColumnAttributes` applied to your DTO properties.
+
+<br>
 
 **_Example_**
 
@@ -1903,7 +1932,7 @@ namespace ECSPrimengTableExample.Services {
             if(!EcsPrimengTableService.ValidateItemsPerPageAndCols(inputData.PageSize, inputData.Columns)) { // Validate the items per page size and columns
                 return (false, null!);
             }
-            return (true,EcsPrimengTableService.PerformDynamicQuery(inputData, GetBaseQuery(), null, columnsToOrderByDefault, columnsToOrderByOrderDefault);
+            return (true, EcsPrimengTableService.PerformDynamicQuery(inputData, GetBaseQuery(), null, columnsToOrderByDefault, columnsToOrderByOrderDefault));
         }
 
         private IQueryable<TestDto> GetBaseQuery() {
@@ -1970,6 +1999,8 @@ Regardless of the strategy, predefined filters must first be defined in the Type
 
 > [!TIP]
 > A single element of the `IPredefinedFilter` array can use multiple representations at the same time (for example, combining an icon with text). You can also mix different representations within the same array: one value could be displayed with an icon, while another could be shown as a tag. 
+
+<br>
 
 **_Example_**
 
@@ -2038,6 +2069,8 @@ To display an element as plain text in a predefined filter, you need to define i
 - **`name`**: The text shown in the cell.
 - **`displayName`**: Set to `true` so the value in `name` is actually displayed.
 
+<br>
+
 **_Example_**
 
 Suppose you have the following possible values in a column that you wish to represent as plain text:
@@ -2078,6 +2111,8 @@ To display an element as a tag in a predefined filter, you need to define in eac
 - **`name`**: The text shown in the tag.
 - **`displayTag`**: Set to `true` so the a tag is displayed containing as text `name`.
 - **`tagStyle`** *(optional)*: If you want to apply a style to the tag, like for example, changing its color.
+
+<br>
 
 **_Example_**
 
@@ -2127,6 +2162,8 @@ To display an element as an icon in a predefined filter, you need to define in e
 - **`icon`**: Specifies the icon to display. You can use icons from PrimeNG or other libraries, such as Font Awesome or Material Icons.
 - **`iconColor`** *(optional)*: Defines the color of the icon.
 - **`iconStyle`** *(optional)*: Allows you to specify additional CSS styles for the icon, such as font size.
+
+<br>
 
 **_Example_**
 
@@ -2184,6 +2221,8 @@ To fetch an image from a URL, you need to define in each `IPredefinedFilter` ent
 - **`value`**: Must match the underlying value of the cell, so that the table can map it properly.
 - **`imageURL`**: The URL from which the image will be retrieved.
 
+<br>
+
 **_Example_**
 
 Suppose a column can have the following states, each represented by an image:
@@ -2213,6 +2252,8 @@ examplePredfinedFilter: IPredefinedFilter[] = [
 To display an image from a Blob provided directly to the frontend, you need to define in each `IPredefinedFilter` entry at least these properties:
 - **`value`**: Must match the underlying value of the cell, so that the table can map it properly.
 - **`imageBlob`**: A valid image Blob (e.g., PNG, JPEG) to be displayed.
+
+<br>
 
 **_Example_**
 
@@ -2249,6 +2290,8 @@ To achieve this, define the following properties in each `IPredefinedFilter` ent
 When the fetch process starts, a skeleton placeholder will be shown until the blob is retrieved. If the request succeeds, the table will automatically populate the `imageBlob` property of the corresponding `IPredefinedFilter` entry with the retrieved `Blob`.
 
 If the request fails, the property **`imageBlobFetchError`** will be set to `true` for that entry, allowing you to detect and handle errors gracefully.
+
+<br>
 
 **_Example_**
 
@@ -2293,6 +2336,8 @@ action?: (rowData: any, option: IPredefinedFilter) => void;
 This means that when the user clicks on the filter, the function will receive:
 - **rowData**: The data of the row where the filter is applied.
 - **option**: The complete predefined filter item that was clicked, giving you access to its name, value, style, and any other properties defined in `IPredefinedFilter`.
+
+<br>
 
 **_Example_**
 
@@ -2372,6 +2417,8 @@ Both emitters provide an object with the following structure:
 > If the default behavior (holding down `CTRL` to unselect) is enabled, repeatedly clicking the same row **without holding `CTRL`** will count as multiple selections.  
 > This can cause unintended behavior if actions are triggered on each selection, so plan your row actions accordingly.
 
+<br>
+
 **_Example_**
 
 For enabling the single row selector and subscribing to changes, in your desired component TypeScript file, a minimal definition should look like this (assuming the component is named `Home`):
@@ -2449,6 +2496,8 @@ At any time, you can access the component’s `selectedRowsCheckbox` property, w
 >
 > This behavior is consistent only if both action and checkbox row selector columns are frozen at the same time(or if they are unfrozen at the same time).
 
+<br>
+
 **_Example_**
 
 To enable the checkbox row selector, subscribe to selection changes, and access the table's `selectedRowsCheckbox` property, your component TypeScript file can have a minimal setup like this (assuming the component is named `Home`):
@@ -2518,6 +2567,8 @@ Both `style` and `class` functions are evaluated dynamically and can be updated 
 
 > [!NOTE]
 > The `rowData` passed to the `style` and `class` functions contains the data currently available in the frontend for the specific row being processed.
+
+<br>
 
 **_Example_**
 
@@ -2632,6 +2683,8 @@ The recommended approach is to define **two separate arrays** of `ITableButton`:
 
 > [!CAUTION]
 > Never assume that a button visible to the user can be safely executed based on frontend conditions alone. Always perform a final validation on the backend, because any data or state exposed in the frontend can be easily tampered with.
+
+<br>
 
 **_Example_**
 
@@ -2763,6 +2816,8 @@ The global filter can be cleared if it contains any data, either by clicking the
 #### Column-level configuration
 To disable the global filter per column this can be done by setting to `false` the property `canBeGlobalFiltered` in the `ColumnAttributes` of your backend DTO class
 
+<br>
+
 **_Example_**
 
 Assuming your DTO class is named `TestDTO` and you want to disable global filtering for the `Username` column:
@@ -2786,6 +2841,8 @@ public class TestDto {
 If you wish to disable the global filter completely so it doesn't appear in the frontend, or if you want to modify the maximum length that a user can enter in the input box, it can be customized via the `globalFilter` object inside your `ITableOptions` configuration. The available options are:
 - **`enabled`** *(Default: `true`)*: Enables or disables the global filter input. When set to `true`, users can search across all table columns using the global search bar. When `false`, the global search input will not be rendered.
 - **`maxLength`** *(Default: `20`)*: Maximum number of characters allowed in the global filter input.
+
+<br>
 
 **_Example_**
 
@@ -2878,7 +2935,7 @@ namespace ECSPrimengTableExample.Services {
             if(!EcsPrimengTableService.ValidateItemsPerPageAndCols(inputData.PageSize, inputData.Columns)) { // Validate the items per page size and columns
                 return (false, null!);
             }
-            return (true,EcsPrimengTableService.PerformDynamicQuery(inputData, GetBaseQuery(), stringDateFormatMethod, columnsToOrderByDefault, columnsToOrderByOrderDefault);
+            return (true, EcsPrimengTableService.PerformDynamicQuery(inputData, GetBaseQuery(), stringDateFormatMethod, columnsToOrderByDefault, columnsToOrderByOrderDefault));
         }
 
         private IQueryable<TestDto> GetBaseQuery() {
@@ -2910,6 +2967,8 @@ The **ECS PrimeNG table** manages pagination automatically. There is no need for
 The only customization available is defined in the **backend**, where you specify which page sizes are allowed for the user.
 
 This is done in the method `EcsPrimengTableService.GetTableConfiguration`.
+
+<br>
 
 **_Example_**
 
@@ -2945,6 +3004,8 @@ When a user holds down the mouse on a cell for a certain duration, the cell’s 
 
 You can adjust this behavior or disable it completely via the `ITableOptions` configuration in your frontend component.
 - **`copyToClipboardTime`**: Defines the number of seconds the user must hold the mouse button on a cell before its content is copied to the clipboard. Set to `<= 0` to turn off this feature entirely.
+
+<br>
 
 **_Example_**
 
@@ -2986,6 +3047,8 @@ The precedence rules that should be taken into account:
 1. If **`cssFormula`** is defined, it always takes priority.
 2. If **`cssFormula`** is not defined and **`fitToContainer`** is `true`, the height is computed dynamically in TypeScript.
 3. If neither of the above apply, the numeric value of **`height`** is used.
+
+<br>
 
 **_Example_**
 
@@ -3036,6 +3099,8 @@ The **`isActive`** flag controls whether the table should fetch its column confi
 
 This is particularly useful if you want to delay table loading until specific conditions are met, such as retrieving some initial data that's required before the table can be shown.
 
+<br>
+
 **_Example_**
 
 Assume that you want to prevent your table from fetching its configuration and data on component startup. Your component TypeScript file could be defined as follows (assuming the component is named `Home`):
@@ -3079,6 +3144,8 @@ You can dynamically change the data source endpoint of your table by temporarily
 > [!IMPORTANT]  
 > - If the table has already been initialized, changing **`urlTableConfiguration`** will have no effect. The **ECS PrimeNG table** only fetches configuration once during its first load.
 > - This feature is intended for scenarios where the **column configuration stays the same** and only the **data source** changes.
+
+<br>
 
 **_Example_**
 
@@ -3482,6 +3549,95 @@ export class Home {
 And your HTML:
 ```html
 <ecs-primeng-table [tableOptions]="tableOptions"/>
+```
+
+<br><br>
+
+
+
+## 6.14 Configurable dynamic column exclusion
+The column exclusion feature is fully managed in the backend.  
+This package provides three core services where this functionality can be configured:
+- **`GetTableConfiguration`**: Limits the set of columns sent to the frontend, also affecting the available options in the column selector menu.
+- **`PerformDynamicQuery`**: Ensures that users cannot manipulate frontend requests to gain access to excluded columns.
+- **`GenerateExcelReport`**: Restricts which columns can be included in exported Excel files.
+
+All these services share a common parameter named **`excludedColumns`**, which is a **`List<string>?`**.  
+This list specifies the names of the columns that must be excluded from visibility or selection.  
+
+Each item in the list must exactly match the **property name** of the DTO used to build the query projection.  
+The comparison is **case-insensitive**.
+
+<br>
+
+**_Example_**
+
+Assume that you have the following DTO were you want to exclude the column `Money` to a set of users:
+```C#
+public class TestDto {
+	[ColumnAttributes(sendColumnAttributes: false)]
+	public Guid RowID { get; set; }
+
+	[ColumnAttributes("Username")]
+	public string Username { get; set; } = string.Empty;
+
+	[ColumnAttributes("Money", dataType: DataType.Numeric)]
+	public decimal Money { get; set; }
+
+	[ColumnAttributes("Has a house", dataType: DataType.Boolean)]
+	public bool House { get; set; }
+}
+```
+
+A minimal implementation of your service could look like this (assuming that you want to exclude the column in all three possible services):
+```c#
+using ECSPrimengTable.Services;
+using ECSPrimengTableExample.DTOs;
+using ECSPrimengTableExample.Interfaces;
+
+namespace ECSPrimengTableExample.Services {
+    public class TestService : ITestService {
+        private readonly ITestRepository _repo;
+
+        public TestService(ITestRepository repository) {
+            _repo = repository;
+        }
+
+        private List<string> FuncThatReturnsColumnsToBeExcluded(){
+          // Provide the logic that returns a List<string> with the names of the columns to exclude.
+          return ["Money"];
+        }
+
+        // Table configuration
+        public TableConfigurationModel GetTableConfiguration() {
+            return EcsPrimengTableService.GetTableConfiguration<TestDto>(excludedColumns: FuncThatReturnsColumnsToBeExcluded());
+        }
+
+        // Table data
+        public (bool success, TablePagedResponseModel data) GetTableData(TableQueryRequestModel inputData) {
+            if(!EcsPrimengTableService.ValidateItemsPerPageAndCols(inputData.PageSize, inputData.Columns)) { // Validate the items per page size and columns
+                return (false, null!);
+            }
+            return (true, EcsPrimengTableService.PerformDynamicQuery(inputData, GetBaseQuery(), excludedColumns: FuncThatReturnsColumnsToBeExcluded()));
+        }
+
+        // Export to Excel
+        public (bool success, byte[]? file, string errorMsg) GenerateExcelReport(ExcelExportRequestModel inputData) {
+            return EcsPrimengTableService.GenerateExcelReport(inputData, GetBaseQuery(), excludedColumns: FuncThatReturnsColumnsToBeExcluded());
+        }
+
+        // Common base query shared between table data and export to Excel
+        private IQueryable<TestDto> GetBaseQuery() {
+            return _repo.GetTableData()
+                .Select(u => new TestDto {
+                    RowID = u.Id,
+                    Username = u.Username,
+                    Money = u.Money,
+                    House = u.House
+                });
+        }
+    }
+}
 ```
 
 <br><br><br>
@@ -3954,12 +4110,12 @@ public static bool ValidateItemsPerPageAndCols(
 
 #### 7.5.2 GetTableConfiguration
 **Namespace:** `ECS.PrimengTable.Services`  
-**Type:** `static TableConfigurationModel`
+**Type:** `static TableConfigurationModel`  
 
 <br>
 
 **_Summary_**  
-Generates a `TableConfigurationModel` based on the metadata of the specified type `T`.  
+Generates a `TableConfigurationModel` from the metadata of the specified type `T`.  
 Inspects all properties of the given type and extracts column configuration using `ColumnAttributes`.
 
 <br>
@@ -3974,6 +4130,7 @@ public static TableConfigurationModel GetTableConfiguration<T>(
     string? dateTimezone = null,
     string? dateCulture = null,
     byte? maxViews = null,
+    List<string>? excludedColumns = null,
     bool convertFieldToLower = true
 )
 ```
@@ -3992,10 +4149,11 @@ public static TableConfigurationModel GetTableConfiguration<T>(
 |-|-|-|
 | `allowedItemsPerPage` | `int[]?` | Optional list of allowed pagination sizes. Defaults to `TableConfigurationDefaults.AllowedItemsPerPage`. |
 | `dateFormat` | `string?` | Optional date format string used for display. Defaults to `TableConfigurationDefaults.DateFormat`. |
-| `dateTimezone` | `string?` | Optional timezone string used for date formatting. Defaults to `TableConfigurationDefaults.DateTimezone`. |
-| `dateCulture` | `string?` | Optional culture string for date localization. Defaults to `TableConfigurationDefaults.DateCulture`. |
-| `maxViews` | `byte?` | Optional maximum number of views allowed for a table. Defaults to `TableConfigurationDefaults.MaxViews`. |
-| `convertFieldToLower` | `bool` | Indicates whether the first letter of each property name should be converted to lowercase in the output model. Defaults to `true`. |
+| `dateTimezone` | `string?` | Optional timezone identifier used for date formatting. Defaults to `TableConfigurationDefaults.DateTimezone`. |
+| `dateCulture` | `string?` | Optional culture code for date localization. Defaults to `TableConfigurationDefaults.DateCulture`. |
+| `maxViews` | `byte?` | Optional maximum number of saved views allowed per table. Defaults to `TableConfigurationDefaults.MaxViews`. |
+| `excludedColumns` | `List<string>?` | Optional list of column names to exclude from the generated configuration. Useful for client-specific visibility rules or restricted data contexts. |
+| `convertFieldToLower` | `bool` | Determines whether the first letter of each property name should be converted to lowercase in the output model. Defaults to `true`. |
 
 <br>
 
@@ -4027,7 +4185,8 @@ public static TablePagedResponseModel PerformDynamicQuery<T>(
     IQueryable<T> baseQuery,
     MethodInfo? stringDateFormatMethod = null,
     List<string>? defaultSortColumnName = null,
-    List<ColumnSort>? defaultSortOrder = null
+    List<ColumnSort>? defaultSortOrder = null,
+    List<string>? excludedColumns = null
 )
 ```
 
@@ -4047,7 +4206,8 @@ public static TablePagedResponseModel PerformDynamicQuery<T>(
 | `baseQuery` | `IQueryable<T>` | The base query to apply dynamic operations on. |
 | `stringDateFormatMethod` | `MethodInfo?` | Optional reflection method used to apply a specific date formatting function to string date columns. |
 | `defaultSortColumnName` | `List<string>?` | Optional list of column names to use for sorting when no explicit sort is provided in `inputData`. |
-| `defaultSortOrder` | [`List<ColumnSort>?`](#712-columnsort) | Optional list of sort directions (`ColumnSort`) matching the default columns. |
+| `defaultSortOrder` | [`List<ColumnSort>?`](#712-columnsort) | Optional list of sort directions ([`ColumnSort`](#712-columnsort)) matching the default columns. |
+| `excludedColumns` | `List<string>?` | Optional list of column names to exclude from the select, even if they appear in the requested columns from `inputData`. |
 
 <br>
 
@@ -4082,6 +4242,7 @@ public static (bool success, byte[]? reportFile, string statusMessage) GenerateE
     MethodInfo? stringDateFormatMethod = null,
     List<string>? defaultSortColumnName = null,
     List<ColumnSort>? defaultSortOrder = null,
+    List<string>? excludedColumns = null,
     string sheetName = "MAIN",
     byte pageStack = 250
 )
@@ -4103,7 +4264,8 @@ public static (bool success, byte[]? reportFile, string statusMessage) GenerateE
 | `baseQuery` | `IQueryable<T>` | The base query to apply dynamic operations on. |  
 | `stringDateFormatMethod` | `MethodInfo?` | Optional reflection method used to apply a specific date formatting function to string date columns. |  
 | `defaultSortColumnName` | `List<string>?` | Optional list of column names to use for sorting when no explicit sort is provided. |  
-| `defaultSortOrder` | [`List<ColumnSort>?`](#712-columnsort) | Optional list of sort directions (`ColumnSort`) matching the default columns. |  
+| `defaultSortOrder` | [`List<ColumnSort>?`](#712-columnsort) | Optional list of sort directions ([`ColumnSort`](#712-columnsort)) matching the default columns. |  
+| `excludedColumns` | `List<string>?` | Optional list of column names to exclude from the select, even if they appear in the requested columns from `inputData`. |  
 | `sheetName` | `string` | Name of the worksheet to create in the workbook. Defaults to `"MAIN"`. |  
 | `pageStack` | `byte` | Number of records to process per internal pagination batch (memory page). Defaults to `250`. |  
 

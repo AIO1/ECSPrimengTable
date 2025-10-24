@@ -26,6 +26,7 @@ namespace ECS.PrimengTable.Services {
         /// <param name="stringDateFormatMethod">Optional reflection method used to apply a specific date formatting function to string date columns.</param>
         /// <param name="defaultSortColumnName">Optional list of column names to use for sorting when no explicit sort is provided in the input.</param>
         /// <param name="defaultSortOrder">Optional list of sort directions (<see cref="ColumnSort"/>) matching the default columns.</param>
+        /// <param name="excludedColumns">Optional list of column names to exclude from the select, even if they appear in the requested columns from <paramref name="inputData"/>.</param>
         /// <param name="sheetName">Name of the worksheet to create in the workbook. Defaults to "MAIN".</param>
         /// <param name="pageStack">Number of records to process per internal pagination batch (memory page). Defaults to 250.</param>
         /// <returns>
@@ -36,7 +37,7 @@ namespace ECS.PrimengTable.Services {
         /// <item><description><c>statusMessage</c> — status message or error description related to the export process.</description></item>
         /// </list>
         /// </returns>
-        internal static (bool success, byte[]? reportFile, string statusMessage) GenerateExcelReport<T>(ExcelExportRequestModel inputDataAll, IQueryable<T> baseQuery, MethodInfo? stringDateFormatMethod = null, List<string>? defaultSortColumnName = null, List<ColumnSort>? defaultSortOrder = null, string sheetName = "MAIN", byte pageStack = 250) {
+        internal static (bool success, byte[]? reportFile, string statusMessage) GenerateExcelReport<T>(ExcelExportRequestModel inputDataAll, IQueryable<T> baseQuery, MethodInfo? stringDateFormatMethod = null, List<string>? defaultSortColumnName = null, List<ColumnSort>? defaultSortOrder = null, List<string>? excludedColumns = null, string sheetName = "MAIN", byte pageStack = 250) {
             try {
                 TableQueryRequestModel inputData = new() {
                     Page = inputDataAll.Page,
@@ -53,9 +54,10 @@ namespace ECS.PrimengTable.Services {
                     inputData.Sort = [];
                 }
                 string reportDateFormatted = DateTime.UtcNow.ToString("dd-MMM-yyyy hh:mm:ss", CultureInfo.GetCultureInfo("en-US")); // Generate timestamp for the report
-                TableConfigurationModel columnsInfo = EcsPrimengTableService.GetTableConfiguration<T>(convertFieldToLower: false); // Retrieve table configuration (column metadata)
+                TableConfigurationModel columnsInfo = EcsPrimengTableService.GetTableConfiguration<T>(excludedColumns: excludedColumns, convertFieldToLower: false); // Retrieve table configuration (column metadata)
                 if(inputDataAll.AllColumns) { // If exporting all columns, include all column fields from the configuration
                     inputData.Columns = columnsInfo.ColumnsInfo
+                        .Where(c => excludedColumns == null || !excludedColumns.Contains(c.Field, StringComparer.OrdinalIgnoreCase))
                         .Select(column => column.Field)
                         .ToList();
                 }
@@ -79,7 +81,7 @@ namespace ECS.PrimengTable.Services {
                         worksheet.Cell(2, col + 1).Value = columnsInfo.ColumnsInfo.First(c => c.Field == fieldName).Header.ToString(); // Write the name of the column
                     }
                     int currentRow = 3; // The row we must write the data to, strating on row 3
-                    WriteExportDataToWorksheet<T>(worksheet, baseQuery, inputData, columnsInfo, propertyAccessors, totalRecords, pageStack, ref currentRow); // Execute the logic to wirte all data to the Excel worksheet
+                    WriteExportDataToWorksheet<T>(worksheet, baseQuery, inputData, columnsInfo, propertyAccessors, totalRecords, pageStack, ref currentRow, excludedColumns); // Execute the logic to wirte all data to the Excel worksheet
                     ApplyExportFormatting(worksheet, reportDateFormatted, numberOfColumns, currentRow); // Apply the export format
                     using(MemoryStream memoryStream = new()) {
                         workbook.SaveAs(memoryStream);
@@ -106,7 +108,7 @@ namespace ECS.PrimengTable.Services {
         /// <param name="totalRecords">Total number of records that match the filters.</param>
         /// <param name="pageStack">Number of records to load per iteration.</param>
         /// <param name="currentRow">Reference to the current worksheet row index (used to continue writing).</param>
-        private static void WriteExportDataToWorksheet<T>(IXLWorksheet worksheet, IQueryable<T> baseQuery, TableQueryRequestModel inputData, TableConfigurationModel columnsInfo, Dictionary<string, Func<object, object?>> propertyAccessors, long totalRecords, byte pageStack, ref int currentRow) {
+        private static void WriteExportDataToWorksheet<T>(IXLWorksheet worksheet, IQueryable<T> baseQuery, TableQueryRequestModel inputData, TableConfigurationModel columnsInfo, Dictionary<string, Func<object, object?>> propertyAccessors, long totalRecords, byte pageStack, ref int currentRow, List<string>? excludedColumns = null) {
             inputData.PageSize = pageStack; // Set how many records to process per page (chunk size)
             int currentPage = -1; // Track the current page index
             int loopStartPage = -1; // Used to detect when pagination is finished
@@ -120,8 +122,7 @@ namespace ECS.PrimengTable.Services {
                 if(currentPage == loopStartPage) { // Exit loop if there are no more records to process
                     break; 
                 }
-                List<dynamic> dataResult = TableQueryProcessingService.GetDynamicSelect(
-                    pagedItems, inputData.Columns!); // Select dynamic data limited to the requested columns
+                List<dynamic> dataResult = TableQueryProcessingService.GetDynamicSelect(pagedItems, inputData.Columns!, excludedColumns); // Select dynamic data limited to the requested columns
                 for(int row = 0; row < dataResult.Count; row++) { // Loop through each record (row)
                     for(int col = 0; col < numberOfColumns; col++) { // Loop through each field (column)
                         string fieldName = inputData.Columns[col]; // Get field name
