@@ -16,25 +16,25 @@ namespace ECS.PrimengTable.Services;
 internal static class TableConfigurationService {
 
     /// <summary>
-    /// Generates a <see cref="TableConfigurationModel"/> based on the metadata of the specified type <typeparamref name="T"/>.
-    /// Inspects all properties of the given type and extracts column configuration using <see cref="ColumnAttributes"/>.
+    /// Generates a <see cref="TableConfigurationModel"/> from the metadata of the specified type <typeparamref name="T"/>.
+    /// It inspects all public properties of the given type and builds the column configuration using <see cref="ColumnAttributes"/> metadata.
     /// </summary>
     /// <remarks>
-    /// Properties of <typeparamref name="T"/> that lack <see cref="ColumnAttributes"/> will be skipped,
-    /// and a warning message will be printed to the console.  
-    /// Columns marked with <c>SendColumnAttributes = false</c> will also be ignored.
+    /// Properties of <typeparamref name="T"/> without <see cref="ColumnAttributes"/> are ignored, and a warning is logged to the console.  
+    /// Columns marked with <c>SendColumnAttributes = false</c> or listed in <paramref name="excludedColumns"/> will also be excluded from the generated configuration.
     /// </remarks>
-    /// <typeparam name="T">The class type representing the data model for which to generate the table configuration.</typeparam>
-    /// <param name="allowedItemsPerPage"> Optional list of allowed pagination sizes. Defaults to <see cref="TableConfigurationDefaults.AllowedItemsPerPage"/>.</param>
-    /// <param name="dateFormat"> Optional date format string used for display. Defaults to <see cref="TableConfigurationDefaults.DateFormat"/> </param>
-    /// <param name="dateTimezone"> Optional timezone string used for date formatting. Defaults to <see cref="TableConfigurationDefaults.DateTimezone"/>. </param>
-    /// <param name="dateCulture"> Optional culture string for date localization. Defaults to <see cref="TableConfigurationDefaults.DateCulture"/>. </param>
-    /// <param name="maxViews"> Optional maximum number of views allowed for a table. Defaults to <see cref="TableConfigurationDefaults.MaxViews"/>. </param>
-    /// <param name="convertFieldToLower"> Indicates whether the first letter of each property name should be converted to lowercase in the output model. Defaults to <c>true</c>. </param>
+    /// <typeparam name="T">The model type representing the data entity used to generate the table configuration.</typeparam>
+    /// <param name="allowedItemsPerPage">Optional list of allowed pagination sizes. Defaults to <see cref="TableConfigurationDefaults.AllowedItemsPerPage"/>.</param>
+    /// <param name="dateFormat">Optional date format string used for display. Defaults to <see cref="TableConfigurationDefaults.DateFormat"/>.</param>
+    /// <param name="dateTimezone">Optional timezone identifier used for date formatting. Defaults to <see cref="TableConfigurationDefaults.DateTimezone"/>.</param>
+    /// <param name="dateCulture">Optional culture code for date localization. Defaults to <see cref="TableConfigurationDefaults.DateCulture"/>.</param>
+    /// <param name="maxViews">Optional maximum number of saved views allowed per table. Defaults to <see cref="TableConfigurationDefaults.MaxViews"/>.</param>
+    /// <param name="excludedColumns">Optional list of column names to exclude from the generated configuration. Useful for client-specific visibility rules or restricted data contexts.</param>
+    /// <param name="convertFieldToLower">Determines whether the first letter of each property name should be converted to lowercase in the output model. Defaults to <c>true</c>.</param>
     /// <returns>
-    /// A <see cref="TableConfigurationModel"/> containing the table metadata derived from the annotated properties of the specified type.
+    /// A <see cref="TableConfigurationModel"/> containing the column metadata derived from the annotated properties of the specified type.
     /// </returns>
-    internal static TableConfigurationModel GetTableConfiguration<T>(int[]? allowedItemsPerPage = null, string? dateFormat = null, string? dateTimezone = null, string? dateCulture = null, byte? maxViews = null, bool convertFieldToLower = true) {
+    internal static TableConfigurationModel GetTableConfiguration<T>(int[]? allowedItemsPerPage = null, string? dateFormat = null, string? dateTimezone = null, string? dateCulture = null, byte? maxViews = null, List<string>? excludedColumns = null, bool convertFieldToLower = true) {
         allowedItemsPerPage ??= TableConfigurationDefaults.AllowedItemsPerPage;
         dateFormat ??= TableConfigurationDefaults.DateFormat;
         dateTimezone ??= TableConfigurationDefaults.DateTimezone;
@@ -42,13 +42,16 @@ internal static class TableConfigurationService {
         maxViews ??= TableConfigurationDefaults.MaxViews;
         List <ColumnMetadataModel> columnsInfo = []; // Prepare the list to be returned
         PropertyInfo[] properties = typeof(T).GetProperties(); // Get the properties of the provided class
+        var excluded = excludedColumns != null
+            ? new HashSet<string>(excludedColumns, StringComparer.OrdinalIgnoreCase)
+            : []; // Prepare hash set for excluded columns (case-insensitive)
         foreach(var property in properties) { // Loop through each property of the class
             ColumnAttributes? colAtt = property.GetCustomAttribute<ColumnAttributes>(); // Try to get the column attributes for the current property
             if(colAtt == null) { // If there are no column properties
                 Console.WriteLine($"[WARN] The column '{property.Name}' is missing its ColumnAttributes. Skipping.");
                 continue;
             }
-            if(!colAtt.SendColumnAttributes) { // If the column doesn't need to be sent
+            if(!colAtt.SendColumnAttributes || excluded.Contains(property.Name)) { // Skip columns that should not be sent or are explicitly excluded
                 continue;
             }
             string propertyName = convertFieldToLower

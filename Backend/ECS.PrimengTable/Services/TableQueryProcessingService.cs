@@ -30,17 +30,18 @@ namespace ECS.PrimengTable.Services {
         /// <param name="stringDateFormatMethod"> Optional reflection method used to apply a specific date formatting function to string date columns.</param>
         /// <param name="defaultSortColumnName"> Optional list of column names to use for sorting when no explicit sort is provided in <paramref name="inputData"/>.</param>
         /// <param name="defaultSortOrder"> Optional list of sort directions (<see cref="ColumnSort"/>) matching the default columns.</param>
+        /// <param name="excludedColumns">Optional list of column names to exclude from the select, even if they appear in the requested columns from <paramref name="inputData"/>.</param>
         /// <returns>
         /// A <see cref="TablePagedResponseModel"/> containing the filtered, sorted, paginated, and projected data,
         /// along with total record counts for both filtered and unfiltered datasets and the current page that we are on.
         /// </returns>
-        internal static TablePagedResponseModel PerformDynamicQuery<T>(TableQueryRequestModel inputData, IQueryable<T> baseQuery, MethodInfo? stringDateFormatMethod = null, List<string>? defaultSortColumnName = null, List<ColumnSort>? defaultSortOrder = null) {
+        internal static TablePagedResponseModel PerformDynamicQuery<T>(TableQueryRequestModel inputData, IQueryable<T> baseQuery, MethodInfo? stringDateFormatMethod = null, List<string>? defaultSortColumnName = null, List<ColumnSort>? defaultSortOrder = null, List<string>? excludedColumns = null) {
             long totalRecordsNotFiltered = 0; // Used to track the number of all available records
             long totalRecords = 0; // Used to track the number of all available records after filters are applied
             GetDynamicQueryBase<T>(ref inputData, ref baseQuery, ref totalRecordsNotFiltered, ref totalRecords, stringDateFormatMethod, defaultSortColumnName, defaultSortOrder);
             int currentPage = inputData.Page; // Get the current page that the user is viewing
             IQueryable<T> pagedItems = PerformPagination(baseQuery, totalRecords, ref currentPage, inputData.PageSize); // Perform the pagination
-            List<dynamic> dataResult = GetDynamicSelect(pagedItems, inputData.Columns!); // Limit the columns that are going to be selected
+            List<dynamic> dataResult = GetDynamicSelect(pagedItems, inputData.Columns!, excludedColumns); // Limit the columns that are going to be selected
             return new TablePagedResponseModel {
                 Page = currentPage,
                 TotalRecords = totalRecords,
@@ -164,15 +165,20 @@ namespace ECS.PrimengTable.Services {
         /// <typeparam name="T">The entity type of the items in the query.</typeparam>
         /// <param name="query">The base query to apply the dynamic select on.</param>
         /// <param name="columns">The list of column names that should be included in the select.</param>
+        /// <param name="excludedColumns">Optional list of column names to exclude from the select, even if they appear in the `columns` list.</param>
         /// <returns>
         /// A list of dynamic objects containing only the selected columns.
         /// </returns>
-        internal static List<dynamic> GetDynamicSelect<T>(IQueryable<T> query, List<string> columns) {
+        internal static List<dynamic> GetDynamicSelect<T>(IQueryable<T> query, List<string> columns, List<string>? excludedColumns = null) {
+            var excluded = excludedColumns != null
+                ? new HashSet<string>(excludedColumns, StringComparer.OrdinalIgnoreCase)
+                : []; // Prepare hash set for excluded columns (case-insensitive)
             PropertyInfo[] properties = typeof(T).GetProperties(); // Get all properties of the entity type T using reflection
             List<string> additionalColumns = [.. properties // Initialize a list of columns that should always be included even if not requested
                 .Where(p => p.GetCustomAttribute<ColumnAttributes>()?.SendColumnAttributes == false) // Filter properties that have the custom attribute ColumnAttributes with SendColumnAttributes = false
                 .Select(p => p.Name)]; // Select only the names of those filtered properties
-            IEnumerable<PropertyInfo> selectedProperties = properties.Where(p => columns.Contains(p.Name) || (additionalColumns != null && additionalColumns.Contains(p.Name))); // Select properties that are in the requested column list or marked to always be included
+            IEnumerable<PropertyInfo> selectedProperties = properties
+                .Where(p => (columns.Contains(p.Name) || additionalColumns.Contains(p.Name)) && !excluded.Contains(p.Name)); // Include requested columns and always-include columns, but skip any excluded ones
             string select = string.Join(", ", selectedProperties.Select(p => p.Name)); // Build a comma-separated string with the property names to use in the dynamic query
             return query.Select($"new ({select})").ToDynamicList(); // Execute the dynamic query using System.Linq.Dynamic.Core and return the resulting list
         }
