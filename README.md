@@ -28,7 +28,8 @@ Some of the key features included are:
 - Table views for saving configurations
 - And much more!
 
-This is an example of the final solution:
+A video showcasing an overview of some of the features can be found at the following link: [YouTube Video](https://youtu.be/06jZPS3m8fA)  
+This is an example image of the final solution:
 <p align="center">
     <img width="1899" height="978" alt="Example table" src="https://github.com/user-attachments/assets/d7bc4183-6895-4166-afa7-a2cd64d2abdd" />
 </p>
