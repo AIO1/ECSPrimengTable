@@ -312,8 +312,8 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
     this.tableOptions.isActive = false;
     this.dt.sortMultiple();
     this.tableOptions.isActive = true;
-    this.tableLazyLoadEventInformation.filters = {...viewData.filters};
-    this.dt.filters = {...viewData.filters};
+    this.tableLazyLoadEventInformation.filters = structuredClone(viewData.filters);
+    this.dt.filters = structuredClone(viewData.filters);
     this.dt.tableWidthState = viewData.tableWidth;
     this.dt.columnWidthsState = viewData.columnsWidth;
     this.tableViewCurrentSelectedAlias = tableViewAlias;
