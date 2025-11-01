@@ -2050,7 +2050,7 @@ public class TestDto {
 }
 ```
 
-The value of `filterPredefinedValuesName` must match the dictionary key created in the frontend component.
+The value of `filterPredefinedValuesName` must match the **dictionary key** created in the frontend component.
 
 Once this is done, predefined filters will work as soon as you populate them with data.
 
@@ -2059,6 +2059,9 @@ For the table to match cell values with predefined filter options, the value ret
 The next sections describe the different representations of a predefined filter, which must be configured when populating the `IPredefinedFilter` list.
 
 If filtering is enabled in a column where a predefined filter has been configured, when the user presses the filter button a modal will appear showing the available options. The user can select one or more values, and a search bar will also be available for convenience.
+
+> [!CAUTION]
+> Each **dictionary key** must be unique across columns, otherwise, the associated dropdown filters will not function correctly.
 
 <br><br>
 

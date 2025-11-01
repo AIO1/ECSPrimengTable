@@ -314,6 +314,26 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
     this.tableOptions.isActive = true;
     this.tableLazyLoadEventInformation.filters = structuredClone(viewData.filters);
     this.dt.filters = structuredClone(viewData.filters);
+    this.predefinedFiltersSelectedValuesCollection = {}; // Empty predefined filters checkbox selection
+    for (const [filterKey, filterDataArrayRaw] of Object.entries(viewData.filters)) { // Iterate over each saved filter
+      const filterDataArray = filterDataArrayRaw as Array<{ value: any; matchMode?: string; operator?: string }>; // Cast expected structure
+      const filterData = filterDataArray?.[0];
+      if (!filterData || !filterData.value) { 
+        continue;
+      }
+      const column = this.columns?.find((c: any) => c.field === filterKey); // Find the column that owns this filterKey
+      if (!column || !column.filterPredefinedValuesName){
+        continue;
+      }
+      const predefinedKey = column.filterPredefinedValuesName;
+      const predefinedOptions = this.tableOptions.predefinedFilters?.[predefinedKey] ?? []; // Get predefined options for this column
+      const selectedItems = predefinedOptions.filter(opt =>
+        Array.isArray(filterData.value)
+          ? filterData.value.includes(opt.value)
+          : filterData.value === opt.value
+      ); // Match selected values with their full predefined definitions
+      this.predefinedFiltersSelectedValuesCollection[predefinedKey] = selectedItems; // Store the result
+    }
     this.dt.tableWidthState = viewData.tableWidth;
     this.dt.columnWidthsState = viewData.columnsWidth;
     this.tableViewCurrentSelectedAlias = tableViewAlias;
@@ -569,10 +589,10 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
             const filters = dt.filters[key];
             if (Array.isArray(filters)) {
               filters.forEach(filter => {
-                filter.value = null;  // Establecer el valor a null
+                filter.value = null;  // Set value to null
               });
             } else {
-              filters.value = null; // Establecer el valor a null
+              filters.value = null; // Set value to null
             }
           }
         }
