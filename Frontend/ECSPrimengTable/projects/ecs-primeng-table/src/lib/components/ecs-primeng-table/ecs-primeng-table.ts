@@ -695,23 +695,6 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
   }
 
   /**
-   * Retrieves the number of values selected for a predefined filter.
-   *
-   * This function checks the collection of selected values for a specified column key name and returns a string
-   * indicating the number of selected items along with a predefined text.
-   *
-   * @param {string} columnKeyName - The key name of the column for which to retrieve the number of selected values.
-   * @returns {string} A string indicating the number of selected values for the specified column.
-   */
-  predefinedFiltersSelectedValuesText(columnKeyName: string): string {
-    let numbItemsSelected = 0; // Initialize the count of selected items to zero
-    if (this.predefinedFiltersSelectedValuesCollection[columnKeyName]) { // Check if there are selected values for the specified column key
-        numbItemsSelected = this.predefinedFiltersSelectedValuesCollection[columnKeyName].length; // Get the number of selected items
-    }
-    return `${numbItemsSelected} items selected`; // Return the number of selected items concatenated with the predefined text
-  }
-
-  /**
    * Checks if the provided column metadata matches a specific style of the predefined filters 
    * that need to be applied to an item on a row.
    *
