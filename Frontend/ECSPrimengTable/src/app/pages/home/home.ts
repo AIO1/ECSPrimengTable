@@ -47,8 +47,10 @@ export class Home implements OnInit {
   ];
 
   employmentStatusPredefinedFilter: IPredefinedFilter[] = []; // Contains the data for the possible employment statuses
+  employmentStatusPredefinedFilterList: IPredefinedFilter[] = [];
   predefinedFiltersCollection: { [key: string]: IPredefinedFilter[] } = {
-    'employmentStatusPredefinedFilter': this.employmentStatusPredefinedFilter
+    'employmentStatusPredefinedFilter': this.employmentStatusPredefinedFilter,
+    'employmentStatusPredefinedFilterList': this.employmentStatusPredefinedFilterList
   };
   tableOptions: ITableOptions = createTableOptions({
     isActive: false,
@@ -104,14 +106,19 @@ export class Home implements OnInit {
     this.sharedService.handleHttpResponse(this.sharedService.handleHttpGetRequest<IEmploymentStatus[]>(`Test/GetEmploymentStatus`)).subscribe({
       next: (responseData: IEmploymentStatus[]) => {
         responseData.forEach((data) => {
-          this.employmentStatusPredefinedFilter.push({
+          // Create reusable filter object
+          const filterItem = {
             value: data.statusName,
             name: data.statusName,
             displayTag: true,
             tagStyle: {
               background: `rgb(${data.colorR}, ${data.colorG}, ${data.colorB})`
             }
-          })
+          };
+
+          // Push the same object to both predefined filters
+          this.employmentStatusPredefinedFilter.push({ ...filterItem });
+          this.employmentStatusPredefinedFilterList.push({ ...filterItem });
         });
         this.dt.updateData();
       },

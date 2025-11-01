@@ -18,7 +18,7 @@ namespace ECSPrimengTableExample.DTOs {
         [ColumnAttributes("Employment status", filterPredefinedValuesName: "employmentStatusPredefinedFilter", columnDescription: "A predefined filter that shows the employment status of the user")]
         public string? EmploymentStatusName { get; set; }
 
-        [ColumnAttributes("Employment status list", dataType: DataType.List, dataAlignHorizontal: DataAlignHorizontal.Left, filterPredefinedValuesName: "employmentStatusPredefinedFilter", columnDescription: "A list of employment statuses separated by ; in the database")]
+        [ColumnAttributes("Employment status list", dataType: DataType.List, dataAlignHorizontal: DataAlignHorizontal.Left, filterPredefinedValuesName: "employmentStatusPredefinedFilterList", columnDescription: "A list of employment statuses separated by ; in the database")]
         public string? EmploymentStatusNameList { get; set; }
 
         [ColumnAttributes("Birthdate", dataType: DataType.Date, dataAlignHorizontal: DataAlignHorizontal.Left, startHidden: true, columnDescription: "When was the user born")]
