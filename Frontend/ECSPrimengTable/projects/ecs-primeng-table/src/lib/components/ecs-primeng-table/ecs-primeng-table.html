@@ -180,22 +180,11 @@
                                                     [style]="{ minWidth: '400px' }" [(ngModel)]="predefinedFiltersSelectedValuesCollection[col.filterPredefinedValuesName]"
                                                     [options]="getPredefinedFilterValues(col.filterPredefinedValuesName)" placeholder="Any value"
                                                     (onChange)="onPredefinedFilterChange(col.field, $event.value)" optionLabel="name">
-                                                        <ng-template #selectedItems>
-                                                        @if (predefinedFiltersSelectedValuesCollection[col.filterPredefinedValuesName].length > 0) {
-                                                            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                                                <div>
-                                                                    {{predefinedFiltersSelectedValuesText(col.filterPredefinedValuesName)}}
-                                                                </div>
-                                                            </div>
-                                                        } @else {
-                                                            <div>Any value</div>
-                                                        }
-                                                        </ng-template>
-                                                        <ng-template let-option pTemplate="item">
-                                                            <div style="display: inline-block; vertical-align: middle;">
-                                                                <ecs-table-predefined-filters [option]="option" [col]="col" [selectable]="false" [rowData]="null"/>
-                                                            </div>
-                                                        </ng-template>
+                                                    <ng-template #item let-option >
+                                                        <div style="display: inline-block; vertical-align: middle;">
+                                                            <ecs-table-predefined-filters [option]="option" [col]="col" [selectable]="false" [rowData]="null"/>
+                                                        </div>
+                                                    </ng-template>
                                                 </p-multiSelect>
                                             </ng-template>
                                         </p-columnFilter>
