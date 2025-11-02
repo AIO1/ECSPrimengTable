@@ -419,6 +419,7 @@ Before diving into advanced features, it’s essential to start with the basics 
 - Which columns should allow filtering: all, some, or none?
 - Can users change the position of columns via drag-and-drop?
 - Are any columns going to be frozen (fixed) on the left or right side?
+- Are there any columns that should be visible only to specific user roles or permission levels?
 
 **Rows**
 - Do any rows need conditional formatting based on the values of a specific column?
@@ -433,6 +434,10 @@ Before diving into advanced features, it’s essential to start with the basics 
 - Will a global filter be available for the table?
 - Should the table support exporting data to Excel?
 - Will users be able to save their table configuration? If so, should it be persistent across sessions or only for the current session?
+- Should the table include a description? If yes, should it be displayed as a tooltip or as inline text next to the information icon?  
+- Does the table require a legend to provide a centralized explanation for columns that share similar meanings, or to clarify the use of icons and color codes?
+
+<br>
 
 Don’t worry if some of these concepts are unclear at this point, each feature will be explained individually in detail in the following sections.
 
@@ -1180,6 +1185,24 @@ The following examples illustrate how the table description appears when configu
 > [!TIP]
 > To keep the table header clean and easy to read, it is recommended to use the description as a tooltip whenever possible.
 
+<br><br>
+
+
+
+### 4.16 Table legend
+A **table legend** can be added to the table footer. It is displayed as a button that remains visible while scrolling vertically and, when clicked, opens a popover containing the legend content.
+
+This feature is **configured per table** and supports **rich HTML content**, allowing you to include formatted text, icons or lists within the legend.  
+Its main purpose is to provide a shared column reference for the table, for example to describe symbols, color codes or specific data conventions used across multiple columns, avoiding redundant descriptions in each column.
+
+The following image illustrates an example of how a table legend is displayed:
+<p align="center">
+	<img width="315" height="250" alt="Legend" src="https://github.com/user-attachments/assets/35d63f1e-6f81-4fcf-9e46-6b38b8133534" />
+</p>
+
+> [!TIP]
+> Use the table legend to centralize shared references and reduce redundancy in column descriptions.
+
 <br><br><br>
 
 
@@ -1224,6 +1247,7 @@ The purpose of this section is to provide a table that maps the features describ
 | Views | [4.13 Views](#413-views) | [6.13 Setting up views](#613-setting-up-views) |
 | Columns | [4.14 Configurable dynamic column exclusion](#414-configurable-dynamic-column-exclusion) | [6.14 Configurable dynamic column exclusion](#614-configurable-dynamic-column-exclusion) |
 | Table | [4.15 Table description](#415-table-description) | [6.15 Table description](#615-table-description) |
+| Table | [4.16 Table legend](#416-table-legend) | [6.16 Table legend](#616-table-legend) |
 
 </div>
 
@@ -3723,6 +3747,70 @@ And in your HTML:
 <ecs-primeng-table [tableOptions]="tableOptions"/>
 ```
 
+<br><br>
+
+
+
+### 6.16 Table legend
+The table legend is configured on the frontend through the **`legend`** object inside the `ITableOptions` interface, which provides the following properties:
+- **`content`** *(Default: `undefined`)*: The content to be displayed in the popover of the legend. Can be HTML rich.
+- **`button`**: Configuration options for the button that displays the popover of the table legend.
+  - **`icon`** *(Default: `"pi pi-bars"`)*: Icon displayed alongside the button of the table legend. You can use any PrimeIcons class or icons from third-party libraries such as Material Icons or Font Awesome.
+  - **`text`** *(Default: `"Legend"`)*: The text shown in the legend button.
+
+To enable this feature, simply provide a non-empty `content` value.
+
+<br>
+
+**_Example_**
+
+To configure the table to display a legend containing rich HTML text, you can define it in your component’s TypeScript file as follows.  
+Below is a minimal example assuming the component is named `Home`:
+```ts
+import { Component } from '@angular/core';
+import { ECSPrimengTable, ITableOptions, createTableOptions } from '@eternalcodestudio/primeng-table';
+
+@Component({
+  selector: 'ecs-home',
+  standalone: true,
+  imports: [
+    ECSPrimengTable
+  ],
+  templateUrl: './home.html'
+})
+export class Home {
+  tableOptions: ITableOptions = createTableOptions({
+    urlTableConfiguration: "Test/GetTableConfiguration",
+    urlTableData: "Test/GetTableData",
+    legend:{
+      content: `
+        <span><b>MY SUPER LEGEND</b></span>
+        <ul>
+          <li>
+            <i class="pi pi-check-square"></i>
+            Item 1
+          </li>
+          <li>
+            <i>Item 2</i>
+            <i class="pi pi-paperclip"></i>
+          </li>
+          <li><u>Item 3</u></li>
+        </ul>
+      `,
+      // button: {
+        // icon: "pi pi-bars", // Uncomment to customize the legend button icon
+        // text: "Legend", // Uncomment to customize the legend button text
+      // }
+    }
+  });
+}
+```
+
+And in your HTML:
+```html
+<ecs-primeng-table [tableOptions]="tableOptions"/>
+```
+
 <br><br><br>
 
 
@@ -4704,6 +4792,11 @@ Configuration options for **ECS PrimeNG table**. Includes settings for table act
 | `clearSortsEnabled` | `header` | `boolean` | `true` | When `false`, the clear sorts button will be hidden. |
 | `clearSortsIcon` | `header` | `string` | `"pi pi-sort-alt-slash"` | Allows customization of the clear sorts button icon. |
 | `isActive` |  | `boolean` | `true` | Controls whether the table is active. When `true`, the table fetches configuration, columns, and data on init. When `false`, it does not automatically fetch or update data, allowing manual manipulations without triggering updates. |
+| `legend` |  | `object` | N/A | Configuration options for the table legend. |
+| `button` | `legend` | `object` | N/A | Configuration options for the button that displays the popover of the table legend. |
+| `icon` | `legend` => `button` | `string` | `"pi pi-bars"` | Icon displayed alongside the button of the table legend. You can use any PrimeIcons class or icons from third-party libraries such as Material Icons or Font Awesome. |
+| `text` | `legend` => `button` | `string` | `"Legend"` | The text shown in the legend button. |
+| `content` | `legend` | `string` | `undefined` | The content to be displayed in the popover of the legend. Can be HTML rich. |
 | `predefinedFilters` |  | `{ [key: string]: IPredefinedFilter[] }` | `{}` | Predefined filters for table columns. Restricts filter options to a known set of values per column, suitable for columns with limited distinct values. Supports plain text, tags, icons, and images, and works with `list` data types. |
 | `rows` |  | `object` | N/A | Configurations related to the rows of the table. |
 | `action` | `rows` | `object` | N/A | Configurations related to the action column for the rows. |

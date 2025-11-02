@@ -253,7 +253,15 @@
         <!-- SHOW CUSTOM RECORDS REPORT -->
         <ng-template #paginatorleft>
             <div #paginatorContainer>
-                Showing {{totalRecords}} records of {{totalRecordsNotFiltered}} available records
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    @if(tableOptions.legend?.content){
+                        <p-button (click)="op.toggle($event)" [icon]="tableOptions.legend?.button?.icon || 'pi pi-bars'" [label]="tableOptions.legend?.button?.text || 'Legend'" />
+                        <p-popover #op>
+                            <div [innerHTML]="tableOptions.legend?.content"></div>
+                        </p-popover>
+                    }
+                    <span>Showing {{totalRecords}} records of {{totalRecordsNotFiltered}} available records</span>
+                </div>
             </div>
         </ng-template>
     </p-table>
