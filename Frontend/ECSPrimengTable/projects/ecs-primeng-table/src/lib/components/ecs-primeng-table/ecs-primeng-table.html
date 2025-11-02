@@ -85,6 +85,16 @@
                             [icon]="tableOptions.header?.clearFiltersIcon ?? 'pi pi-filter-slash'" (onClick)="clearFilters(dt)" [disabled]="!hasToClearFilters(dt, globalSearchText)"
                             pTooltip="Clear filters" [showDelay]="700" tooltipPosition="top" styleClass="p-button-icon-only"/>
                     }
+
+                    <!--TABLE DESCRIPTION-->
+                    @if(tableOptions.description?.text){ <!-- If a table description text is provided -->
+                        @if(!tableOptions.description!.tooltip){ <!-- The table description must be shown as text next to the icon -->
+                            <i [class]="tableOptions.description!.icon"></i>
+                            <span [innerHTML]="tableOptions.description!.text"></span>
+                        } @else {
+                            <i [escape]="false" [pTooltip]="tableOptions.description!.text" tooltipPosition="right" [class]="tableOptions.description!.icon"></i>
+                        }
+                    }
                 </div>
 
                 <!--TABLE VIEWS-->
