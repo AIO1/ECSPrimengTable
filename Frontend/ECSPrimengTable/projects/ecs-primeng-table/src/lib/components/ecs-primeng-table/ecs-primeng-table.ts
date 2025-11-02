@@ -15,6 +15,7 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { PaginatorModule } from 'primeng/paginator';
 import { FilterMetadata } from 'primeng/api';
 import { ButtonGroupModule } from 'primeng/buttongroup';
+import { PopoverModule } from 'primeng/popover';
 
 import { ECSPrimengTableService } from './ecs-primeng-table.service';
 import { CellOverflowBehaviour, DataAlignHorizontal, DataAlignVertical, DataType, FrozenColumnAlign, TableViewSaveMode } from '../../enums';
@@ -49,8 +50,9 @@ import { ViewsManagement } from "../views-management/views-management";
     ColumnSelector,
     ExportExcel,
     ButtonGroupModule,
-    ViewsManagement
-],
+    ViewsManagement,
+    PopoverModule
+  ],
   standalone: true,
   templateUrl: './ecs-primeng-table.html',
   styleUrl: './ecs-primeng-table.scss',

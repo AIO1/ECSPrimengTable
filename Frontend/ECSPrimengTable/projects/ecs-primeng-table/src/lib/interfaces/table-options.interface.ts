@@ -84,6 +84,39 @@ export interface ITableOptions {
     }
 
     /**
+     * Configuration options for the table legend.
+     */
+    legend?: {
+        /**
+         * The content to be displayed in the popover of the legend. Can be HTML rich.
+         *
+         * @default undefined
+         */
+        content?: string;
+
+        /**
+         * Configuration options for the button that displays the popover of the table legend.
+         */
+        button?: {
+            /**
+             * Icon displayed alongside the button of the table legend.
+             * You can use any PrimeIcons class or icons from third-party libraries
+             * such as Material Icons or Font Awesome.
+             *
+             * @default "pi pi-bars"
+             */
+            icon?: string;
+
+            /**
+             * The text shown in the legend button.
+             *
+             * @default "Legend"
+             */
+            text?: string;
+        }
+    }
+
+    /**
      * Configurations related to options that are at the header of the table.
      */
     header?: {
@@ -512,6 +545,13 @@ export const DEFAULT_TABLE_OPTIONS: ITableOptions = {
         icon: "pi pi-info-circle",
         tooltip: true,
         text: undefined
+    },
+    legend: {
+        content: undefined,
+        button: {
+            icon: "pi pi-bars",
+            text: "Legend"
+        }
     },
     header: {
         buttons: [],
