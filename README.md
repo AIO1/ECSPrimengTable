@@ -1152,6 +1152,34 @@ Some example use cases are as follows:
 > While column exclusions can be configured differently for the table display and export operations, it is generally recommended to keep them consistent across both for a coherent user experience.  
 > The option to define separate exclusions is available to accommodate special or exceptional scenarios where different visibility rules are required.
 
+<br><br>
+
+
+
+### 4.15 Table description
+You can optionally include a **table description** in the header (on the left side) to provide additional context about the table’s purpose or explain how to use specific features.
+
+This feature is **configured per table** and supports **rich HTML content**, allowing you to format the text with elements such as `<b>` (bold), `<u>` (underline), `<i>` (italic), custom colors, or different fonts.
+
+The table description can be displayed in two different ways:
+- As a **tooltip**, which shows the description when the user hovers over the icon (the tooltip appears to the right of the icon if there is enough space, if not it will be rendered below).
+- As **inline text**, displayed directly to the right of the icon.
+
+The description icon itself is **fully customizable** and supports icons from any library, including PrimeIcons, Material Icons, or Font Awesome.
+
+The following examples illustrate how the table description appears when configured as a tooltip and as inline text respectively.
+
+<p align="center">
+	<img width="330" height="128" alt="Tooltip" src="https://github.com/user-attachments/assets/45b22225-c1fb-44e4-a8d4-f6c8d769e907" />
+</p>
+
+<p align="center">
+	<img width="633" height="120" alt="Text" src="https://github.com/user-attachments/assets/4c827a01-62ed-4646-a86f-742740878713" />
+</p>
+
+> [!TIP]
+> To keep the table header clean and easy to read, it is recommended to use the description as a tooltip whenever possible.
+
 <br><br><br>
 
 
@@ -1195,6 +1223,7 @@ The purpose of this section is to provide a table that maps the features describ
 | Excel report | [4.12 Excel report](#412-excel-report) | [6.12 Configuring Excel reports](#612-configuring-excel-reports) |
 | Views | [4.13 Views](#413-views) | [6.13 Setting up views](#613-setting-up-views) |
 | Columns | [4.14 Configurable dynamic column exclusion](#414-configurable-dynamic-column-exclusion) | [6.14 Configurable dynamic column exclusion](#614-configurable-dynamic-column-exclusion) |
+| Table | [4.15 Table description](#415-table-description) | [6.15 Table description](#615-table-description) |
 
 </div>
 
@@ -3644,6 +3673,56 @@ namespace ECSPrimengTableExample.Services {
 }
 ```
 
+<br><br>
+
+
+
+### 6.15 Table description
+The table description is configured on the frontend through the **`description`** object inside the `ITableOptions` interface, which provides the following properties:
+- **`icon`** *(Default: `"pi pi-info-circle"`)*: Icon displayed alongside the table description. You can use any PrimeIcons class or icons from third-party libraries such as Material Icons or Font Awesome.
+- **`tooltip`** *(Default: `true`)*: Determines how the description text is displayed.
+  - `true`, the `text` content is shown as a tooltip when hovering over the description icon.
+  - `false`, the `text` is displayed inline to the right of the icon.
+- **`text`** *(Default: `undefined`)*: The description content to display. If left undefined or string empty, the table description will not be rendered. Supports basic HTML for rich text formatting (e.g., `<b>`, `<u>`, `<i>`).
+
+To enable this feature, simply provide a non-empty `text` value and use the other properties to customize how the description is displayed.
+
+<br>
+
+**_Example_**
+
+To configure the table to display a description containing rich HTML text, rendered inline next to the icon, you can define it in your component’s TypeScript file as follows.  
+Below is a minimal example assuming the component is named `Home`:
+```ts
+import { Component } from '@angular/core';
+import { ECSPrimengTable, ITableOptions, createTableOptions } from '@eternalcodestudio/primeng-table';
+
+@Component({
+  selector: 'ecs-home',
+  standalone: true,
+  imports: [
+    ECSPrimengTable
+  ],
+  templateUrl: './home.html'
+})
+export class Home {
+  tableOptions: ITableOptions = createTableOptions({
+    urlTableConfiguration: "Test/GetTableConfiguration",
+    urlTableData: "Test/GetTableData",
+    description: {
+      text: "Hello world. <b>This is bold.</b> <i>This is italic.</i> <u>This is underlined.</u>",
+      tooltip: false,
+      // icon: "pi pi-info-circle" // Uncoment to modify the icon displayed
+    }
+  });
+}
+```
+
+And in your HTML:
+```html
+<ecs-primeng-table [tableOptions]="tableOptions"/>
+```
+
 <br><br><br>
 
 
@@ -4607,6 +4686,10 @@ Configuration options for **ECS PrimeNG table**. Includes settings for table act
 | `selectorIcon` | `columns` | `string` | `"pi pi-pen-to-square"` | Icon used for the column selector button. Can be replaced with any PrimeNG, Font Awesome, or Material Icon. |
 | `shown` | `columns` | `IColumnMetadata[]` | `[]` | Array of columns that must be displayed in the table, including non-selectable and user-selected columns. |
 | `data` |  | `any[]` | `[]` | The array of data to be displayed in the table. Each item should represent a row and match the table's column structure. |
+| `description` |  | `object` | N/A | Configuration options for the table description section. |
+| `icon` | `description` | `string` | `"pi pi-info-circle"` | Icon displayed alongside the table description. You can use any PrimeIcons class or icons from third-party libraries such as Material Icons or Font Awesome. |
+| `text` | `description` | `string` | `undefined` | The description content to display. If left undefined or string empty, the table description will not be rendered. Supports basic HTML for rich text formatting. |
+| `tooltip` | `description` | `boolean` | `true` | Determines how the description text is displayed. `true`, the `text` content is shown as a tooltip when hovering over the description icon. `false`, the `text` is displayed inline to the right of the icon. |
 | `excelReport` |  | `object` | N/A | Configurations for exporting the table data to Excel. |
 | `defaultTitle` | `excelReport` | `string` | `"Report"` | Default title shown in the Excel export modal when preparing the export. If empty and `titleAllowUserEdit` is `false`, the export button is disabled. |
 | `titleAllowUserEdit` | `excelReport` | `boolean` | `true` | Determines whether the user can edit the title of the Excel file in the export modal. If `true`, editable; if `false`, title is fixed to `defaultTitle`. |

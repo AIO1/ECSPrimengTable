@@ -51,6 +51,39 @@ export interface ITableOptions {
     data?: any[];
 
     /**
+     * Configuration options for the table description section.
+     */
+    description?: {
+        /**
+         * Icon displayed alongside the table description.
+         * You can use any PrimeIcons class or icons from third-party libraries
+         * such as Material Icons or Font Awesome.
+         *
+         * @default "pi pi-info-circle"
+         */
+        icon?: string;
+
+        /**
+         * Determines how the description text is displayed.
+         * - `true`, the `text` content is shown as a tooltip when hovering
+         * over the description icon.
+         * - `false`, the `text` is displayed inline to the right of the icon.
+         *
+         * @default true
+         */
+        tooltip?: boolean;
+
+        /**
+         * The description content to display.
+         * If left undefined or string empty, the table description will not be rendered.
+         * Supports basic HTML for rich text formatting.
+         *
+         * @default undefined
+         */
+        text?: string;
+    }
+
+    /**
      * Configurations related to options that are at the header of the table.
      */
     header?: {
@@ -472,9 +505,14 @@ export interface ITableOptions {
 /** Default configuration options for ECS Primeng table */
 export const DEFAULT_TABLE_OPTIONS: ITableOptions = {
     isActive: true,
-    data: [],
     urlTableConfiguration: undefined,
     urlTableData: undefined,
+    data: [],
+    description: {
+        icon: "pi pi-info-circle",
+        tooltip: true,
+        text: undefined
+    },
     header: {
         buttons: [],
         clearSortsEnabled: true,
