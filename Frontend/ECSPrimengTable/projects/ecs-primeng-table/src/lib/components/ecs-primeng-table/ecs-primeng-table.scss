@@ -6,13 +6,14 @@
 .p-datatable-column-filter-button.p-button-icon-only.p-button-rounded {
   height: var(--p-icon-size) !important;
   width: var(--p-icon-size) !important;
+  border-radius: 0 !important;
 }
 /* Column filter clear button */
 .p-datatable-column-filter-clear-button.p-button-icon-only.p-button-rounded {
   height: var(--p-icon-size) !important;
   width: var(--p-icon-size) !important;
+  border-radius: 0 !important;
 }
-
 
 .viewButton {
   width: 200px;
