@@ -772,6 +772,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
   }
 
   columnSelectorShow(){
+    this.tableOptions.columns?.selectorOrderByColumnName
     let tempData = this.columns.map(column => {
       const isSelected = this.columnsSelected.some(selectedColumn => selectedColumn.field === column.field) || this.columnsCantBeHidden.some(selectedColumn => selectedColumn.field === column.field);
       const isSelectDisabled =  this.columnsCantBeHidden.some(selectedColumn => selectedColumn.field === column.field);
@@ -788,11 +789,11 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
         dataAlignVerticalDisabled: !column.dataAlignVerticalAllowUserEdit
       };
     });
-    tempData.slice().sort((a: any, b: any) => { // Sort selectable columns by header
-      const fieldA = a.header.toUpperCase();
-      const fieldB = b.header.toUpperCase();
-      return fieldA.localeCompare(fieldB);
-    });
+    if (this.tableOptions.columns?.selectorOrderByColumnName === true) { // Sort columns by header only if order by column name is true
+      tempData = tempData.slice().sort((a, b) => {
+        return a.header.toUpperCase().localeCompare(b.header.toUpperCase()); // Sort by header text (A-Z)
+      });
+    }
     this.columnModalData = [...tempData];
     this.filteredColumnData = this.columnModalData;
     this.showColumnSelector=true;

@@ -594,7 +594,7 @@ By default, the table includes a **column properties button** located at the top
 This menu can be **disabled globally** if you do not want users to make any modifications to column properties or visibility.
 
 When enabled, clicking the button opens a modal window that provides the following features:
-- **Column list**: Displays all available columns in the table (excluding **utility columns**).
+- **Column list**: Displays all available columns in the table ordered from A-Z (excluding **utility columns**). Automatic ordering can be disabled if desired.
 - **Search bar**: A global search input to filter columns by name. Columns are listed alphabetically (A–Z).
 - **Editable properties** (if not locked for the column):
   - Visibility (show/hide columns).
@@ -1822,14 +1822,14 @@ By default, all columns are **visible**. You can control column visibility using
   - Example use case: internal IDs, keys, or technical references required by the application logic.
 
 - **`canBeHidden`**
-  - Determines whether the user can toggle the visibility of the column in the column editor menu.
+  - Determines whether the user can toggle the visibility of the column in the column properties menu.
   - Default: `true` (users can toggle the visibility).
   - If set to `false`, the column will always remain visible, and the user cannot hide it.
 
 - **`startHidden`**
   - Defines whether the column is visible when the table first loads.
   - Default: `false` (the column is visible initially).
-  - If set to `true`, the column will start as hidden, but the user can make it visible through the column editor menu.
+  - If set to `true`, the column will start as hidden, but the user can make it visible through the column properties menu.
   - **Important**: if `canBeHidden` is `false`, the `startHidden` option is ignored, and the column will always be visible.
 
 <br><br>
@@ -1854,7 +1854,7 @@ There are two exceptions to this rule:
 #### 6.3.3 Horizontal and vertical alignment
 By default, all columns are aligned **horizontally at `Center`** and **vertically at `Middle`**, which means that the content of each cell is displayed at its center.
 
-Users are allowed to change both the horizontal and vertical alignment through the **column editor menu** by default.
+Users are allowed to change both the horizontal and vertical alignment through the **column properties menu** by default.
 
 If different initial alignments are required, or if user customization must be restricted, the `ColumnAttributes` of the DTO provides the following configuration options:
 
@@ -1863,8 +1863,8 @@ If different initial alignments are required, or if user customization must be r
   - **`dataAlignVertical`**: Uses the `DataAlignVertical` enum. Default value is `Middle`. Possible values are `Top`, `Middle` and `Bottom`.
 
 - **Restricting alignment changes**
-  - **`dataAlignHorizontalAllowUserEdit`**: By default set to `true`. If set to `false`, the user cannot change the horizontal alignment of the column in the editor menu.
-  - **`dataAlignVerticalAllowUserEdit`**: By default set to `true`. If set to `false`, the user cannot change the vertical alignment of the column in the editor menu.
+  - **`dataAlignHorizontalAllowUserEdit`**: By default set to `true`. If set to `false`, the user cannot change the horizontal alignment of the column in the properties menu.
+  - **`dataAlignVerticalAllowUserEdit`**: By default set to `true`. If set to `false`, the user cannot change the vertical alignment of the column in the properties menu.
 
 <br><br>
 
@@ -1881,7 +1881,7 @@ If you need a different default behaviour, or if you want to prevent users from 
   - `Hidden` (default): exceeding the width of the column will be truncated and not displayed.
   - `Wrap`: Excess content is wrapped onto new lines, allowing the row to expand vertically as needed to fit all content.
 
-- **`cellOverflowBehaviourAllowUserEdit`**: Controls whether users can change the column’s overflow behaviour through the column editor menu. Default is `true`. Set it to `false` to prevent users from modifying this setting.
+- **`cellOverflowBehaviourAllowUserEdit`**: Controls whether users can change the column’s overflow behaviour through the column properties menu. Default is `true`. Set it to `false` to prevent users from modifying this setting.
 
 > [!NOTE]
 > When the column's data type is `boolean`, the `cellOverflowBehaviour` setting will be automatically overridden to `Hidden`.
@@ -1895,13 +1895,11 @@ As described in the functional documentation for this section, the table include
 
 You can customize the column properties menu behavior through the following table options:
 
-- **`selectorEnabled`**: *(default: `true`)*
-  Controls the visibility of the top-left button.
+- **`selectorEnabled`**: *(default: `true`)* Controls the visibility of the top-left button.
   - `true`: Button is visible and users can open the column properties menu.
   - `false`: Button is hidden.
-
-- **`selectorIcon`**: *(default: PrimeNG icon `pi pi-pen-to-square`)*
-  Specifies the icon displayed on the button. You can replace it with any icon from PrimeNG or other libraries such as Font Awesome or Material Icons.
+- **`selectorIcon`**: *(default: PrimeNG icon `pi pi-pen-to-square`)* Specifies the icon displayed on the button. You can replace it with any icon from PrimeNG or other libraries such as Font Awesome or Material Icons.
+- **`selectorOrderByColumnName`**: *(default: `true`)* When `true`, columns in the selector are displayed alphabetically (A–Z). When `false`, columns keep the order provided by the backend.
 
 <br><br>
 
@@ -4835,6 +4833,7 @@ Configuration options for **ECS PrimeNG table**. Includes settings for table act
 | `columns` |  | `object` | N/A | Configurations related to the columns of the table. |
 | `selectorEnabled` | `columns` | `boolean` | `true` | Enables or disables the column selector feature. When `true`, a button appears in the top-left corner, opening a modal that lets users show/hide columns, adjust cell overflow behavior, and change horizontal/vertical alignment per column. When `false`, the selector button is not available. |
 | `selectorIcon` | `columns` | `string` | `"pi pi-pen-to-square"` | Icon used for the column selector button. Can be replaced with any PrimeNG, Font Awesome, or Material Icon. |
+| `selectorOrderByColumnName` | `columns` | `boolean` | `true` | When `true`, columns in the selector are displayed alphabetically (A–Z). When `false`, columns keep the order provided by the backend. |
 | `shown` | `columns` | `IColumnMetadata[]` | `[]` | Array of columns that must be displayed in the table, including non-selectable and user-selected columns. |
 | `data` |  | `any[]` | `[]` | The array of data to be displayed in the table. Each item should represent a row and match the table's column structure. |
 | `description` |  | `object` | N/A | Configuration options for the table description section. |

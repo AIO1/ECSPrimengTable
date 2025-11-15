@@ -3,9 +3,9 @@
     <ng-template pTemplate="header">
         <span class="white-space-nowrap"><b>MODIFY COLUMNS</b></span>
     </ng-template>
-    <div style="padding: 20px;">
+    <div style="padding: 10px;">
         <p-table #dt_columnDialog [value]="columnModalData" [scrollable]="true" size="small" showGridlines stripedRows 
-            [globalFilterFields]="['header']" scrollHeight="400px" [tableStyle]="{'min-width': '25rem'}" (onFilter)="onColumnModalFilter($event)">
+            [globalFilterFields]="['header']" scrollHeight="calc(80vh - 220px)" (onFilter)="onColumnModalFilter($event)">
             <ng-template #caption>
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div style="display: flex; align-items: center; gap: 10px">

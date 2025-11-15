@@ -176,12 +176,20 @@ export interface ITableOptions {
         selectorEnabled?: boolean;
 
         /**
-         * Can be used to specifiy a different icon to be used by the column selector.
+         * Can be used to specifiy a different icon to be used by the column selector.  
          * You can replace it with any icon from PrimeNG or other libraries such as Font Awesome or Material Icons.
          * 
          * @default "pi pi-pen-to-square"
          */
         selectorIcon?: string;
+
+        /**
+         * When `true`, columns in the selector are displayed alphabetically (A–Z).  
+         * When `false`, columns keep the order provided by the backend.
+         * 
+         * @default true
+         */
+        selectorOrderByColumnName?: boolean;
 
         /**
          * The combination of non-selectable columns and user-selected columns 
@@ -583,6 +591,7 @@ export const DEFAULT_TABLE_OPTIONS: ITableOptions = {
     columns: {
         selectorEnabled: true,
         selectorIcon: "pi pi-pen-to-square",
+        selectorOrderByColumnName: true,
         shown: []
     },
     rows: {
