@@ -103,7 +103,6 @@
                         <p-buttongroup>
                             <p-button (click)="viewsModalShow=true;" [label]="tableViewCurrentSelectedAlias ? tableViewCurrentSelectedAlias : '--- Select a view ---'" class="viewButton"/>
                             <p-button icon="pi pi-refresh" (click)="viewLoad(tableViewCurrentSelectedAlias!)" [disabled]="!tableViewCurrentSelectedAlias" pTooltip="Apply view again" [showDelay]="700" tooltipPosition="top"/>
-                            <p-button icon="pi pi-eraser" (click)="resetTableView()" pTooltip="Reset table view" [showDelay]="700" tooltipPosition="top"/>
                         </p-buttongroup>
                     </div>
                 }
@@ -134,11 +133,15 @@
                             pTooltip="Export to Excel" [showDelay]="700" tooltipPosition="top" styleClass="p-button-icon-only"/>
                     }
 
-                    <!--REFRESH DATA-->
-                    @if (showRefreshData) {
-                        <p-button icon="pi pi-refresh" (onClick)="refreshData($event)" pTooltip="Refresh data" [showDelay]="700"
+                    <!--RESET TABLE VIEW-->
+                    @if(tableOptions.resetTableView?.enabled){
+                        <p-button [icon]="tableOptions.resetTableView?.icon ?? 'pi pi-eraser'" (click)="resetTableView()" pTooltip="Reset table view" [showDelay]="700"
                             tooltipPosition="top" styleClass="p-button-icon-only"/>
                     }
+
+                    <!--REFRESH DATA-->
+                    <p-button icon="pi pi-refresh" (onClick)="refreshData($event)" pTooltip="Refresh data" [showDelay]="700"
+                        tooltipPosition="top" styleClass="p-button-icon-only"/>
                     
                     <!-- HEADER ACTION BUTTONS -->
                     @if ((tableOptions.header?.buttons?.length ?? 0) > 0) {
