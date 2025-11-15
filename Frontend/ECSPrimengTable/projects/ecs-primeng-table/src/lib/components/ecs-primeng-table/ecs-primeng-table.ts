@@ -85,7 +85,6 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
   showColumnSelector: boolean = false;
   selectedRowsCheckbox: any[] = []; // An array to keep all the selected rows
   @ViewChild('dt') dt!: Table; // Get the reference to the object table
-  showRefreshData=true;
   
   globalSearchText: string | null = null; // The text used by the global search
   tableViewsList: ITableView[] = [];

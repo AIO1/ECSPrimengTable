@@ -31,7 +31,7 @@ Some of the key features included are:
 A video showcasing an overview of some of the features can be found at the following link: [YouTube Video](https://youtu.be/06jZPS3m8fA)  
 This is an example image of the final solution:
 <p align="center">
-    <img width="1899" height="978" alt="Example table" src="https://github.com/user-attachments/assets/d7bc4183-6895-4166-afa7-a2cd64d2abdd" />
+	<img width="1918" height="992" alt="Example table" src="https://github.com/user-attachments/assets/5c7f4016-a0f4-4af1-b5da-53afdb615012" />
 </p>
 
 <br><br><br>
@@ -44,7 +44,7 @@ Then, select the **Outline** button in the top-right corner to display an index 
 
 Following these steps provides a more convenient way to navigate and review the documentation.
 <p align="center">
-    <img width="1899" height="965" alt="image" src="https://github.com/user-attachments/assets/822794d2-dab7-4b49-bbdc-703bf4c094ca" />
+    <img width="1899" height="965" alt="Improving documentation readability" src="https://github.com/user-attachments/assets/822794d2-dab7-4b49-bbdc-703bf4c094ca" />
 </p>
 
 <br><br><br>
@@ -431,6 +431,7 @@ Before diving into advanced features, it’s essential to start with the basics 
 - Are there any table-level actions needed, such as creating records?
 - How will dates be displayed in the table?
 - Will users be able to customize the date format?
+- Should the table allow users to reset it to its original state?
 - Will a global filter be available for the table?
 - Should the table support exporting data to Excel?
 - Will users be able to save their table configuration? If so, should it be persistent across sessions or only for the current session?
@@ -851,7 +852,7 @@ Users can also **unselect a previously selected row**. There are two ways to con
 - **Click only:** Simply click the already selected row to unselect it, without needing to press `CTRL`.
 
 <p align="center">
-  <img width="1899" height="243" alt="Single row select example" src="https://github.com/user-attachments/assets/644c4bd3-512d-4768-9e56-d283e6d05827"/>
+	<img width="1915" height="250" alt="Single row select example" src="https://github.com/user-attachments/assets/021d054d-56b7-4d96-8866-5c831c1d9e4d" />
 </p>
 
 > [!NOTE]
@@ -902,7 +903,7 @@ In the example below:
 - If the value `Unemployed` exists in the column `Employment status list`, the row’s **background color** will change to **light red**, the **text color** to **dark red**, and the **font weight** will be **bold**.
 
 <p align="center">
-  <img width="1901" height="558" alt="Dynamic row styling" src="https://github.com/user-attachments/assets/2ef09870-110b-45d6-b4e8-14aef7baad51" />
+	<img width="1915" height="563" alt="Dynamic row styling" src="https://github.com/user-attachments/assets/1c58a0c5-fe29-4d61-8c66-676184fb68aa" />
 </p>
 
 > [!TIP]
@@ -973,7 +974,7 @@ The global filter does **not apply** to columns with a **boolean data type**, si
 
 An example of the global filter:
 <p align="center">
-  <img width="1899" height="560" alt="Global filter example" src="https://github.com/user-attachments/assets/fb6308aa-7d6d-48ab-be4e-31580e595aa9"/>
+	<img width="1916" height="568" alt="Global filter example" src="https://github.com/user-attachments/assets/f817be2b-ff64-49c4-a9f8-fc72a3bafb0d" />
 </p>
 
 > [!CAUTION]
@@ -1110,13 +1111,12 @@ Views are saved **per table key and user**. To enable this, you just need to:
 
 If views are enabled, users will see the following menu in the middle of the table header:
 <p align="center">
-  <img width="308" height="51" alt="Views top menu" src="https://github.com/user-attachments/assets/60b0f80e-ccd9-4077-aa1b-574a64e083da" />
+	<img width="256" height="48" alt="Views top menu" src="https://github.com/user-attachments/assets/cd407df7-6305-4d5e-842d-7eb01a355148" />
 </p>
 
 This menu shows the currently applied view:
 - A text showing "---Select a view---" displays the name of the currently applied view (if a view is being applied).
 - The **replay button** reapplies the last configuration of the selected view.
-- The **eraser button** resets the table to its original state, as if no views were applied.
 
 When the text of the menu is pressed, the following modal is shown:
 <p align="center">
@@ -1203,6 +1203,27 @@ The following image illustrates an example of how a table legend is displayed:
 > [!TIP]
 > Use the table legend to centralize shared references and reduce redundancy in column descriptions.
 
+<br><br>
+
+
+
+### 4.17 Reset table view
+By default, the **reset table view** button is displayed next to the **refresh table data** button on the top right of the table. It allows users to return the table to its original state, exactly as it was when first rendered. Resetting affects:
+- Visible columns  
+- Column widths  
+- Column order  
+- Column filters  
+- Global filter  
+- Sorting  
+- Pagination  
+- Current page  
+
+If needed, this button can be completely disabled or its icon customized.  
+An example of the default appearance of the button is shown below:
+<p align="center">
+	<img width="525" height="173" alt="Reset table view button" src="https://github.com/user-attachments/assets/cf10f99d-64be-471b-8d85-6f7f1b3ebf27" />
+</p>
+
 <br><br><br>
 
 
@@ -1248,6 +1269,7 @@ The purpose of this section is to provide a table that maps the features describ
 | Columns | [4.14 Configurable dynamic column exclusion](#414-configurable-dynamic-column-exclusion) | [6.14 Configurable dynamic column exclusion](#614-configurable-dynamic-column-exclusion) |
 | Table | [4.15 Table description](#415-table-description) | [6.15 Table description](#615-table-description) |
 | Table | [4.16 Table legend](#416-table-legend) | [6.16 Table legend](#616-table-legend) |
+| Table | [4.17 Reset table view](#417-reset-table-view) | [6.17 Reset table view](#617-reset-table-view) |
 
 </div>
 
@@ -3811,6 +3833,47 @@ And in your HTML:
 <ecs-primeng-table [tableOptions]="tableOptions"/>
 ```
 
+<br><br>
+
+
+
+### 6.17 Reset table view
+The reset table view can be customized through the **`resetTableView`** object inside the `ITableOptions` interface, which provides the following properties:
+- **`enabled`** *(Default: `true`)*: If the reset table view button should be enabled.
+- **`icon`** *(Default: `"pi pi-eraser"`)*: Can be used to specifiy a different icon to be used by the reset table view button. You can replace it with any icon from PrimeNG or other libraries such as Font Awesome or Material Icons.
+
+This feature is enable by default but can be disabled by setting `enabled` to `false` if needed.
+
+<br>
+
+**_Example_**
+
+To configure the table to hide the **`reset table view button`**, you can define it in your component’s TypeScript file as follows.  
+Below is a minimal example assuming the component is named `Home`:
+```ts
+import { Component } from '@angular/core';
+import { ECSPrimengTable, ITableOptions, createTableOptions } from '@eternalcodestudio/primeng-table';
+
+@Component({
+  selector: 'ecs-home',
+  standalone: true,
+  imports: [
+    ECSPrimengTable
+  ],
+  templateUrl: './home.html'
+})
+export class Home {
+  tableOptions: ITableOptions = createTableOptions({
+    urlTableConfiguration: "Test/GetTableConfiguration",
+    urlTableData: "Test/GetTableData",
+    resetTableView: {
+      enabled: false,
+      // icon: "pi pi-eraser" // Uncomment to modify the icon used
+    }
+  });
+}
+```
+
 <br><br><br>
 
 
@@ -4798,6 +4861,9 @@ Configuration options for **ECS PrimeNG table**. Includes settings for table act
 | `text` | `legend` => `button` | `string` | `"Legend"` | The text shown in the legend button. |
 | `content` | `legend` | `string` | `undefined` | The content to be displayed in the popover of the legend. Can be HTML rich. |
 | `predefinedFilters` |  | `{ [key: string]: IPredefinedFilter[] }` | `{}` | Predefined filters for table columns. Restricts filter options to a known set of values per column, suitable for columns with limited distinct values. Supports plain text, tags, icons, and images, and works with `list` data types. |
+| `resetTableView` |  | `object` | N/A | Configurations related to the reset table view button. |
+| `enabled` | `resetTableView` | `boolean` | `true` | If the reset table view button should be enabled. |
+| `icon` | `resetTableView` | `string` | `"pi pi-eraser"` | Can be used to specifiy a different icon to be used by the reset table view button. You can replace it with any icon from PrimeNG or other libraries such as Font Awesome or Material Icons. |
 | `rows` |  | `object` | N/A | Configurations related to the rows of the table. |
 | `action` | `rows` | `object` | N/A | Configurations related to the action column for the rows. |
 | `alignmentRight` | `rows` => `action` | `boolean` | `true` | If `true`, the column will appear on the right side of the table; otherwise, it will appear on the left. |

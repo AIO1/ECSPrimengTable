@@ -490,6 +490,26 @@ export interface ITableOptions {
     };
 
     /**
+     * Configurations related to the reset table view button.
+     */
+    resetTableView?:{
+        /**
+         * If the reset table view button should be enabled.
+         * 
+         * @default true
+         */
+        enabled?: boolean;
+
+        /**
+         * Can be used to specifiy a different icon to be used by the reset table view button.
+         * You can replace it with any icon from PrimeNG or other libraries such as Font Awesome or Material Icons.
+         * 
+         * @default "pi pi-eraser"
+         */
+        icon?: string;
+    }
+
+    /**
      * Configurations for exporting the table data to Excel.
      */
     excelReport?: {
@@ -605,6 +625,10 @@ export const DEFAULT_TABLE_OPTIONS: ITableOptions = {
         saveKey: undefined,
         urlGet: undefined,
         urlSave: undefined
+    },
+    resetTableView: {
+        enabled: true,
+        icon: "pi pi-eraser"
     },
     excelReport: {
         url: undefined,
