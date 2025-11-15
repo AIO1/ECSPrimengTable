@@ -5,7 +5,7 @@
             <span class="p-dialog-title">Export data to Excel</span>
         </div>
     </ng-template>
-    <div style="display: grid; grid-template-columns: 4fr 8fr; gap: 1rem; align-items: center;">
+    <div style="display: grid; grid-template-columns: 4fr 8fr; gap: 1rem; align-items: center; margin-top: 10px;">
         <div style="justify-self: end;">
             Report filename
         </div>
@@ -55,7 +55,7 @@
         }
     </div>
     <ng-template pTemplate="footer" style="display: flex; justify-content: space-between; align-items: center;">
-        <p-button (click)="closeModal()" label="Cancel export" severity="danger" [style]="{'margin-top': '20px'}"/>
-        <p-button (click)="getExcelReport()" label="Export" severity="success" [style]="{'margin-top': '20px'}"/>
+        <p-button (click)="closeModal()" label="Cancel export" outlined="true" [style]="{'margin-top': '20px'}"/>
+        <p-button (click)="getExcelReport()" label="Export" [style]="{'margin-top': '20px'}"/>
     </ng-template>
 </p-dialog>

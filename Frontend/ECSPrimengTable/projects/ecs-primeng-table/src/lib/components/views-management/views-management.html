@@ -65,7 +65,7 @@
             [(ngModel)]="newViewAlias"/>
     </div>
     <ng-template pTemplate="footer" style="display: flex; justify-content: space-between; align-items: center;">
-        <p-button (click)="viewEditorShow = false" label="Cancel" severity="danger" [style]="{'margin-top': '20px'}"></p-button>
-        <p-button (click)="createOrUpdateTableView()" [label]="editingViewAlias !== '' ? 'Update' : 'Create'" severity="success" [style]="{'margin-top': '20px'}"></p-button>
+        <p-button (click)="viewEditorShow = false" label="Cancel" outlined="true" [style]="{'margin-top': '20px'}"></p-button>
+        <p-button (click)="createOrUpdateTableView()" [label]="editingViewAlias !== '' ? 'Update' : 'Create'" [style]="{'margin-top': '20px'}"></p-button>
     </ng-template>
 </p-dialog>

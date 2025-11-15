@@ -607,7 +607,7 @@ At the bottom-right of the modal, users can either **Cancel** or **Apply** their
 - If only formatting changes (alignment or overflow) are applied, the table will **preserve filters and sorting** without refreshing data.
 
 <p align="center">
-    <img width="1232" height="527" alt="Modify column properties menu" src="https://github.com/user-attachments/assets/b6831580-ea14-4b33-81f9-587a7563fee6" />
+	<img width="1276" height="544" alt="Modify column properties menu" src="https://github.com/user-attachments/assets/82b535c8-8445-40cc-8d4d-de107da13b5d" />
 </p>
 
 <br><br>
@@ -1075,7 +1075,7 @@ With minimal setup, you can allow users to **export table data** through an inte
 
 If enabled, an **Excel icon** will appear at the top right of the table. Clicking it opens a modal window like this:
 <p align="center">
-  <img width="1359" height="507" alt="Excel report example" src="https://github.com/user-attachments/assets/021010b2-815d-43b7-b09b-5b930af4feb6"/>
+	<img width="1367" height="520" alt="Excel report example" src="https://github.com/user-attachments/assets/f9696140-216d-438b-8165-a5c925d6c6ce" />
 </p>
 
 Users can customize the export with the following options:
@@ -1120,7 +1120,7 @@ This menu shows the currently applied view:
 
 When the text of the menu is pressed, the following modal is shown:
 <p align="center">
-  <img width="1359" height="455" alt="Views menu" src="https://github.com/user-attachments/assets/d8bf9234-02f3-4c6d-95a8-1558d1df2b69"/>
+	<img width="1379" height="457" alt="Views menu" src="https://github.com/user-attachments/assets/0de305dc-a33b-42d7-a7bf-741126f3639f" />
 </p>
 
 In the modal, users can manage table views and create new ones. For each view, the available options are:
