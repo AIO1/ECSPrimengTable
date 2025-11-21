@@ -26,6 +26,6 @@
     <p-tag style="gap: 0;" [innerHtml]="highlightText(option.name, col, globalSearchText)" [style]="getTagStyle(option)" [value]="option.name"/>
   }
   @if (option?.displayName === true) {
-    <span style="gap: 0;" [innerHtml]="highlightText(option.name, col, globalSearchText)">{{ option.name }}</span>
+    <span style="gap: 0;" [innerHtml]="highlightText(option.name, col, globalSearchText)"  [ngStyle]="option.nameStyle || {}">{{ option.name }}</span>
   }
 </div>

@@ -5,12 +5,14 @@ import { TagModule } from 'primeng/tag';
 import { ECSPrimengTableService } from '../ecs-primeng-table/ecs-primeng-table.service';
 import { highlightText } from '../../utils';
 import { IColumnMetadata } from '../../interfaces';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'ecs-table-predefined-filters',
   imports: [
     SkeletonModule,
-    TagModule
+    TagModule,
+    CommonModule
   ],
   standalone: true,
   templateUrl: './table-predefined-filters.html'

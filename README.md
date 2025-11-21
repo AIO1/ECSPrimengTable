@@ -805,7 +805,7 @@ Predefined filters are a special type of filter where, instead of letting the us
 
 Additionally, predefined filters allow you to **customize how values are displayed** in a cell. Supported display formats include:
 
-- **Plain text**
+- **Plain text**, where you can personalize the text color (or other properties like font or size).
 - **Tags**, where you can personalize the tag color.
 - **Icons**, where you can customize the icon color and size. Icons can come from multiple libraries, such as PrimeNG icons, Font Awesome, Material Icons, etc...
 - **Images**, which will be displayed directly in the cell. The table manages image loading and displays a skeleton while downloading. Images can be hosted locally on your server or come from external URLs.
@@ -2147,6 +2147,7 @@ To display an element as plain text in a predefined filter, you need to define i
 - **`value`**: Must match the underlying value of the cell, so that the table can map it properly.
 - **`name`**: The text shown in the cell.
 - **`displayName`**: Set to `true` so the value in `name` is actually displayed.
+- **`nameStyle`**: *(optional)*: If you want to apply a style to the text, like for example, changing its color or size.
 
 <br>
 
@@ -2154,8 +2155,8 @@ To display an element as plain text in a predefined filter, you need to define i
 
 Suppose you have the following possible values in a column that you wish to represent as plain text:
 - Ok
-- Warning
-- Critical
+- Warning → orange (using RGB color)
+- Critical → red and bold
 
 Your `IPredefinedFilter` list in TypeScript could look like this:
 ```ts
@@ -2167,11 +2168,18 @@ examplePredfinedFilter: IPredefinedFilter[] = [
     }, {
         value: "backendValueForWarning",
         name: "Warning",
-        displayName: true
+        displayName: true,
+        nameStyle: {
+            color: 'rgb(255, 130, 30)'
+        }
     }, {
         value: "backendValueForCritical",
         name: "Critical",
-        displayName: true
+        displayName: true,
+        nameStyle: {
+            color: 'red',
+            fontWeight: 'bold'
+        }
     }
 ];
 ```
@@ -2197,8 +2205,8 @@ To display an element as a tag in a predefined filter, you need to define in eac
 
 Suppose you have the following possible values in a column that you wish to represent in a tag with the following colors:
 - Ok → green
-- Warning → orange
-- Critical → red
+- Warning → orange (using RGB color)
+- Critical → red and bold
 
 Your `IPredefinedFilter` list in TypeScript could look like this:
 ```ts
@@ -2222,7 +2230,8 @@ examplePredfinedFilter: IPredefinedFilter[] = [
         name: "Critical",
         displayTag: true,
         tagStyle: {
-            background: 'rgb(255, 0, 0)'
+            background: 'red',
+            fontWeight: 'bold'
         }
     }
 ];
@@ -4795,6 +4804,7 @@ Allows displaying a value as text, tag, icon, or image (from URL or Blob) with o
 | `imageBlobSourceEndpoint?` | `string` | If using a Blob and it is not provided directly, the backend endpoint to fetch the Blob from. |
 | `imageURL?` | `string` | The image to display directly from a URL. |
 | `name?` | `string` | The text displayed in the frontend for this filter value. Used when `displayName` is `true` or when displaying a tag. |
+| `nameStyle?` | `{ [key: string]: string }` | Optional CSS style object to apply to the text when `displayName` is `true`. Example: `{ color: 'blue', fontWeight: 'bold', fontStyle: 'italic' }` |
 | `tagStyle?` | `{ [key: string]: string }` | Optional CSS style object to apply to the tag. Example: `{ background: 'rgb(255,0,0)', color: 'white' }`. |
 | `value` | `string \| number` | The underlying value of the cell. Must match the backend data for proper filtering. For text/tag, recommended to match `name`. |
 
