@@ -1,8 +1,10 @@
 import { Component, Input } from '@angular/core';
-import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+import { DomSanitizer, SafeHtml, SafeUrl } from '@angular/platform-browser';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TagModule } from 'primeng/tag';
 import { ECSPrimengTableService } from '../ecs-primeng-table/ecs-primeng-table.service';
+import { highlightText } from '../../utils';
+import { IColumnMetadata } from '../../interfaces';
 
 @Component({
   selector: 'ecs-table-predefined-filters',
@@ -22,6 +24,7 @@ export class TablePredefinedFilters {
   @Input() col: any;
   @Input() selectable: boolean = false;
   @Input() rowData: any;
+  @Input() globalSearchText?: any;
   /**
    * Converts a blob from the database to a safe URL that can be used to display an image.
    *
@@ -56,5 +59,9 @@ export class TablePredefinedFilters {
       ...option.tagStyle,
       'vertical-align': 'middle'
     };
+  }
+
+  highlightText(cellValue: any, colMetadata: IColumnMetadata, globalSearchText: string | null | undefined ): SafeHtml {
+      return highlightText(cellValue, colMetadata, globalSearchText ?? null, this.sanitizer);
   }
 }
