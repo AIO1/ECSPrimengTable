@@ -122,6 +122,21 @@ namespace ECS.PrimengTable.Attributes {
         public double InitialWidth { get; }
 
         /// <summary>
+        /// Optional date format override for this column.
+        /// </summary>
+        public string? DateFormat { get; }
+
+        /// <summary>
+        /// Optional timezone override.
+        /// </summary>
+        public string? DateTimezone { get; }
+
+        /// <summary>
+        /// Optional culture override.
+        /// </summary>
+        public string? DateCulture { get; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ColumnAttributes"/> class.
         /// </summary>
         /// <param name="header">The name displayed for the column in the table. Defaults to empty string.</param>
@@ -146,6 +161,9 @@ namespace ECS.PrimengTable.Attributes {
         /// <param name="cellOverflowBehaviour">Defines how cell content behaves when it overflows. Defaults to <see cref="CellOverflowBehaviour.Hidden"/>.</param>
         /// <param name="cellOverflowBehaviourAllowUserEdit">If true, user can modify overflow behavior. Disabled for Boolean columns. Defaults to true.</param>
         /// <param name="initialWidth">Initial width of the column in pixels. If <=0 and frozen, defaults to 100. Defaults to 0.</param>
+        /// <param name="dateFormat">Optional date format override for this column.</param>
+        /// <param name="dateTimezone">Optional timezone override.</param>
+        /// <param name="dateCulture">Optional culture override.</param>
         /// <exception cref="ArgumentException">Thrown if an invalid dataAlign or dataType value is provided.</exception>
         public ColumnAttributes(
             string header = "",
@@ -169,7 +187,10 @@ namespace ECS.PrimengTable.Attributes {
             FrozenColumnAlign frozenColumnAlign = FrozenColumnAlign.None,
             CellOverflowBehaviour cellOverflowBehaviour = CellOverflowBehaviour.Hidden,
             bool cellOverflowBehaviourAllowUserEdit = true,
-            double initialWidth = 0
+            double initialWidth = 0,
+            string? dateFormat = null,
+            string? dateTimezone = null,
+            string? dateCulture = null
         ) {
             Header = header;
             DataType = dataType;
@@ -193,6 +214,9 @@ namespace ECS.PrimengTable.Attributes {
             CellOverflowBehaviour = dataType == DataType.Boolean ? CellOverflowBehaviour.Hidden : cellOverflowBehaviour;
             CellOverflowBehaviourAllowUserEdit = cellOverflowBehaviourAllowUserEdit && dataType != DataType.Boolean;
             InitialWidth = initialWidth <= 0 && frozenColumnAlign != FrozenColumnAlign.None ? 100 : initialWidth;
+            DateFormat = dataType == DataType.Date ? dateFormat : null;
+            DateTimezone = dataType == DataType.Date ? dateTimezone : null;
+            DateCulture = dataType == DataType.Date ? dateCulture : null;
         }
     }
 }

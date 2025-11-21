@@ -81,7 +81,10 @@ internal static class TableConfigurationService {
                 FrozenColumnAlign = colAtt.FrozenColumnAlign,
                 CellOverflowBehaviour = colAtt.CellOverflowBehaviour,
                 CellOverflowBehaviourAllowUserEdit = colAtt.CellOverflowBehaviourAllowUserEdit,
-                InitialWidth = colAtt.InitialWidth
+                InitialWidth = colAtt.InitialWidth,
+                DateFormat = colAtt.DateFormat,
+                DateTimezone = colAtt.DateTimezone,
+                DateCulture = colAtt.DateCulture
             });
         }
         return new TableConfigurationModel {

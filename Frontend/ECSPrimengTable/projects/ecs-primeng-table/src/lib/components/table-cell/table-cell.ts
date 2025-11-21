@@ -56,24 +56,36 @@ export class TableCell {
   
 
   /**
-   * Formats a date value to a specific string format. Provided date will be assumed to be in UTC
+   * Formats a date value using either column-level overrides or global settings.
+   * The incoming value is assumed to represent a UTC date.
    *
    * @param {any} value - The date value to be formatted.
-   * @returns {string} - The formatted date string in 'dd-MMM-yyyy HH:mm:ss' format followed by the timezone, or empty string if the provided value is invalid or undefined.
-   * 
+   * @param {string | null} dateFormat - Optional column-level override for the date format.
+   * @param {string | null} dateTimezone - Optional column-level override for the timezone used in formatting.
+   * @param {string | null} dateCulture - Optional column-level override for the culture used in formatting.
+   *
+   * @returns {string} - The formatted date string using the effective (column or global) settings,
+   *                     or an empty string if the value is invalid or undefined.
+   *
    * @example
-   * // Example date value
-   * const dateValue: Date = new Date();
-   * 
-   * // Use formatDate to get the formatted date string
-   * const formattedDate: string = formatDate(dateValue);
-   * 
-   * // Output might be: '18-Jun-2024 14:30:00 GMT+0000'
+   * // Example using only global settings:
+   * const result = formatDate(dateValue, null, null, null);
+   *
+   * @example
+   * // Example using column-level overrides:
+   * const result = formatDate(dateValue, 'dd/MM/yyyy', 'UTC', 'en-GB');
    */
-  formatDate(value: any): string{
+  formatDate(value: any, dateFormat: string | null, dateTimezone : string | null, dateCulture : string | null): string{
+    if(!value){ // If no value, return empty
+       return '';
+    }
     let formattedDate = undefined; // By default, formattedDate will be undefined
+    const effectiveFormat = dateFormat ?? this.dateFormat;
+    const effectiveTimezone = dateTimezone ?? this.dateTimezone;
+    const effectiveCulture = dateCulture ?? this.dateCulture;
     if(value){ // If value is not undefined
-      formattedDate = this.datePipe.transform(value, this.dateFormat, this.dateTimezone, this.dateCulture); // Perform the date masking
+      const dateUtc = new Date(value + 'Z'); // Make sure the date is treated as UTC
+      formattedDate = this.datePipe.transform(dateUtc, effectiveFormat, effectiveTimezone, effectiveCulture); // Perform the date masking
     }
     return formattedDate ?? ''; // Returns the date formatted, or as empty string if an issue was found (or value was undefined).
   }

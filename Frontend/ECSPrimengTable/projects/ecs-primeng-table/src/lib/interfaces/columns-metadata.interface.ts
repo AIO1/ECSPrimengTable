@@ -73,4 +73,13 @@ export interface IColumnMetadata {
 
     /** Initial width of the column in pixels. */
     initialWidth: number;
+
+    /** Optional date format override for this column. */
+    dateFormat: string | null;
+
+    /** Optional timezone override. */
+    dateTimezone: string | null;
+
+    /** Optional culture override. */
+    dateCulture: string | null;
 }

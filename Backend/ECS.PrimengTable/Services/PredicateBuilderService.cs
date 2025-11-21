@@ -79,33 +79,53 @@ namespace ECS.PrimengTable.Services {
         /// </remarks>
         /// <exception cref="ArgumentException">Thrown when an unsupported match mode is specified.</exception>
         /// <exception cref="ArgumentNullException">Thrown when the property is null.</exception>
-        internal static Expression<Func<T, bool>>? CreateDateFilterPredicate<T>(MemberExpression property, ParameterExpression parameter, dynamic filterValue, string matchMode = "dateIs") {
-            Expression<Func<T, bool>>? predicate; // Initialize the predicate as null since it will be set later
-            MemberExpression dateProperty = null!; // Initialize the dateProperty as null since it will be set later
-            if(!DateTime.TryParse(filterValue.ToString(), out DateTime filterDateTime)) { // Try parsing the filter value as a DateTime
-                return null; // Early return if provided filter value is not a date
+        internal static Expression<Func<T, bool>>? CreateDateFilterPredicate<T>(MemberExpression property, ParameterExpression parameter, dynamic filterValue, string dateTimezone, string matchMode = "dateIs") {
+            if(!DateTime.TryParse(filterValue.ToString(), out DateTime rawInput)) {
+                return null;
             }
-            if(property.Type != typeof(DateTime)) { // Check if the property is of type DateTime, if not, extract the Date part
-                MemberExpression valueExpression = Expression.Property(property, "Value"); // Create an expression representing the "Value" property of the original property
-                dateProperty = Expression.Property(valueExpression, nameof(DateTime.Date)); // Create an expression representing the "Date" property of the "Value" property
+            DateTime inputLocal = DateTime.SpecifyKind(rawInput, DateTimeKind.Unspecified);  // IMPORTANT: treat input as LOCAL date, not UTC
+            var tz = dateTimezone.StartsWith("+") ? dateTimezone.Substring(1) : dateTimezone; // Parse offset
+
+            if(!TimeSpan.TryParse(tz, out TimeSpan offset)) {
+                offset = TimeSpan.Zero;
             }
-            predicate = matchMode switch { // Create the predicate based on the match mode
+            DateTime localDate = inputLocal.Date; // Local date the user selected
+
+            // Local day range
+            DateTime startLocal = localDate;
+            DateTime endLocal = localDate.AddDays(1);
+
+            // Convert local range -> real UTC timestamps
+            DateTime startUtc = startLocal - offset;
+            DateTime endUtc = endLocal - offset;
+
+            // Build expression
+            Expression dateExpression = property.Type == typeof(DateTime)
+                ? property
+                : Expression.Property(property, "Value");
+            Expression<Func<T, bool>> predicate = matchMode switch {
                 "dateIs" => Expression.Lambda<Func<T, bool>>(
-                    (property.Type == typeof(DateTime)) ? Expression.Equal(Expression.Property(property, nameof(DateTime.Date)), Expression.Constant(filterDateTime))
-                    : Expression.AndAlso(Expression.NotEqual(property, Expression.Constant(null)), Expression.Equal(dateProperty, Expression.Constant(filterDateTime.Date))),
-                    parameter),
-                "dateIsNot" => Expression.Lambda<Func<T, bool>>(
-                    (property.Type == typeof(DateTime)) ? Expression.NotEqual(Expression.Property(property, nameof(DateTime.Date)), Expression.Constant(filterDateTime))
-                    : Expression.Condition(Expression.NotEqual(property, Expression.Constant(null)), Expression.NotEqual(dateProperty, Expression.Constant(filterDateTime.Date)), Expression.Constant(true))
-                    , parameter),
+                                        Expression.AndAlso(
+                                            Expression.GreaterThanOrEqual(dateExpression, Expression.Constant(startUtc)),
+                                            Expression.LessThan(dateExpression, Expression.Constant(endUtc))
+                                        ),
+                                        parameter
+                                    ),
                 "dateBefore" => Expression.Lambda<Func<T, bool>>(
-                    (property.Type == typeof(DateTime)) ? Expression.LessThan(Expression.Property(property, nameof(DateTime.Date)), Expression.Constant(filterDateTime))
-                    : Expression.AndAlso(Expression.NotEqual(property, Expression.Constant(null)), Expression.LessThan(dateProperty, Expression.Constant(filterDateTime.Date))),
-                    parameter),
+                                        Expression.LessThan(dateExpression, Expression.Constant(startUtc)),
+                                        parameter
+                                    ),
                 "dateAfter" => Expression.Lambda<Func<T, bool>>(
-                    (property.Type == typeof(DateTime)) ? Expression.GreaterThan(Expression.Property(property, nameof(DateTime.Date)), Expression.Constant(filterDateTime))
-                    : Expression.AndAlso(Expression.NotEqual(property, Expression.Constant(null)), Expression.GreaterThan(dateProperty, Expression.Constant(filterDateTime.Date))),
-                    parameter),
+                                        Expression.GreaterThanOrEqual(dateExpression, Expression.Constant(endUtc)),
+                                        parameter
+                                    ),
+                "dateIsNot" => Expression.Lambda<Func<T, bool>>(
+                                        Expression.OrElse(
+                                            Expression.LessThan(dateExpression, Expression.Constant(startUtc)),
+                                            Expression.GreaterThanOrEqual(dateExpression, Expression.Constant(endUtc))
+                                        ),
+                                        parameter
+                                    ),
                 _ => throw new ArgumentException("Invalid filtering option value for date predicate", nameof(matchMode)),
             };
             return predicate;

@@ -29,8 +29,8 @@ namespace ECS.PrimengTable.Services {
         /// <param name="andPredicateOperator">If true, combines with AND; otherwise, combines with OR.</param>
         /// <param name="combinedPredicate">The cumulative predicate expression being built.</param>
         /// <param name="stringDateFormatMethod">Optional method used for string date conversion, if applicable.</param>
-        internal static void FilterPredicateBuilder<T>(PropertyInfo property, ColumnAttributes attribute, dynamic val, string matchMode, bool andPredicateOperator, ref ExpressionStarter<T> combinedPredicate, MethodInfo? stringDateFormatMethod = null) {
-            dynamic filterPredicate = GetColumnFilterPredicate<T>(property.Name, val, attribute.DataType, matchMode, stringDateFormatMethod); // Get the filter predicate for the column
+        internal static void FilterPredicateBuilder<T>(PropertyInfo property, ColumnAttributes attribute, dynamic val, string matchMode, bool andPredicateOperator, ref ExpressionStarter<T> combinedPredicate, string dateFormat, string dateTimezone, string dateCulture, MethodInfo? stringDateFormatMethod = null) {
+            dynamic filterPredicate = GetColumnFilterPredicate<T>(property.Name, val, attribute.DataType, matchMode, dateFormat, dateTimezone, dateCulture, stringDateFormatMethod); // Get the filter predicate for the column
             if(filterPredicate != null) { // If a valid filter predicate is obtained, combine it with the existing predicate using AND or OR
                 if(combinedPredicate.Body.NodeType == ExpressionType.Constant) { // If the combined predicate is initially a constant expression, replace it with the filter predicate
                     combinedPredicate = filterPredicate;
@@ -54,11 +54,11 @@ namespace ECS.PrimengTable.Services {
         /// <param name="andPredicateOperator">If true, combines with AND; otherwise, combines with OR.</param>
         /// <param name="combinedPredicate">The cumulative predicate expression being built.</param>
         /// <param name="stringDateFormatMethod">Optional method used for string date conversion, if applicable.</param>
-        internal static void FilterPredicateInClauseBuilder<T>(ColumnFilterModel value, PropertyInfo property, ColumnAttributes attribute, bool andPredicateOperator, ref ExpressionStarter<T> combinedPredicate, MethodInfo? stringDateFormatMethod = null) {
+        internal static void FilterPredicateInClauseBuilder<T>(ColumnFilterModel value, PropertyInfo property, ColumnAttributes attribute, bool andPredicateOperator, ref ExpressionStarter<T> combinedPredicate, string dateFormat, string dateTimezone, string dateCulture, MethodInfo? stringDateFormatMethod = null) {
             if(value.Value is JsonElement jsonElement && jsonElement.ValueKind == JsonValueKind.Array) {
                 List<object> items = JsonSerializer.Deserialize<List<object>>(jsonElement.GetRawText())!;
                 foreach(object item in items) {
-                    FilterPredicateBuilder(property, attribute, item, "equals", andPredicateOperator, ref combinedPredicate, stringDateFormatMethod);
+                    FilterPredicateBuilder(property, attribute, item, "equals", andPredicateOperator, ref combinedPredicate, dateFormat, dateTimezone, dateCulture, stringDateFormatMethod);
                 }
             } 
         }
@@ -77,11 +77,11 @@ namespace ECS.PrimengTable.Services {
         /// <param name="andPredicateOperator">If true, combines with AND; otherwise, combines with OR.</param>
         /// <param name="combinedPredicate">The cumulative predicate expression being built.</param>
         /// <param name="stringDateFormatMethod">Optional method used for string date conversion, if applicable.</param>
-        internal static void FilterPredicateNotInClauseBuilder<T>(ColumnFilterModel value, PropertyInfo property, ColumnAttributes attribute, bool andPredicateOperator, ref ExpressionStarter<T> combinedPredicate, MethodInfo? stringDateFormatMethod = null) {
+        internal static void FilterPredicateNotInClauseBuilder<T>(ColumnFilterModel value, PropertyInfo property, ColumnAttributes attribute, bool andPredicateOperator, ref ExpressionStarter<T> combinedPredicate, string dateFormat, string dateTimezone, string dateCulture, MethodInfo? stringDateFormatMethod = null) {
             if(value.Value is JsonElement jsonElement && jsonElement.ValueKind == JsonValueKind.Array) {
                 List<object> items = JsonSerializer.Deserialize<List<object>>(jsonElement.GetRawText())!;
                 foreach(object item in items) {
-                    FilterPredicateBuilder(property, attribute, item, "notEquals", andPredicateOperator, ref combinedPredicate, stringDateFormatMethod);
+                    FilterPredicateBuilder(property, attribute, item, "notEquals", andPredicateOperator, ref combinedPredicate, dateFormat, dateTimezone, dateCulture, stringDateFormatMethod);
                 }
             } 
         }
@@ -118,13 +118,13 @@ namespace ECS.PrimengTable.Services {
         /// <param name="matchMode">The matching mode for the filter.</param>
         /// <returns>An Expression<Func<T, bool>> predicate for filtering entities.</returns>
         /// <exception cref="ArgumentException">Thrown when the filterDataType is not supported.</exception>
-        private static Expression<Func<T, bool>>? GetColumnFilterPredicate<T>(string propertyName, dynamic filterValue, DataType filterDataType, string matchMode, MethodInfo stringDateFormatMethod) {
+        private static Expression<Func<T, bool>>? GetColumnFilterPredicate<T>(string propertyName, dynamic filterValue, DataType filterDataType, string matchMode, string dateFormat, string dateTimezone, string dateCulture, MethodInfo stringDateFormatMethod) {
             Expression<Func<T, bool>>? predicate; // Initialize the predicate as null
             ParameterExpression parameter = Expression.Parameter(typeof(T), "x");  // Create an expression parameter to represent the generic entity T
             MemberExpression property = Expression.Property(parameter, propertyName);  // Get the specific property of the entity using the provided property name
             predicate = filterDataType switch {
-                DataType.Text => PredicateBuilderService.CreateTextFilterPredicate<T>(property, filterValue.ToString(), stringDateFormatMethod, matchMode),
-                DataType.Date => PredicateBuilderService.CreateDateFilterPredicate<T>(property, parameter, filterValue, matchMode),
+                DataType.Text => PredicateBuilderService.CreateTextFilterPredicate<T>(property, filterValue.ToString(), stringDateFormatMethod, matchMode, dateFormat, dateTimezone, dateCulture),
+                DataType.Date => PredicateBuilderService.CreateDateFilterPredicate<T>(property, parameter, filterValue, dateTimezone, matchMode),
                 DataType.Numeric => PredicateBuilderService.CreateNumericFilterPredicate<T>(property, parameter, filterValue, matchMode),
                 DataType.Boolean => PredicateBuilderService.CreateBoolFilterPredicate<T>(property, parameter, filterValue),
                 DataType.List => PredicateBuilderService.CreateListFilterPredicate<T>(property,filterValue),
