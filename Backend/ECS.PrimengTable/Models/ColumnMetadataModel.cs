@@ -116,5 +116,20 @@ namespace ECS.PrimengTable.Models {
         /// Initial width of the column in pixels. If <=0 and frozen, defaults to 100.
         /// </summary>
         public double InitialWidth { get; set; }
+
+        /// <summary>
+        /// Optional date format override for this column.
+        /// </summary>
+        public string? DateFormat { get; set; }
+
+        /// <summary>
+        /// Optional timezone override.
+        /// </summary>
+        public string? DateTimezone { get; set; }
+
+        /// <summary>
+        /// Optional culture override.
+        /// </summary>
+        public string? DateCulture { get; set; }
     }
 }

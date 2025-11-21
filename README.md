@@ -451,9 +451,9 @@ Don’t worry if some of these concepts are unclear at this point, each feature 
 
 
 ### 4.2 Date formatting
-At first glance, date formatting might seem simple, but it can easily confuse end users if not carefully considered from the start.
+At first glance, date formatting may seem straightforward, but it can quickly become a source of confusion for end users if not thoughtfully planned from the beginning.
 
-The **ECS PrimeNG table** component allows you to control how dates are displayed in each table, letting you customize:
+The **ECS PrimeNG Table** component gives you full control over how dates are displayed. You can define a **global configuration** that applies to all date columns in a table, or **override** it at the column level when you need a more specific format. This allows you to customize:
 - **Format**: This defines how the date and time will be displayed to the user.  
   For example, `"dd-MMM-yyyy HH:mm:ss zzzz"` means:
   - `dd` → day of the month (01-31).
@@ -501,7 +501,7 @@ The **ECS PrimeNG table** component allows you to control how dates are displaye
   For example, `"+00:00"` is UTC (Coordinated Universal Time). Changing this will adjust the displayed time to the desired zone.
 - **Culture**: This determines the language and formatting conventions for the date, such as month names, day names, and the order of day/month/year. Default `"en-US"` uses English (United States) conventions. Using `"es-ES"` would show month and day names in Spanish, for example.
 
-You can configure this customization per table, with several possible approaches:
+You can configure this customization per table, and override it per column if needed, with several possible approaches:
 - **Static**: Use the default values or hardcode alternative values if they suit your needs.
 - **Server-based**: Use the configuration of the server environment where your application is deployed.
 - **Per-user**: Save each user's preferred configuration, allowing users to choose how dates are displayed in their tables. This requires additional setup but provides maximum flexibility.
@@ -1749,6 +1749,8 @@ namespace ECSPrimengTableExample.Services {
 > - **Date format**: `"dd-MMM-yyyy HH:mm:ss zzzz"`
 > - **Date timezone**: `"+00:00"`
 > - **Date culture**: `"en-US"`
+
+It is possible to override the global table date format for individual columns directly from the backend by specifying the corresponding fields in the `ColumnAttributes` of the DTO used to build the table.
 
 <br><br>
 
@@ -4047,6 +4049,9 @@ Marks a property to define its table column behavior in ECS PrimeNG tables. Incl
 | `dataTooltipCustomColumnSource` | `string` | `""` | Optional column name to fetch custom tooltip content. |
 | `dataTooltipShow` | `bool` | `true` | If true, displays cell content as tooltip on hover. |
 | `dataType` | [`DataType`](#715-datatype) | `Text` | The type of data in the column, used for filtering and formatting. |
+| `dateCulture` | `string?` | `null` | Optional culture override. |
+| `dateFormat` | `string?` | `null` | Optional date format override for this column. |
+| `dateTimezone` | `string?` | `null` | Optional timezone override. |
 | `filterPredefinedValuesName` | `string` | `""` | Name used in TypeScript to store predefined filter values. |
 | `frozenColumnAlign` | [`FrozenColumnAlign`](#716-frozencolumnalign) | `None` | Indicates if the column is frozen and its alignment. |
 | `header` | `string` | `""` | The name displayed for the column in the table. |
@@ -4137,6 +4142,9 @@ Contains information about the field, header, type, alignment, visibility, filte
 | `DataTooltipCustomColumnSource` | `string` | Gets or sets the column name to fetch custom tooltip content. |
 | `DataTooltipShow` | `bool` | Gets or sets a value indicating whether the column displays cell content as tooltip on hover. |
 | `DataType` | [`DataType`](#715-datatype) | Gets or sets the data type of the column. |
+| `DateCulture` | `string?` | Gets or sets an optional culture override. |
+| `DateFormat` | `string?` | Gets or sets an optional date format override for this column. |
+| `DateTimezone` | `string?` | Gets or sets an optional timezone override. |
 | `Field` | `string` | Gets or sets the field associated with the column. |
 | `FilterPredefinedValuesName` | `string` | Gets or sets the name used in TypeScript to store predefined filter values. |
 | `FrozenColumnAlign` | [`FrozenColumnAlign`](#716-frozencolumnalign) | Gets or sets the alignment of a frozen column. |
@@ -4752,6 +4760,9 @@ Provides configuration options for column behavior, appearance, and user interac
 | `dataAlignVerticalAllowUserEdit` | `boolean` | Indicates whether the vertical alignment can be modified by the user. |
 | `dataTooltipCustomColumnSource` | `string` | Custom source for the tooltip content, if applicable. |
 | `dataTooltipShow` | `boolean` | Determines if a tooltip should be shown for the column data. |
+| `dateCulture` | `string \| null` | Optional culture override. |
+| `dateFormat` | `string \| null` | Optional date format override for this column. |
+| `dateTimezone` | `string \| null` | Optional timezone override. |
 | `dataType` | [`DataType`](#814-datatype) | The type of data contained in the column. |
 | `field` | `string` | The key or identifier for the column's data field. |
 | `filterPredefinedValuesName` | `string` | Name of predefined filter values, if any. |

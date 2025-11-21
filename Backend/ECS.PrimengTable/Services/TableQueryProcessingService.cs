@@ -94,7 +94,7 @@ namespace ECS.PrimengTable.Services {
             totalRecordsNotFiltered = baseQuery.Count(); // Count total records before applying any filters
             if(performFilters) { // Check if filters should be applied
                 baseQuery = QueryFilterService.ApplyGlobalFilter(baseQuery, inputData.GlobalFilter, inputData.Columns!, inputData.DateFormat, inputData.DateTimezone, inputData.DateCulture, stringDateFormatMethod); // Apply a global search filter (searches across all columns)
-                baseQuery = QueryFilterService.ApplyColumnFilters(baseQuery, inputData.Filter, inputData.Columns!, stringDateFormatMethod); // Apply individual column filters
+                baseQuery = QueryFilterService.ApplyColumnFilters(baseQuery, inputData.Filter, inputData.Columns!, inputData.DateFormat, inputData.DateTimezone, inputData.DateCulture, stringDateFormatMethod); // Apply individual column filters
             }
             totalRecords = baseQuery.Count(); // Count total records again after filters have been applied
         }

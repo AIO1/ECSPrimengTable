@@ -48,14 +48,14 @@
       }
       @case (DataType.Date) {
         <div 
-          [innerHtml]="highlightText(formatDate(value), col, globalSearchText)"
+          [innerHtml]="highlightText(formatDate(value, col.dateFormat, col.dateTimezone, col.dateCulture), col, globalSearchText)"
           [pTooltip]="col.dataTooltipCustomColumnSource && col.dataTooltipCustomColumnSource.length > 0 
             ? rowData[col.dataTooltipCustomColumnSource] 
-            : formatDate(value)"
+            : formatDate(value, col.dateFormat, col.dateTimezone, col.dateCulture)"
           [tooltipDisabled]="!col.dataTooltipShow"
           [showDelay]="700"
           tooltipPosition="top">
-          {{ formatDate(value) }}
+          {{ formatDate(value, col.dateFormat, col.dateTimezone, col.dateCulture) }}
         </div>
       }
       @default {
