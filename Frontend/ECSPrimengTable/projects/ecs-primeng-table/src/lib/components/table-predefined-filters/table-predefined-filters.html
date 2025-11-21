@@ -1,4 +1,4 @@
-<div style="align-items: center; gap: 0.25rem;"
+<div style="display: flex; align-items: center; gap: 0.5rem;"
     [style.cursor]="(selectable && option?.action) ? 'pointer' : 'default'"
     [attr.role]="selectable && option?.action ? 'button' : null"
     (click)="handleClick(); $event.stopPropagation();">
@@ -23,9 +23,9 @@
         style="vertical-align: middle;"/>
   }
   @if (option?.displayTag === true) {
-    <p-tag [style]="getTagStyle(option)" [value]="option.name"/>
+    <p-tag style="gap: 0;" [innerHtml]="highlightText(option.name, col, globalSearchText)" [style]="getTagStyle(option)" [value]="option.name"/>
   }
   @if (option?.displayName === true) {
-    <span>{{ option.name }}</span>
+    <span style="gap: 0;" [innerHtml]="highlightText(option.name, col, globalSearchText)">{{ option.name }}</span>
   }
 </div>
