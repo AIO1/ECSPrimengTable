@@ -27,6 +27,13 @@ export interface IPredefinedFilter {
     displayName?: boolean;
 
     /**
+     * Optional CSS style object to apply to the text when `displayName` is `true`.
+     * 
+     * Example: { color: 'blue', fontWeight: 'bold', fontStyle: 'italic' }
+     */
+    nameStyle?: { [key: string]: string };
+
+    /**
      * Set to `true` to display the `name` as a tag in the cell.
      */
     displayTag?: boolean
