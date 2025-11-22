@@ -14,11 +14,28 @@
         </div>
 
         <div style="justify-self: end;">
-            <i pTooltip="Activating this option will add the current '_{year}{month}{day}_{hours}{minutes}{seconds}_UTC' at the end of your filename" tooltipPosition="top" class="pi pi-info-circle"></i>
-            Include time in report filename
+            <i pTooltip="Activating this option will add the current <b>'_{year}{month}{day}_{hours}{minutes}{seconds}_UTC'</b> at the end of your filename." 
+                tooltipPosition="top" 
+                [escape]="false"
+                class="pi pi-info-circle">
+            </i>
+            Include time in report filename?
         </div>
         <div style="justify-self: stretch; width: 100%;">
             <p-checkbox [binary]="true" [(ngModel)]="includeTimeInTitle"/>
+        </div>
+
+        <div style="justify-self: end;">
+            <i pTooltip="Activating this option will make boolean values be shown as icons in the Excel report:<br>True → <span class='bool-icon bool-true'>✔</span><br>False → <span class='bool-icon bool-false'>✘</span>"   
+                tooltipPosition="top" 
+                tooltipStyleClass="excel-export-tooltip"
+                [escape]="false"
+                class="pi pi-info-circle">
+            </i>
+            Use icons in boolean fields?
+        </div>
+        <div style="justify-self: stretch; width: 100%;">
+            <p-checkbox [binary]="true" [(ngModel)]="exportUseIconsInBools"/>
         </div>
         
         <div style="justify-self: end;">

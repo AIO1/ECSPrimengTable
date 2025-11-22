@@ -20,4 +20,7 @@ export interface IExcelExportRequest extends ITableQueryRequest {
 
     /** Determines whether the current table sorting should be applied in the export. */
     applySorts: boolean;
+
+    /** If in bools we need to use icons or the underlying boolean value. */
+    useIconInBools: boolean;
 }

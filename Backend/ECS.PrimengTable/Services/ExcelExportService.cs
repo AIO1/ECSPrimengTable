@@ -1,4 +1,6 @@
 ﻿using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Office2013.Drawing.ChartStyle;
+using DocumentFormat.OpenXml.Spreadsheet;
 using ECS.PrimengTable.Enums;
 using ECS.PrimengTable.Models;
 using System.Globalization;
@@ -81,7 +83,7 @@ namespace ECS.PrimengTable.Services {
                         worksheet.Cell(2, col + 1).Value = columnsInfo.ColumnsInfo.First(c => c.Field == fieldName).Header.ToString(); // Write the name of the column
                     }
                     int currentRow = 3; // The row we must write the data to, strating on row 3
-                    WriteExportDataToWorksheet<T>(worksheet, baseQuery, inputData, columnsInfo, propertyAccessors, totalRecords, pageStack, ref currentRow, excludedColumns); // Execute the logic to wirte all data to the Excel worksheet
+                    WriteExportDataToWorksheet<T>(worksheet, baseQuery, inputData, columnsInfo, propertyAccessors, totalRecords, pageStack, ref currentRow, excludedColumns, inputDataAll.UseIconInBools); // Execute the logic to wirte all data to the Excel worksheet
                     ApplyExportFormatting(worksheet, reportDateFormatted, numberOfColumns, currentRow); // Apply the export format
                     using(MemoryStream memoryStream = new()) {
                         workbook.SaveAs(memoryStream);
@@ -108,7 +110,9 @@ namespace ECS.PrimengTable.Services {
         /// <param name="totalRecords">Total number of records that match the filters.</param>
         /// <param name="pageStack">Number of records to load per iteration.</param>
         /// <param name="currentRow">Reference to the current worksheet row index (used to continue writing).</param>
-        private static void WriteExportDataToWorksheet<T>(IXLWorksheet worksheet, IQueryable<T> baseQuery, TableQueryRequestModel inputData, TableConfigurationModel columnsInfo, Dictionary<string, Func<object, object?>> propertyAccessors, long totalRecords, byte pageStack, ref int currentRow, List<string>? excludedColumns = null) {
+        /// <param name="excludedColumns">Optional list of column names to exclude from the select, even if they appear in the requested columns from <paramref name="inputData"/>.</param>
+        /// <param name="useIconInBools">If the booleans must be shown as their underlying value or with an icon.</param>
+        private static void WriteExportDataToWorksheet<T>(IXLWorksheet worksheet, IQueryable<T> baseQuery, TableQueryRequestModel inputData, TableConfigurationModel columnsInfo, Dictionary<string, Func<object, object?>> propertyAccessors, long totalRecords, byte pageStack, ref int currentRow, List<string>? excludedColumns = null, bool useIconInBools = false) {
             inputData.PageSize = pageStack; // Set how many records to process per page (chunk size)
             int currentPage = -1; // Track the current page index
             int loopStartPage = -1; // Used to detect when pagination is finished
@@ -128,19 +132,35 @@ namespace ECS.PrimengTable.Services {
                         string fieldName = inputData.Columns[col]; // Get field name
                         DataType dataType = columnTypeLookup[fieldName]; // Resolve the column data type
                         dynamic? cellValue = propertyAccessors[fieldName](dataResult[row]); // Get property value
-                        if(row == 0 && dataType == DataType.Date) { // Apply Excel date format only once per column (on first row)
-                            worksheet.Column(col + 1).Style.NumberFormat.Format = "dd-mmm-yyyy hh:mm:ss"; // Apply the date format
+                        if(row == 0) { // Apply Excel date format only once per column (on first row)
+                            IXLAlignment colStyle = worksheet.Column(col + 1).Style.Alignment;
+                            colStyle.Horizontal = XLAlignmentHorizontalValues.Left;
+                            if(dataType == DataType.Date) {
+                                worksheet.Column(col + 1).Style.NumberFormat.Format = "dd-mmm-yyyy hh:mm:ss"; // Apply the date format
+                            } else if (dataType == DataType.Boolean) {
+                                colStyle.Horizontal = XLAlignmentHorizontalValues.Center;
+                            }
                         }
+                        IXLCell cell = worksheet.Cell(currentRow, col + 1);
                         if(cellValue == null) { // If current cell value is null
-                            worksheet.Cell(currentRow, col + 1).Value = ""; // Set the cell value in the Excel to empty
+                            cell.Value = ""; // Set the cell value in the Excel to empty
                         } else { // If current cell value has data, write cell value in Excel based on type
-                            worksheet.Cell(currentRow, col + 1).Value = dataType switch {
+                            cell.Value = dataType switch {
                                 DataType.Text => cellValue.ToString(),
                                 DataType.Numeric => Convert.ToDouble(cellValue),
                                 DataType.Date when cellValue is DateTime => cellValue,
-                                DataType.Boolean => Convert.ToBoolean(cellValue),
+                                DataType.Boolean => useIconInBools
+                                    ? (Convert.ToBoolean(cellValue) ? "✔" : "✘")
+                                    : Convert.ToBoolean(cellValue),
                                 _ => cellValue
                             };
+                            if(dataType == DataType.Boolean && useIconInBools) {
+                                if(Convert.ToBoolean(cellValue)) {
+                                    cell.Style.Font.FontColor = XLColor.Green;
+                                } else {
+                                    cell.Style.Font.FontColor = XLColor.Red;
+                                }
+                            }
                         }
                     }
                     currentRow++; // Move to the next worksheet row
@@ -153,18 +173,28 @@ namespace ECS.PrimengTable.Services {
         /// </summary>
         private static void ApplyExportFormatting(IXLWorksheet worksheet, string reportDateFormatted, int numberOfColumns, int currentRow) {
             worksheet.Range($"A1:{GetExcelColumnLetter(numberOfColumns)}1").Merge().Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left; // Merge title row and set alignment
-            worksheet.Cell(1, 1).Value = $"Report date: {reportDateFormatted}"; // Write the format date
+            worksheet.Cell(1, 1).Value = $"Report date: {reportDateFormatted} UTC"; // Write the format date
             currentRow = Math.Max(1, currentRow - 1);
             IXLRange range = worksheet.Range($"A1:{GetExcelColumnLetter(numberOfColumns)}{currentRow}"); // Get the range to add borders
             range.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
             range.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+            range.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center; // Align all cells vertically centered
 
             // Setup autofilter and freeze header row
-            worksheet.Range($"A2:{GetExcelColumnLetter(numberOfColumns)}2").SetAutoFilter();
+            IXLRange titlesRange = worksheet.Range($"A2:{GetExcelColumnLetter(numberOfColumns)}2");
+            titlesRange.SetAutoFilter();
+            titlesRange.Style.Font.Bold = true;
             worksheet.Row(2).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
             worksheet.SheetView.FreezeRows(2);
 
             worksheet.Columns().AdjustToContents(); // Auto-fit columns
+
+            // Add extra width so that filter icon is not over titles
+            const double extraWidth = 2.0;
+            for(int c = 1; c <= numberOfColumns; c++) {
+                IXLColumn column = worksheet.Column(c);
+                column.Width = column.Width + extraWidth;
+            }
         }
 
         /// <summary>

@@ -1075,12 +1075,13 @@ With minimal setup, you can allow users to **export table data** through an inte
 
 If enabled, an **Excel icon** will appear at the top right of the table. Clicking it opens a modal window like this:
 <p align="center">
-	<img width="1367" height="520" alt="Excel report example" src="https://github.com/user-attachments/assets/f9696140-216d-438b-8165-a5c925d6c6ce" />
+	<img width="1331" height="530" alt="Excel report example" src="https://github.com/user-attachments/assets/adb02886-b44c-4d1f-b594-b8e60c3a1483" />
 </p>
 
 Users can customize the export with the following options:
 - **Report filename**: Can be prefilled with a name (default: "Report"). You can also prevent users from changing it.
 - **Include timestamp**: By default enabled. Adds the current time in the format `_{year}{month}{day}_{hours}{minutes}{seconds}_UTC` to the filename. Users can disabled it if they want to.
+- **Use icons in boolean fields**: By default disabled. When disabled, boolean values are exported using their native Excel values `TRUE` or `FALSE`, which Excel automatically localizes depending on the user's language. When enabled, boolean fields are exported using icons ✔ (U+2714) for `true` and ✘ (U+2718) for `false` and each icon is styled with a corresponding color (green for `true`, red for `false`).
 - **Export columns**: Choose whether to export only visible columns or all columns (default: visible only).
 - **Filters to apply**: Decide whether table filters should apply to the export (default: not applied). If the **Selected rows** option is enabled and not set to "All rows," this option becomes mandatory applying the current filters.
 - **Sorts to apply**: Include table sorting in the export (default: not applied).
@@ -3643,7 +3644,7 @@ And your HTML:
 
 
 
-## 6.14 Configurable dynamic column exclusion
+### 6.14 Configurable dynamic column exclusion
 The column exclusion feature is fully managed in the backend.  
 This package provides three core services where this functionality can be configured:
 - **`GetTableConfiguration`**: Limits the set of columns sent to the frontend, also affecting the available options in the column selector menu.
@@ -4199,6 +4200,7 @@ Includes options to specify whether all columns should be exported and whether a
 | `ApplyFilters` | `bool` | If true, applies the currently active filters when exporting data. |
 | `ApplySorts` | `bool` | If true, applies the currently active sorts when exporting data. |
 | `Filename` | `string` | The name of the Excel file to be generated. |
+| `UseIconInBools` | `bool` |  If in bools we need to use icons or the underlying boolean value. |
 
 <br><br>
 

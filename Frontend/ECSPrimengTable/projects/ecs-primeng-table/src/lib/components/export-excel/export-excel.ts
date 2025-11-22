@@ -28,13 +28,15 @@ export class ExportExcel implements OnChanges {
   @Input() rowCheckboxSelectorActive: boolean = false;
   @Input() excelReportTitle: string = "";
   includeTimeInTitle: boolean = true;
+  exportUseIconsInBools: boolean = false;
   @Input() allowTitleUserEdit: boolean = false;
   @Output() exportToExcel = new EventEmitter<{
     allColumns: boolean,
     applyFilters: boolean,
     applySorts: boolean,
     selectedRows: number,
-    filename: string
+    filename: string,
+    useIconInBools: boolean
   }>();
   @Output() visibleChange = new EventEmitter<boolean>();
 
@@ -77,6 +79,7 @@ export class ExportExcel implements OnChanges {
 
   private resetValues() {
     this.includeTimeInTitle = true;
+    this.exportUseIconsInBools = false;
     this.option_exportColumns_selected = false;
     this.option_applyCurrentFilters_selected = false;
     this.option_applyCurrentSorts_selected = false;
@@ -107,7 +110,8 @@ export class ExportExcel implements OnChanges {
       applyFilters: this.option_applyCurrentFilters_selected,
       applySorts: this.option_applyCurrentSorts_selected,
       selectedRows: this.option_selectedRowsExport_selected,
-      filename: excelReportFinalTitle
+      filename: excelReportFinalTitle,
+      useIconInBools: this.exportUseIconsInBools
     });
   }
 
