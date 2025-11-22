@@ -896,7 +896,8 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
       allColumns: event.allColumns,
       applyFilters: filtersMustBeApplied,
       applySorts: event.applySorts,
-      filename: event.filename
+      filename: event.filename,
+      useIconInBools: event.useIconInBools
     };
     this.tableService.fetchExcelReport(this.tableOptions.excelReport.url, requestData).subscribe({
       next: (response: HttpResponse<Blob>) => {

@@ -4,6 +4,17 @@
     border-radius: 2px;
 }
 
+.excel-export-tooltip .bool-icon {
+    text-shadow: 0 0 2px white, 0 0 3px white;
+}
+.excel-export-tooltip .bool-true {
+    color: green;
+}
+.excel-export-tooltip .bool-false {
+    color: red;
+}
+
+
 /* Column filter open button */
 .p-datatable-column-filter-button.p-button-icon-only.p-button-rounded {
   height: var(--p-icon-size) !important;

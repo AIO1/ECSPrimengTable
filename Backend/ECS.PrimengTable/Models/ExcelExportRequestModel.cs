@@ -24,5 +24,10 @@
         /// The name of the Excel file to be generated.
         /// </summary>
         public string Filename { get; set; } = null!;
+
+        /// <summary>
+        /// If in bools we need to use icons or the underlying boolean value.
+        /// </summary>
+        public bool UseIconInBools { get; set; }
     }
 }
