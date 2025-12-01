@@ -145,7 +145,7 @@
                     
                     <!-- HEADER ACTION BUTTONS -->
                     @if ((tableOptions.header?.buttons?.length ?? 0) > 0) {
-                        <td style="display: flex; justify-content: center; align-items: center; gap: 5px;">
+                        <td style="display: flex; justify-content: center; align-items: center; gap: 10px;">
                             @for (button of tableOptions.header?.buttons; track $index) {
                                 <ecs-table-button [button]="button" [rowData]="null"/>
                             }
