@@ -1,4 +1,4 @@
-@if (value !== null) {
+@if (value !== null && value !== undefined) {
   @if (col.filterPredefinedValuesName && col.filterPredefinedValuesName.length > 0) {
     <div [ngStyle]="{
             'justify-content': getDataAlignHorizontalAsText(col.dataAlignHorizontal),
