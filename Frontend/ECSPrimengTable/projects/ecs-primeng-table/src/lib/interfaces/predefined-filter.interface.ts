@@ -90,6 +90,21 @@ export interface IPredefinedFilter {
     imageBlobFetchError?: boolean;
 
     /**
+     * Optional width of the image (and skeleton) in pixels.
+     * 
+     * If the value is <= 0 or undefined, the width will not be applied.
+     */
+    imageWidth?: number;
+
+    /**
+     * Optional height of the image (and skeleton) in pixels.
+     * 
+     * If the value is <= 0 or undefined, the height will not be applied.
+     * If no value is specified, a default value of 22px will be used.
+     */
+    imageHeight?: number;
+
+    /**
      * Optional. The action to execute when the predefined filter is clicked.
      * @param rowData The row data object of the clicked row.
      * @param option The IPredefinedFilter data of the predefined element clicked.

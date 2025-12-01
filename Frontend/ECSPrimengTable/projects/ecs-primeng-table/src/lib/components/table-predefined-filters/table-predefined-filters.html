@@ -3,24 +3,16 @@
     [attr.role]="selectable && option?.action ? 'button' : null"
     (click)="handleClick(); $event.stopPropagation();">
   @if (option?.icon) {
-    <i [class]="option.icon"
-      [style]="'vertical-align: middle; color: '+(option.iconColor || '') +';' +(option.iconStyle || '')"></i>
+    <i [class]="option.icon" [style]="'vertical-align: middle; color: '+(option.iconColor || '') +';' +(option.iconStyle || '')"></i>
   }
-  @if (!option?.imageBlob && option?.imageBlobSourceEndpoint) {
-    <p-skeleton size="28px"
-                [style]="{'vertical-align': 'middle'}"/>
+  @if (!option?.imageBlob && option?.imageBlobSourceEndpoint) { <!-- If a blob image needs to be loaded from endpoint, while it's still loading, show skeleton -->
+    <p-skeleton [style]="getImageSkeletonStyle(option.imageWidth, option.imageHeight, true)"/>
   }
   @if (option?.imageBlob) {
-    <img alt="image"
-        [src]="getBlobIconAsUrl(option.imageBlob)"
-        height="28"
-        style="vertical-align: middle;"/>
+    <img alt="image" [src]="getBlobIconAsUrl(option.imageBlob)" [style]="getImageSkeletonStyle(option.imageWidth, option.imageHeight)"/>
   }
   @if (option?.imageURL) {
-    <img alt="iconFromURL"
-        [src]="option.imageURL"
-        height="28"
-        style="vertical-align: middle;"/>
+    <img alt="iconFromURL" [src]="option.imageURL" [style]="getImageSkeletonStyle(option.imageWidth, option.imageHeight)"/>
   }
   @if (option?.displayTag === true) {
     <p-tag [innerHtml]="highlightText(option.name, col, globalSearchText)" [style]="getTagStyle(option)" [value]="option.name"/>
