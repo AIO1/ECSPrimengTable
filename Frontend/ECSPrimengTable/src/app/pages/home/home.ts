@@ -107,7 +107,7 @@ export class Home implements OnInit {
       next: (responseData: IEmploymentStatus[]) => {
         responseData.forEach((data) => {
           // Create reusable filter object
-          const filterItem = {
+          const filterItem: IPredefinedFilter = {
             value: data.statusName,
             name: data.statusName,
             displayTag: true,

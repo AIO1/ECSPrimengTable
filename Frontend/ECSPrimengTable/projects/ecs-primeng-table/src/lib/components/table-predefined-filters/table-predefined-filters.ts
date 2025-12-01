@@ -64,6 +64,24 @@ export class TablePredefinedFilters {
     };
   }
 
+  getImageSkeletonStyle(width?: number, height?: number, isSkeleton: boolean = false): Record<string, string> {
+    const finalHeight = height && height > 0 ? `${height}px` : '22px'; // Compute final height; use default if invalid
+    let finalWidth: string | undefined;
+    if (width && width > 0) { // If width is valid, use it
+      finalWidth = `${width}px`;
+    } else if (isSkeleton) { // If it's a skeleton and width is not provided, mirror the height
+      finalWidth = finalHeight;
+    }
+    const style: Record<string, string> = {
+      'vertical-align': 'middle',
+      'height': finalHeight
+    };
+    if (finalWidth) { // Add width if available
+      style['width'] = finalWidth;
+    }
+    return style;
+  }
+
   highlightText(cellValue: any, colMetadata: IColumnMetadata, globalSearchText: string | null | undefined ): SafeHtml {
       return highlightText(cellValue, colMetadata, globalSearchText ?? null, this.sanitizer);
   }

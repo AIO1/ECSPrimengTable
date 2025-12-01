@@ -2303,6 +2303,9 @@ We will now cover the three different methods.
 > If a predefined filter displays only images, it is recommended to disable the global filter for that column in your DTO class in your backend.
 > This prevents the global filter from attempting to filter by a column without text, which could be confusing for users.
 
+> [!NOTE]
+> The width and height of the image (and skeleton) can be customized if needed. If no height is given, a default value of 22px will be used.
+
 <br>
 
 ###### Using a URL
@@ -4804,7 +4807,9 @@ Allows displaying a value as text, tag, icon, or image (from URL or Blob) with o
 | `imageBlob?` | `Blob` | The image to display from a Blob object. |
 | `imageBlobFetchError?` | `boolean` | **Internal.** Indicates that fetching the Blob from `imageBlobSourceEndpoint` failed. **Do not modify manually.** |
 | `imageBlobSourceEndpoint?` | `string` | If using a Blob and it is not provided directly, the backend endpoint to fetch the Blob from. |
+| `imageHeight?` | `number` | Optional height of the image (and skeleton) in pixels. If the value is <= 0 or undefined, the height will not be applied. If no value is specified, a default value of 22px will be used. |
 | `imageURL?` | `string` | The image to display directly from a URL. |
+| `imageWidth?` | `number` | Optional width of the image (and skeleton) in pixels. If the value is <= 0 or undefined, the width will not be applied. |
 | `name?` | `string` | The text displayed in the frontend for this filter value. Used when `displayName` is `true` or when displaying a tag. |
 | `nameStyle?` | `{ [key: string]: string }` | Optional CSS style object to apply to the text when `displayName` is `true`. Example: `{ color: 'blue', fontWeight: 'bold', fontStyle: 'italic' }` |
 | `tagStyle?` | `{ [key: string]: string }` | Optional CSS style object to apply to the tag. Example: `{ background: 'rgb(255,0,0)', color: 'white' }`. |
