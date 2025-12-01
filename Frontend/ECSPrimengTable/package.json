@@ -20,13 +20,13 @@
   },
   "private": true,
   "dependencies": {
-    "@angular/animations": "20.3.12",
-    "@angular/common": "20.3.12",
-    "@angular/compiler": "20.3.12",
-    "@angular/core": "20.3.12",
-    "@angular/forms": "20.3.12",
-    "@angular/platform-browser": "20.3.12",
-    "@angular/router": "20.3.12",
+    "@angular/animations": "20.3.15",
+    "@angular/common": "20.3.15",
+    "@angular/compiler": "20.3.15",
+    "@angular/core": "20.3.15",
+    "@angular/forms": "20.3.15",
+    "@angular/platform-browser": "20.3.15",
+    "@angular/router": "20.3.15",
     "@primeng/themes": "20.3.0",
     "primeicons": "7.0.0",
     "primeng": "20.3.0",
@@ -35,9 +35,9 @@
     "zone.js": "0.15.1"
   },
   "devDependencies": {
-    "@angular/build": "20.3.10",
-    "@angular/cli": "20.3.10",
-    "@angular/compiler-cli": "20.3.12",
+    "@angular/build": "20.3.12",
+    "@angular/cli": "20.3.12",
+    "@angular/compiler-cli": "20.3.15",
     "ng-packagr": "20.3.2",
     "typescript": "5.9.3"
   }
