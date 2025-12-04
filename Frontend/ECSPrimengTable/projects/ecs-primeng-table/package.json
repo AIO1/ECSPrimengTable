@@ -1,6 +1,6 @@
 {
   "name": "@eternalcodestudio/primeng-table",
-  "version": "20.0.16",
+  "version": "21.0.0",
   "description": "ECS reusable Angular PrimeNG table component with advanced server-side filters. Designed to offload filtering logic to any backend API.",
   "author": "ECS (Eternal CODE Studio)",
   "license": "MIT",
@@ -14,10 +14,9 @@
     "ui"
   ],
   "peerDependencies": {
-    "@angular/common": ">=20.0.0",
-    "@angular/core": ">=20.0.0",
-    "@angular/animations": ">=20.0.0",
-    "primeng": ">=20.0.0",
+    "@angular/common": ">=21.0.0",
+    "@angular/core": ">=21.0.0",
+    "primeng": ">=21.0.0",
     "primeicons": ">=7.0.0"
   },
   "dependencies": {

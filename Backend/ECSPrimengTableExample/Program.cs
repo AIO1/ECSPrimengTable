@@ -3,7 +3,7 @@ using ECSPrimengTableExample.Interfaces;
 using ECSPrimengTableExample.Repository;
 using ECSPrimengTableExample.Services;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
