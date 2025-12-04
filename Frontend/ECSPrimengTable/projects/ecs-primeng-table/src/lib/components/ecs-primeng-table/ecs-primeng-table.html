@@ -185,7 +185,7 @@
                                         <p-columnFilter [type]="getDataTypeAsText(col.dataType)" [field]="col.field" display="menu" [showButtons]="false"/>
                                     } @else {
                                         <p-columnFilter
-                                            type="{{getDataTypeAsText(col.dataType)}}" field="{{col.field}}" display="menu"
+                                            [type]="getDataTypeAsText(col.dataType)" [field]="col.field" display="menu"
                                             [showButtons]="false" matchMode="in" operator="or" [showMatchModes]="false"
                                             [showOperator]="false" [showAddButton]="false" [showClearButton]="false" [showApplyButton]="false">
                                             <ng-template #filter>
