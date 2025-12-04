@@ -4,7 +4,7 @@
 [![npm version](https://img.shields.io/npm/v/@eternalcodestudio/primeng-table.svg)](https://www.npmjs.com/package/@eternalcodestudio/primeng-table)
 [![npm downloads](https://img.shields.io/npm/dm/@eternalcodestudio/primeng-table.svg)](https://www.npmjs.com/package/@eternalcodestudio/primeng-table)
 # ECS PrimeNG Table
-A solution created by Alex Ibrahim Ojea that enhances the PrimeNG table with advanced filters and extended functionality, delegating all query and filtering logic to the database engine. The frontend is built with Angular 20 and PrimeNG 20 components, while the backend is a .NET 8 (ASP.NET) API connected to Microsoft SQL Server, easily adaptable to other databases. This approach prevents server and frontend overload by handling filtering and paging dynamically in the database, and includes features such as column visibility, column filters, custom views, and more.
+A solution created by Alex Ibrahim Ojea that enhances the PrimeNG table with advanced filters and extended functionality, delegating all query and filtering logic to the database engine. The frontend is built with Angular 21 and PrimeNG 21 components, while the backend is a .NET 10 (ASP.NET) API connected to Microsoft SQL Server, easily adaptable to other databases. This approach prevents server and frontend overload by handling filtering and paging dynamically in the database, and includes features such as column visibility, column filters, custom views, and more.
 
 <br><br><br>
 
@@ -55,7 +55,7 @@ Following these steps provides a more convenient way to navigate and review the 
 ## 1 Required software
 To run this project, you will need:
 - [Visual Studio Code](https://code.visualstudio.com/Download) – for frontend development.
-- [Visual Studio 2022](https://visualstudio.microsoft.com/downloads/) – for backend API development with ASP.NET Core. Make sure to install the **ASP.NET workload** and **.NET 8 framework**.
+- [Visual Studio 2026](https://visualstudio.microsoft.com/downloads/) – for backend API development with ASP.NET Core. Make sure to install the **ASP.NET workload** and **.NET 10 framework**.
 - [Node.js](https://nodejs.org/en/download/package-manager) – to run the Angular application. Managing Node versions with [NVM](https://github.com/nvm-sh/nvm) is recommended.
 - [Microsoft SQL Server](https://www.microsoft.com/en-us/sql-server/sql-server-downloads) – the database engine used for queries. Optional, can be replaced with other engines with minor code adjustments.
 - (Optional) [DBeaver](https://dbeaver.io/download/) – A GUI for database management that works with multiple engines. You can use other tools, but this is the one I normally use.
@@ -98,7 +98,7 @@ The following image shows the ER diagram of all the tables:
 
 
 #### 2.2.1 Open the project
-Using **Visual Studio 2022**, open the backend solution located in [this path](Backend). Make sure the **ASP.NET workload** and **.NET 8 framework** are installed. If any component is missing, use the **Visual Studio Installer** to add it.
+Using **Visual Studio 2026**, open the backend solution located in [this path](Backend). Make sure the **ASP.NET workload** and **.NET 10 framework** are installed. If any component is missing, use the **Visual Studio Installer** to add it.
 
 <br><br>
 
@@ -226,16 +226,16 @@ This section provides a step-by-step guide on how to integrate the **ECS PrimeNG
 
 ### 3.1 Backend requirements
 > [!NOTE]  
-> The **ECS PrimeNG Table** package is built for .NET 8, but it should also work seamlessly with newer .NET versions.
+> The **ECS PrimeNG Table** package is built for .NET 10, but it should also work seamlessly with newer .NET versions.
 
-If you are already working on a **.NET 8 project (or higher)**, you will need to install the backend compiled package from NuGet (downloading the latest version is recommended.):  
+If you are already working on a **.NET 10 project (or higher)**, you will need to install the backend compiled package from NuGet (downloading the latest version is recommended.):  
 [ECS.PrimeNGTable on NuGet](https://www.nuget.org/packages/ECS.PrimeNGTable)
 
 In addition, make sure the following required dependencies are installed:
-- **ClosedXML** (>= 0.104.0)
+- **ClosedXML** (>= 0.105.0)
 - **LinqKit** (>= 1.3.0)
-- **Microsoft.EntityFrameworkCore** (>= 8.0.0)
-- **System.Linq.Dynamic.Core** (>= 1.6.0)
+- **Microsoft.EntityFrameworkCore** (>= 10.0.0)
+- **System.Linq.Dynamic.Core** (>= 1.7.0)
 
 > [!TIP]
 > You can always check the latest dependency versions by visiting:  
@@ -254,9 +254,9 @@ With these dependencies in place and the package installed, your backend is read
 
 #### 3.2.1 Installing the package and peer dependencies
 > [!NOTE]  
-> The **ECS PrimeNG Table** package is built for Angular 20 with PrimeNG 20 components. While it may work with newer versions, compatibility is not guaranteed, as PrimeNG frequently introduces breaking changes to its components.
+> The **ECS PrimeNG Table** package is built for Angular 21 with PrimeNG 21 components. While it may work with newer versions, compatibility is not guaranteed, as PrimeNG frequently introduces breaking changes to its components.
 
-If you are already working on an **Angular 20** project, you can check the frontend compiled package on NPM here:  
+If you are already working on an **Angular 21** project, you can check the frontend compiled package on NPM here:  
 [@eternalcodestudio/primeng-table on NPM](https://www.npmjs.com/package/@eternalcodestudio/primeng-table)
 
 To install the package, open a terminal in the root folder of your project and run the following command (downloading the latest version is recommended.):
@@ -266,10 +266,9 @@ npm install @eternalcodestudio/primeng-table
 ```
 
 In addition, make sure the following required dependencies are installed in your project:
-- **@angular/common** (>=20.0.0)
-- **@angular/core** (>=20.0.0)
-- **@angular/animations** (>=20.0.0)
-- **primeng** (>=20.0.0)
+- **@angular/common** (>=21.0.0)
+- **@angular/core** (>=21.0.0)
+- **primeng** (>=21.0.0)
 - **primeicons** (>=7.0.0)
 
 > [!CAUTION]  
