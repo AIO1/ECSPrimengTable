@@ -1,5 +1,4 @@
 ﻿using ECS.PrimengTable.Attributes;
-using ECS.PrimengTable.Enums;
 using ECS.PrimengTable.Models;
 using LinqKit;
 using System.Reflection;
@@ -14,20 +13,25 @@ namespace ECS.PrimengTable.Services {
         /// <param name="globalFilter">The text used for global filtering.</param>
         /// <param name="visibleColumns">The list of column names that are currently visible.</param>
         /// <returns>A filtered list based on the global filter and visible columns.</returns>
-        internal static IQueryable<T> ApplyGlobalFilter<T>(IQueryable<T> query, string? globalFilter, List<string> visibleColumns, string dateFormat, string dateTimezone, string dateCulture, MethodInfo? stringDateFormatMethod = null) {
+        internal static IQueryable<T> ApplyGlobalFilter<T>(IQueryable<T> query, string? globalFilter, List<string> visibleColumns, string dateFormat, string dateTimezone, string dateCulture, MethodInfo? stringDateFormatMethod = null, Dictionary<string, ColumnMetadataOverrideModel>? dynamicAttributes = null) {
             if(string.IsNullOrEmpty(globalFilter) || string.IsNullOrWhiteSpace(globalFilter)) { // If the global filter is empty or whitespace, return the original list
                 return query;
             }
             var predicate = PredicateBuilder.New<T>(); // Create a predicate to combine filter conditions
             foreach(PropertyInfo property in typeof(T).GetProperties().Where(x => visibleColumns.Contains(x.Name))) { // Iterate through properties of type T where the property is visible
                 ColumnAttributes? attribute = (ColumnAttributes?)property.GetCustomAttributes(typeof(ColumnAttributes), false).FirstOrDefault(); // Retrieve column attributes
-                if(attribute != null && attribute.CanBeGlobalFiltered) {  // Check if the property can be globally filtered
-                    string effectiveDateFormat = attribute.DateFormat ?? dateFormat;
-                    string effectiveDateTimezone = attribute.DateTimezone ?? dateTimezone;
-                    string effectiveDateCulture = attribute.DateCulture ?? dateCulture;
-                    var filterPredicate = QueryPredicateService.GetGlobalFilterPredicate<T>(property.Name, globalFilter, attribute.DataType, effectiveDateFormat, effectiveDateTimezone, effectiveDateCulture, stringDateFormatMethod); // Get the filter predicate for the property
-                    if(filterPredicate != null) { // If a valid filter predicate is obtained, combine it with the existing predicate using OR
-                        predicate = predicate.Or(filterPredicate);
+                if(attribute != null) {
+                    if(dynamicAttributes != null && dynamicAttributes.TryGetValue(property.Name, out var overrideValues)) {
+                        ColumnAttributeOverrideService.ApplyAttributeOverrides(attribute, overrideValues); // Applies override to the attribute itself
+                    }
+                    if(attribute.CanBeGlobalFiltered) {  // Check if the property can be globally filtered
+                        string effectiveDateFormat = attribute.DateFormat ?? dateFormat;
+                        string effectiveDateTimezone = attribute.DateTimezone ?? dateTimezone;
+                        string effectiveDateCulture = attribute.DateCulture ?? dateCulture;
+                        var filterPredicate = QueryPredicateService.GetGlobalFilterPredicate<T>(property.Name, globalFilter, attribute.DataType, effectiveDateFormat, effectiveDateTimezone, effectiveDateCulture, stringDateFormatMethod); // Get the filter predicate for the property
+                        if(filterPredicate != null) { // If a valid filter predicate is obtained, combine it with the existing predicate using OR
+                            predicate = predicate.Or(filterPredicate);
+                        }
                     }
                 }
             }
@@ -43,7 +47,7 @@ namespace ECS.PrimengTable.Services {
         /// <param name="visibleColumns">The list of column names that are currently visible. Must not be null.</param>
         /// <returns>A filtered list based on the column filters and visible columns.</returns>
         /// <exception cref="ArgumentNullException">Thrown if sourceList, columnFilters, or visibleColumns is null.</exception>
-        internal static IQueryable<T> ApplyColumnFilters<T>(IQueryable<T> query, Dictionary<string, List<ColumnFilterModel>> columnFilters, List<string> visibleColumns, string dateFormat, string dateTimezone, string dateCulture, MethodInfo? stringDateFormatMethod = null) {
+        internal static IQueryable<T> ApplyColumnFilters<T>(IQueryable<T> query, Dictionary<string, List<ColumnFilterModel>> columnFilters, List<string> visibleColumns, string dateFormat, string dateTimezone, string dateCulture, MethodInfo? stringDateFormatMethod = null, Dictionary<string, ColumnMetadataOverrideModel>? dynamicAttributes = null) {
             foreach(var entry in columnFilters) { // Iterate through the column filters
                 string key = entry.Key; // Get the key of the current column filter
                 if((!visibleColumns.Contains(key) && key != "RowID") || key == "Selector") {
@@ -59,15 +63,20 @@ namespace ECS.PrimengTable.Services {
                     PropertyInfo property = typeof(T).GetProperty(key) ?? throw new ArgumentNullException(key, $"The property with name '{key}' does not exist in type '{typeof(T).FullName}'."); // Retrieve the property
                     ColumnAttributes? attribute = (ColumnAttributes?)property.GetCustomAttributes(typeof(ColumnAttributes), false).FirstOrDefault() ?? throw new ArgumentNullException(key, $"The property with name '{key}' does not have the PrimeNGAttributes attribute in type '{typeof(T).FullName}'."); // Retrieve PrimeNGAttributes attribute and if its null throw error
                     if(attribute != null) {
-                        string effectiveDateFormat = attribute.DateFormat ?? dateFormat;
-                        string effectiveDateTimezone = attribute.DateTimezone ?? dateTimezone;
-                        string effectiveDateCulture = attribute.DateCulture ?? dateCulture;
-                        if(value.MatchMode == "in") {
-                            QueryPredicateService.FilterPredicateInClauseBuilder<T>(value, property, attribute, andPredicateOperator, ref combinedPredicate, effectiveDateFormat, effectiveDateTimezone, effectiveDateCulture, stringDateFormatMethod);
-                        } else if(value.MatchMode == "notIn") {
-                            QueryPredicateService.FilterPredicateNotInClauseBuilder<T>(value, property, attribute, andPredicateOperator, ref combinedPredicate, effectiveDateFormat, effectiveDateTimezone, effectiveDateCulture, stringDateFormatMethod);
-                        } else {
-                            QueryPredicateService.FilterPredicateBuilder(property, attribute, value.Value, value.MatchMode, andPredicateOperator, ref combinedPredicate, effectiveDateFormat, effectiveDateTimezone, effectiveDateCulture, stringDateFormatMethod);
+                        if(dynamicAttributes != null && dynamicAttributes.TryGetValue(property.Name, out var overrideValues)) {
+                            ColumnAttributeOverrideService.ApplyAttributeOverrides(attribute, overrideValues); // Applies override to the attribute itself
+                        }
+                        if(attribute.CanBeFiltered) {
+                            string effectiveDateFormat = attribute.DateFormat ?? dateFormat;
+                            string effectiveDateTimezone = attribute.DateTimezone ?? dateTimezone;
+                            string effectiveDateCulture = attribute.DateCulture ?? dateCulture;
+                            if(value.MatchMode == "in") {
+                                QueryPredicateService.FilterPredicateInClauseBuilder<T>(value, property, attribute, andPredicateOperator, ref combinedPredicate, effectiveDateFormat, effectiveDateTimezone, effectiveDateCulture, stringDateFormatMethod);
+                            } else if(value.MatchMode == "notIn") {
+                                QueryPredicateService.FilterPredicateNotInClauseBuilder<T>(value, property, attribute, andPredicateOperator, ref combinedPredicate, effectiveDateFormat, effectiveDateTimezone, effectiveDateCulture, stringDateFormatMethod);
+                            } else {
+                                QueryPredicateService.FilterPredicateBuilder(property, attribute, value.Value, value.MatchMode, andPredicateOperator, ref combinedPredicate, effectiveDateFormat, effectiveDateTimezone, effectiveDateCulture, stringDateFormatMethod);
+                            }
                         }
                     }
                 }

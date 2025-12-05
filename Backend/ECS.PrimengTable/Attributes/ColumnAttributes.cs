@@ -12,129 +12,127 @@ namespace ECS.PrimengTable.Attributes {
         /// <summary>
         /// The name displayed for the column in the table.
         /// </summary>
-        public string Header { get; }
+        public string Header { get; set; }
 
         /// <summary>
         /// The type of data in the column, used for filtering and formatting.
         /// </summary>
-        public DataType DataType { get; }
+        public DataType DataType { get; set; }
 
         /// <summary>
         /// Horizontal alignment of the data in the column.
         /// </summary>
-        public DataAlignHorizontal DataAlignHorizontal { get; }
+        public DataAlignHorizontal DataAlignHorizontal { get; set; }
 
         /// <summary>
         /// Indicates if the user can modify the horizontal alignment.
         /// </summary>
-        public bool DataAlignHorizontalAllowUserEdit { get; }
+        public bool DataAlignHorizontalAllowUserEdit { get; set; }
 
         /// <summary>
         /// Vertical alignment of the data in the column.
         /// </summary>
-        public DataAlignVertical DataAlignVertical { get; }
+        public DataAlignVertical DataAlignVertical { get; set; }
 
         /// <summary>
         /// Indicates if the user can modify the vertical alignment.
         /// </summary>
-        public bool DataAlignVerticalAllowUserEdit { get; }
+        public bool DataAlignVerticalAllowUserEdit { get; set; }
 
         /// <summary>
         /// If true, the column can be hidden by the user.
         /// </summary>
-        public bool CanBeHidden { get; }
+        public bool CanBeHidden { get; set; }
 
         /// <summary>
-        /// If true, the column starts hidden (only applies if <see cref="CanBeHidden"/> is true).
+        /// If true, the column starts hidden (only applies if CanBeHidden is true).
         /// </summary>
-        public bool StartHidden { get; }
+        public bool StartHidden { get; set; }
 
         /// <summary>
         /// If true, the column can be resized by the user.
         /// </summary>
-        public bool CanBeResized { get; }
+        public bool CanBeResized { get; set; }
 
         /// <summary>
         /// If true, the column can be reordered by the user.
         /// </summary>
-        public bool CanBeReordered { get; }
+        public bool CanBeReordered { get; set; }
 
         /// <summary>
         /// If true, the column can be sorted.
         /// </summary>
-        public bool CanBeSorted { get; }
+        public bool CanBeSorted { get; set; }
 
         /// <summary>
         /// If true, the column can be filtered.
         /// </summary>
-        public bool CanBeFiltered { get; }
+        public bool CanBeFiltered { get; set; }
 
         /// <summary>
         /// The name used in TypeScript to store predefined filter values.
         /// </summary>
-        public string FilterPredefinedValuesName { get; }
+        public string FilterPredefinedValuesName { get; set; }
 
         /// <summary>
         /// If true, data can be globally filtered. Disabled for Boolean columns.
         /// </summary>
-        public bool CanBeGlobalFiltered { get; }
+        public bool CanBeGlobalFiltered { get; set; }
 
         /// <summary>
         /// If true, column attributes will be sent automatically in dynamic queries.
         /// </summary>
-        public bool SendColumnAttributes { get; }
+        public bool SendColumnAttributes { get; set; }
 
         /// <summary>
         /// Optional description displayed via an icon in the column header.
         /// </summary>
-        public string ColumnDescription { get; }
+        public string ColumnDescription { get; set; }
 
         /// <summary>
         /// If true, displays cell content as tooltip on hover.
         /// </summary>
-        public bool DataTooltipShow { get; }
+        public bool DataTooltipShow { get; set; }
 
         /// <summary>
         /// Optional column name to fetch custom tooltip content.
         /// </summary>
-        public string DataTooltipCustomColumnSource { get; }
+        public string DataTooltipCustomColumnSource { get; set; }
 
         /// <summary>
         /// Indicates if the column is frozen and its alignment.
         /// </summary>
-        public FrozenColumnAlign FrozenColumnAlign { get; }
+        public FrozenColumnAlign FrozenColumnAlign { get; set; }
 
         /// <summary>
         /// Defines how cell content behaves when it overflows.
         /// </summary>
-        public CellOverflowBehaviour CellOverflowBehaviour { get; }
+        public CellOverflowBehaviour CellOverflowBehaviour { get; set; }
 
         /// <summary>
-        /// Indicates if the user can modify the overflow behavior.
-        /// Disabled for Boolean columns.
+        /// Indicates if the user can modify the overflow behavior. Disabled for Boolean columns.
         /// </summary>
-        public bool CellOverflowBehaviourAllowUserEdit { get; }
+        public bool CellOverflowBehaviourAllowUserEdit { get; set; }
 
         /// <summary>
-        /// Initial width of the column in pixels.
-        /// If <=0 and frozen, defaults to 100. Defaults to 0 otherwise.
+        /// Initial width of the column in pixels. If <=0 and frozen, defaults to 100. Defaults to 0 otherwise.
         /// </summary>
-        public double InitialWidth { get; }
+        public double InitialWidth { get; set; }
 
         /// <summary>
         /// Optional date format override for this column.
         /// </summary>
-        public string? DateFormat { get; }
+        public string? DateFormat { get; set; }
 
         /// <summary>
         /// Optional timezone override.
         /// </summary>
-        public string? DateTimezone { get; }
+        public string? DateTimezone { get; set; }
 
         /// <summary>
         /// Optional culture override.
         /// </summary>
-        public string? DateCulture { get; }
+        public string? DateCulture { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ColumnAttributes"/> class.

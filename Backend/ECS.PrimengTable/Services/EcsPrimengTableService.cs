@@ -44,6 +44,10 @@ namespace ECS.PrimengTable.Services {
         /// <param name="dateTimezone">Optional timezone identifier used for date formatting. Defaults to <see cref="TableConfigurationDefaults.DateTimezone"/>.</param>
         /// <param name="dateCulture">Optional culture code for date localization. Defaults to <see cref="TableConfigurationDefaults.DateCulture"/>.</param>
         /// <param name="maxViews">Optional maximum number of saved views allowed per table. Defaults to <see cref="TableConfigurationDefaults.MaxViews"/>.</param>
+        /// <param name="dynamicAttributes">
+        /// Optional column attribute overrides. Keys represent column names, and values are <see cref="ColumnMetadataOverrideModel"/> instances whose properties override the default or attribute-based column metadata.  
+        /// If null, no dynamic overrides are applied.
+        /// </param>
         /// <param name="excludedColumns">Optional list of column names to exclude from the generated configuration. Useful for client-specific visibility rules or restricted data contexts.</param>
         /// <param name="convertFieldToLower">Determines whether the first letter of each property name should be converted to lowercase in the output model. Defaults to <c>true</c>.</param>
         /// <returns>
@@ -55,10 +59,11 @@ namespace ECS.PrimengTable.Services {
             string? dateTimezone = null,
             string? dateCulture = null,
             byte? maxViews = null,
+            Dictionary<string, ColumnMetadataOverrideModel>? dynamicAttributes = null,
             List<string>? excludedColumns = null,
             bool convertFieldToLower = true
         ) {
-            return TableConfigurationService.GetTableConfiguration<T>(allowedItemsPerPage, dateFormat, dateTimezone, dateCulture, maxViews, excludedColumns, convertFieldToLower);
+            return TableConfigurationService.GetTableConfiguration<T>(allowedItemsPerPage, dateFormat, dateTimezone, dateCulture, maxViews, dynamicAttributes, excludedColumns, convertFieldToLower);
         }
 
         /// <summary>
@@ -75,6 +80,10 @@ namespace ECS.PrimengTable.Services {
         /// <param name="stringDateFormatMethod"> Optional reflection method used to apply a specific date formatting function to string date columns.</param>
         /// <param name="defaultSortColumnName"> Optional list of column names to use for sorting when no explicit sort is provided in <paramref name="inputData"/>.</param>
         /// <param name="defaultSortOrder"> Optional list of sort directions (<see cref="ColumnSort"/>) matching the default columns.</param>
+        /// <param name="dynamicAttributes">
+        /// Optional column attribute overrides. Keys represent column names, and values are <see cref="ColumnMetadataOverrideModel"/> instances whose properties override the default or attribute-based column metadata.  
+        /// If null, no dynamic overrides are applied.
+        /// </param>
         /// <param name="excludedColumns">Optional list of column names to exclude from the select, even if they appear in the requested columns from <paramref name="inputData"/>.</param>
         /// <returns>
         /// A <see cref="TablePagedResponseModel"/> containing the filtered, sorted, paginated, and projected data,
@@ -86,9 +95,10 @@ namespace ECS.PrimengTable.Services {
             MethodInfo? stringDateFormatMethod = null,
             List<string>? defaultSortColumnName = null,
             List<ColumnSort>? defaultSortOrder = null,
+            Dictionary<string, ColumnMetadataOverrideModel>? dynamicAttributes = null,
             List<string>? excludedColumns = null
         ) {
-            return TableQueryProcessingService.PerformDynamicQuery<T>(inputData, baseQuery, stringDateFormatMethod, defaultSortColumnName, defaultSortOrder, excludedColumns);
+            return TableQueryProcessingService.PerformDynamicQuery<T>(inputData, baseQuery, stringDateFormatMethod, defaultSortColumnName, defaultSortOrder, dynamicAttributes, excludedColumns);
         }
 
         /// <summary>
@@ -106,6 +116,10 @@ namespace ECS.PrimengTable.Services {
         /// <param name="stringDateFormatMethod">Optional reflection method used to apply a specific date formatting function to string date columns.</param>
         /// <param name="defaultSortColumnName">Optional list of column names to use for sorting when no explicit sort is provided in the input.</param>
         /// <param name="defaultSortOrder">Optional list of sort directions (<see cref="ColumnSort"/>) matching the default columns.</param>
+        /// <param name="dynamicAttributes">
+        /// Optional column attribute overrides. Keys represent column names, and values are <see cref="ColumnMetadataOverrideModel"/> instances whose properties override the default or attribute-based column metadata.  
+        /// If null, no dynamic overrides are applied.
+        /// </param>
         /// <param name="excludedColumns">Optional list of column names to exclude from the select, even if they appear in the requested columns from <paramref name="inputData"/>.</param>
         /// <param name="sheetName">Name of the worksheet to create in the workbook. Defaults to "MAIN".</param>
         /// <param name="pageStack">Number of records to process per internal pagination batch (memory page). Defaults to 250.</param>
@@ -123,11 +137,12 @@ namespace ECS.PrimengTable.Services {
             MethodInfo? stringDateFormatMethod = null,
             List<string>? defaultSortColumnName = null,
             List<ColumnSort>? defaultSortOrder = null,
+            Dictionary<string, ColumnMetadataOverrideModel>? dynamicAttributes = null,
             List<string>? excludedColumns = null,
             string sheetName = "MAIN",
             byte pageStack = 250
         ) {
-            return ExcelExportService.GenerateExcelReport<T>(inputData, baseQuery, stringDateFormatMethod, defaultSortColumnName, defaultSortOrder, excludedColumns, sheetName, pageStack);
+            return ExcelExportService.GenerateExcelReport<T>(inputData, baseQuery, stringDateFormatMethod, defaultSortColumnName, defaultSortOrder, dynamicAttributes, excludedColumns, sheetName, pageStack);
         }
 
         /// <summary>

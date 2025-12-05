@@ -500,13 +500,22 @@ The **ECS PrimeNG Table** component gives you full control over how dates are di
   For example, `"+00:00"` is UTC (Coordinated Universal Time). Changing this will adjust the displayed time to the desired zone.
 - **Culture**: This determines the language and formatting conventions for the date, such as month names, day names, and the order of day/month/year. Default `"en-US"` uses English (United States) conventions. Using `"es-ES"` would show month and day names in Spanish, for example.
 
-You can configure this customization per table, and override it per column if needed, with several possible approaches:
+You can configure this customization per table, and **override it per column if needed**, with several possible approaches:
 - **Static**: Use the default values or hardcode alternative values if they suit your needs.
 - **Server-based**: Use the configuration of the server environment where your application is deployed.
 - **Per-user**: Save each user's preferred configuration, allowing users to choose how dates are displayed in their tables. This requires additional setup but provides maximum flexibility.
 
 > [!NOTE]
-> While per-table customization is possible, it is recommended to set a **global configuration** for all tables. Individual table settings are mainly useful for specific scenarios, but managing a global configuration is easier and more consistent.
+> Although per-table configuration is possible, it is recommended to set a **global configuration** for all tables.  
+> 
+> You can also override settings **per-column** (for example, applying a different date format or timezone than the table default).  
+> However, use this carefully. Having mixed formats or timezones may confuse users.  
+> 
+> If a column uses a custom timezone, it is highly recommended to make it explicit, either:
+> - In the **column header**, or  
+> - Directly within the **date format** (e.g., including the timezone offset).
+>
+> Keeping formats consistent helps avoid misunderstandings and improves overall readability.
 
 <br><br>
 
@@ -1224,6 +1233,25 @@ An example of the default appearance of the button is shown below:
 	<img width="525" height="173" alt="Reset table view button" src="https://github.com/user-attachments/assets/cf10f99d-64be-471b-8d85-6f7f1b3ebf27" />
 </p>
 
+<br><br>
+
+
+
+### 4.18 Configurable dynamic column attributes
+Although each table column has a predefined set of attributes that are typically fixed, `ECS PrimeNG Table` allows you to dynamically override these values at runtime.
+
+A common use case is adjusting the **timezone** of a specific column without modifying the table-level defaults.  
+Other examples include changing the column header, modifying filter behavior, or adjusting alignment.  
+In practice, this feature enables you to dynamically customize almost every attribute a column can expose.
+
+> [!TIP]  
+> Dynamic column attributes can be configured **independently** for table display and for export operations.  
+> However, keeping both configurations aligned is strongly recommended to preserve a consistent user experience.  
+>
+> Remember that **Excel does not support the same date format patterns** used by Angular, .NET, or other frameworks.  
+> For example, patterns such as `zzzz` (timezone offset) are not recognized by Excel.  
+> Because of this, you may need to define a separate date format specifically for Excel exports.
+
 <br><br><br>
 
 
@@ -1270,6 +1298,7 @@ The purpose of this section is to provide a table that maps the features describ
 | Table | [4.15 Table description](#415-table-description) | [6.15 Table description](#615-table-description) |
 | Table | [4.16 Table legend](#416-table-legend) | [6.16 Table legend](#616-table-legend) |
 | Table | [4.17 Reset table view](#417-reset-table-view) | [6.17 Reset table view](#617-reset-table-view) |
+| Columns | [4.18 Configurable dynamic column attributes](#418-configurable-dynamic-column-attributes) | [6.18 Configurable dynamic column attributes](#618-configurable-dynamic-column-attributes) |
 
 </div>
 
@@ -3886,6 +3915,101 @@ export class Home {
 }
 ```
 
+<br><br>
+
+
+
+### 6.18 Configurable dynamic column attributes
+The column dynamic attributes feature is fully managed in the backend.  
+This package provides three core services where this functionality can be configured:
+- **`GetTableConfiguration`**: Injects dynamic column attributes into the metadata returned to the frontend, allowing each column to display updated headers, formats, visibility rules, alignment, and more.
+- **`PerformDynamicQuery`**: Applies dynamic attribute overrides during query processing, ensuring that filtering, sorting, and other server-side operations respect the updated column configuration.
+- **`GenerateExcelReport`**: Uses the dynamic column attributes to determine the structure and formatting of the exported Excel file, including custom date formats, renamed columns, timezone overrides, and any other runtime adjustments.
+
+All three services share a common parameter named **`dynamicAttributes`**, which is a **`Dictionary<string, ColumnMetadataOverrideModel>?`**.
+
+This dictionary contains the list of columns whose attributes you want to override.  
+Each dictionary key must match the **property name** of the DTO used in the query projection.  
+The overridable fields correspond to the properties defined in the `ColumnMetadataOverrideModel` class, covering nearly all attributes that a column can support.
+
+<br>
+
+**_Example_**
+
+Assume the following example DTO, where you want to override the attributes of the `DateOfBirth` column so that it uses a different timezone than the default one defined for the table:
+```C#
+public class TestDto {
+	[ColumnAttributes(sendColumnAttributes: false)]
+	public Guid RowID { get; set; }
+
+	[ColumnAttributes("Username")]
+	public string Username { get; set; } = string.Empty;
+
+	[ColumnAttributes("Date of birth", dataType: DataType.Date)]
+	public DateTime DateOfBirth { get; set; }
+
+	[ColumnAttributes("Has a house", dataType: DataType.Boolean)]
+	public bool House { get; set; }
+}
+```
+
+A minimal implementation of your service could look like this (assuming that you want to change the timezone of the column in all three possible services):
+```c#
+using ECSPrimengTable.Services;
+using ECSPrimengTableExample.DTOs;
+using ECSPrimengTableExample.Interfaces;
+
+namespace ECSPrimengTableExample.Services {
+    public class TestService : ITestService {
+        private readonly ITestRepository _repo;
+
+        public TestService(ITestRepository repository) {
+            _repo = repository;
+        }
+
+        private Dictionary<string, ColumnMetadataOverrideModel> FuncThatReturnsColumnsToBeModified(){
+          // Provide the logic that returns a Dictionary<string, ColumnMetadataOverrideModel> 
+          // with the names of the columns and attributes that you want to override.
+          return new() {
+              { "DateOfBirth", new ColumnMetadataOverrideModel {
+                  // Overrides the timezone for this column only
+                  DateTimezone = "+05:00"
+              }}
+          };
+        }
+
+        // Table configuration
+        public TableConfigurationModel GetTableConfiguration() {
+            return EcsPrimengTableService.GetTableConfiguration<TestDto>(dynamicAttributes: FuncThatReturnsColumnsToBeModified());
+        }
+
+        // Table data
+        public (bool success, TablePagedResponseModel data) GetTableData(TableQueryRequestModel inputData) {
+            if(!EcsPrimengTableService.ValidateItemsPerPageAndCols(inputData.PageSize, inputData.Columns)) { // Validate the items per page size and columns
+                return (false, null!);
+            }
+            return (true, EcsPrimengTableService.PerformDynamicQuery(inputData, GetBaseQuery(), dynamicAttributes: FuncThatReturnsColumnsToBeModified()));
+        }
+
+        // Export to Excel
+        public (bool success, byte[]? file, string errorMsg) GenerateExcelReport(ExcelExportRequestModel inputData) {
+            return EcsPrimengTableService.GenerateExcelReport(inputData, GetBaseQuery(), dynamicAttributes: FuncThatReturnsColumnsToBeModified());
+        }
+
+        // Common base query shared between table data and export to Excel
+        private IQueryable<TestDto> GetBaseQuery() {
+            return _repo.GetTableData()
+                .Select(u => new TestDto {
+                    RowID = u.Id,
+                    Username = u.Username,
+                    DateOfBirth = u.DateOfBirth,
+                    House = u.House
+                });
+        }
+    }
+}
+```
+
 <br><br><br>
 
 
@@ -4169,7 +4293,42 @@ Contains information about the field, header, type, alignment, visibility, filte
 
 
 
-#### 7.4.3 ColumnSortModel
+#### 7.4.3 ColumnMetadataOverrideModel
+**Namespace:** `ECS.PrimengTable.Models`  
+
+Represents a set of optional overrides for column metadata.  
+Any property defined here replaces the corresponding value on the underlying [`ColumnMetadataModel`](#742-columnmetadatamodel).
+Only non-null properties are applied, allowing partial and targeted overrides.
+
+<br>
+
+**_Properties_**
+| Property | Type | Description |
+|-|-|-|
+| `CanBeFiltered` | `bool?` | Overrides whether the column can be filtered. |
+| `CanBeGlobalFiltered` | `bool?` | Overrides whether the column participates in global filtering. |
+| `CanBeHidden` | `bool?` | Overrides whether the column can be hidden. |
+| `CanBeReordered` | `bool?` | Overrides whether the column can be reordered. |
+| `CanBeResized` | `bool?` | Overrides whether the column can be resized. |
+| `CanBeSorted` | `bool?` | Overrides whether the column can be sorted. |
+| `CellOverflowBehaviour` | `CellOverflowBehaviour?` | Overrides how cell content behaves when it overflows the column. |
+| `CellOverflowBehaviourAllowUserEdit` | `bool?` | Overrides whether the user can modify overflow behavior. |
+| `ColumnDescription` | `string?` | Overrides the optional description shown in the column header. |
+| `DataAlignHorizontal` | `DataAlignHorizontal?` | Overrides the horizontal alignment of the column data. |
+| `DataAlignHorizontalAllowUserEdit` | `bool?` | Overrides whether the user can edit the horizontal alignment. |
+| `DataAlignVertical` | `DataAlignVertical?` | Overrides the vertical alignment of the column data. |
+| `DataAlignVerticalAllowUserEdit` | `bool?` | Overrides whether the user can edit the vertical alignment. |
+| `DataTooltipShow` | `bool?` | Overrides whether the column shows cell content as a tooltip on hover. |
+| `DateCulture` | `string?` | Overrides the culture used when formatting date values. |
+| `DateFormat` | `string?` | Overrides the date format for this column. |
+| `DateTimezone` | `string?` | Overrides the timezone applied to date values for this column. |
+| `Header` | `string?` | Overrides the header displayed for the column. |
+| `StartHidden` | `bool?` | Overrides whether the column starts hidden. |
+
+<br><br>
+
+
+#### 7.4.4 ColumnSortModel
 **Namespace:** `ECS.PrimengTable.Models`  
 
 Represents the base sorting configuration for a table column.  
@@ -4186,9 +4345,9 @@ This model defines the field to sort by and the order of sorting (ascending or d
 <br><br>
 
 
-#### 7.4.4 ExcelExportRequestModel
+#### 7.4.5 ExcelExportRequestModel
 **Namespace:** `ECS.PrimengTable.Models`  
-**Inherits:** [`TableQueryRequestModel`](#747-tablequeryrequestmodel)  
+**Inherits:** [`TableQueryRequestModel`](#748-tablequeryrequestmodel)  
 
 Represents a request to export table data to Excel.  
 Includes options to specify whether all columns should be exported and whether active filters and sorts should be applied.
@@ -4208,7 +4367,7 @@ Includes options to specify whether all columns should be exported and whether a
 
 
 
-#### 7.4.5 TableConfigurationModel
+#### 7.4.6 TableConfigurationModel
 **Namespace:** `ECS.PrimengTable.Models`  
 
 Represents the configuration of a table including column metadata, pagination, and date formatting.
@@ -4229,7 +4388,7 @@ Represents the configuration of a table including column metadata, pagination, a
 
 
 
-#### 7.4.6 TablePagedResponseModel
+#### 7.4.7 TablePagedResponseModel
 **Namespace:** `ECS.PrimengTable.Models`  
 
 Represents a paged response for a table query, including page info, total records, and the data itself.
@@ -4248,7 +4407,7 @@ Represents a paged response for a table query, including page info, total record
 
 
 
-#### 7.4.7 TableQueryRequestModel
+#### 7.4.8 TableQueryRequestModel
 **Namespace:** `ECS.PrimengTable.Models`  
 
 Represents a table query request, including pagination, sorting, filtering, and optional column selection.
@@ -4266,13 +4425,13 @@ Represents a table query request, including pagination, sorting, filtering, and 
 | `GlobalFilter` | `string?` | Optional global filter applied to all columns. |
 | `Page` | `int` | The page number to retrieve (1-based index). |
 | `PageSize` | `byte` | Number of items per page. |
-| `Sort` | [`ColumnSortModel[]?`](#743-columnsortmodel) | List of sorting configurations to apply to the table columns. |
+| `Sort` | [`ColumnSortModel[]?`](#744-columnsortmodel) | List of sorting configurations to apply to the table columns. |
 
 <br><br>
 
 
 
-#### 7.4.8 ViewDataModel
+#### 7.4.9 ViewDataModel
 **Namespace:** `ECS.PrimengTable.Models`  
 
 Represents the view data for a table, including its alias, serialized data, and whether it is the last active view.
@@ -4290,7 +4449,7 @@ Represents the view data for a table, including its alias, serialized data, and 
 
 
 
-#### 7.4.9 ViewLoadRequestModel
+#### 7.4.10 ViewLoadRequestModel
 **Namespace:** `ECS.PrimengTable.Models`  
 
 Represents a request to load a saved table view using its key.
@@ -4306,9 +4465,9 @@ Represents a request to load a saved table view using its key.
 
 
 
-#### 7.4.10 ViewSaveRequestModel
+#### 7.4.11 ViewSaveRequestModel
 **Namespace:** `ECS.PrimengTable.Models`  
-**Inherits:** [`ViewLoadRequestModel`](#749-viewloadrequestmodel)  
+**Inherits:** [`ViewLoadRequestModel`](#7410-viewloadrequestmodel)  
 
 Represents a request to save one or multiple table views.
 
@@ -4317,7 +4476,7 @@ Represents a request to save one or multiple table views.
 **_Properties_**
 | Property | Type | Description |
 |----------|------|-------------|
-| `Views` | [`List<ViewDataModel>`](#748-viewdatamodel) | List of table views to be saved. |
+| `Views` | [`List<ViewDataModel>`](#749-viewdatamodel) | List of table views to be saved. |
 
 <br><br>
 
@@ -4383,6 +4542,7 @@ public static TableConfigurationModel GetTableConfiguration<T>(
     string? dateTimezone = null,
     string? dateCulture = null,
     byte? maxViews = null,
+    Dictionary<string, ColumnMetadataOverrideModel>? dynamicAttributes = null,
     List<string>? excludedColumns = null,
     bool convertFieldToLower = true
 )
@@ -4405,6 +4565,7 @@ public static TableConfigurationModel GetTableConfiguration<T>(
 | `dateTimezone` | `string?` | Optional timezone identifier used for date formatting. Defaults to `TableConfigurationDefaults.DateTimezone`. |
 | `dateCulture` | `string?` | Optional culture code for date localization. Defaults to `TableConfigurationDefaults.DateCulture`. |
 | `maxViews` | `byte?` | Optional maximum number of saved views allowed per table. Defaults to `TableConfigurationDefaults.MaxViews`. |
+| `dynamicAttributes` | `Dictionary<string, ColumnMetadataOverrideModel>?` | Optional column attribute overrides. Keys represent column names, and values are [ColumnMetadataOverrideModel](#743-columnmetadataoverridemodel) instances whose properties override the default or attribute-based column metadata. If null, no dynamic overrides are applied. |
 | `excludedColumns` | `List<string>?` | Optional list of column names to exclude from the generated configuration. Useful for client-specific visibility rules or restricted data contexts. |
 | `convertFieldToLower` | `bool` | Determines whether the first letter of each property name should be converted to lowercase in the output model. Defaults to `true`. |
 
@@ -4413,7 +4574,7 @@ public static TableConfigurationModel GetTableConfiguration<T>(
 **_Returns_**
 | Type | Description |
 |-|-|
-| [`TableConfigurationModel`](#745-tableconfigurationmodel) | Contains the table metadata derived from the annotated properties of the specified type. |
+| [`TableConfigurationModel`](#746-tableconfigurationmodel) | Contains the table metadata derived from the annotated properties of the specified type. |
 
 <br><br>
 
@@ -4439,6 +4600,7 @@ public static TablePagedResponseModel PerformDynamicQuery<T>(
     MethodInfo? stringDateFormatMethod = null,
     List<string>? defaultSortColumnName = null,
     List<ColumnSort>? defaultSortOrder = null,
+    Dictionary<string, ColumnMetadataOverrideModel>? dynamicAttributes = null,
     List<string>? excludedColumns = null
 )
 ```
@@ -4455,11 +4617,12 @@ public static TablePagedResponseModel PerformDynamicQuery<T>(
 **_Parameters_**
 | Name | Type | Description |
 |-|-|-|
-| `inputData` | [`TableQueryRequestModel`](#747-tablequeryrequestmodel) | The input model containing filters, sorting, and pagination parameters. |
+| `inputData` | [`TableQueryRequestModel`](#748-tablequeryrequestmodel) | The input model containing filters, sorting, and pagination parameters. |
 | `baseQuery` | `IQueryable<T>` | The base query to apply dynamic operations on. |
 | `stringDateFormatMethod` | `MethodInfo?` | Optional reflection method used to apply a specific date formatting function to string date columns. |
 | `defaultSortColumnName` | `List<string>?` | Optional list of column names to use for sorting when no explicit sort is provided in `inputData`. |
 | `defaultSortOrder` | [`List<ColumnSort>?`](#712-columnsort) | Optional list of sort directions ([`ColumnSort`](#712-columnsort)) matching the default columns. |
+| `dynamicAttributes` | `Dictionary<string, ColumnMetadataOverrideModel>?` | Optional column attribute overrides. Keys represent column names, and values are [ColumnMetadataOverrideModel](#743-columnmetadataoverridemodel) instances whose properties override the default or attribute-based column metadata. If null, no dynamic overrides are applied. |
 | `excludedColumns` | `List<string>?` | Optional list of column names to exclude from the select, even if they appear in the requested columns from `inputData`. |
 
 <br>
@@ -4467,7 +4630,7 @@ public static TablePagedResponseModel PerformDynamicQuery<T>(
 **_Returns_**
 | Type | Description |
 |-|-|
-| [`TablePagedResponseModel`](#746-tablepagedresponsemodel) | Contains the filtered, sorted, paginated, and projected data, along with total record counts for both filtered and unfiltered datasets and the current page information. |
+| [`TablePagedResponseModel`](#747-tablepagedresponsemodel) | Contains the filtered, sorted, paginated, and projected data, along with total record counts for both filtered and unfiltered datasets and the current page information. |
 
 <br><br>
 
@@ -4495,6 +4658,7 @@ public static (bool success, byte[]? reportFile, string statusMessage) GenerateE
     MethodInfo? stringDateFormatMethod = null,
     List<string>? defaultSortColumnName = null,
     List<ColumnSort>? defaultSortOrder = null,
+    Dictionary<string, ColumnMetadataOverrideModel>? dynamicAttributes = null,
     List<string>? excludedColumns = null,
     string sheetName = "MAIN",
     byte pageStack = 250
@@ -4513,11 +4677,12 @@ public static (bool success, byte[]? reportFile, string statusMessage) GenerateE
 **_Parameters_**  
 | Name | Type | Description |  
 |-|-|-|  
-| `inputData` | [`ExcelExportRequestModel`](#744-excelexportrequestmodel) | Export request model containing pagination, sorting, filtering, and column selection options. |  
+| `inputData` | [`ExcelExportRequestModel`](#745-excelexportrequestmodel) | Export request model containing pagination, sorting, filtering, and column selection options. |  
 | `baseQuery` | `IQueryable<T>` | The base query to apply dynamic operations on. |  
 | `stringDateFormatMethod` | `MethodInfo?` | Optional reflection method used to apply a specific date formatting function to string date columns. |  
 | `defaultSortColumnName` | `List<string>?` | Optional list of column names to use for sorting when no explicit sort is provided. |  
 | `defaultSortOrder` | [`List<ColumnSort>?`](#712-columnsort) | Optional list of sort directions ([`ColumnSort`](#712-columnsort)) matching the default columns. |  
+| `dynamicAttributes` | `Dictionary<string, ColumnMetadataOverrideModel>?` | Optional column attribute overrides. Keys represent column names, and values are [ColumnMetadataOverrideModel](#743-columnmetadataoverridemodel) instances whose properties override the default or attribute-based column metadata. If null, no dynamic overrides are applied. |
 | `excludedColumns` | `List<string>?` | Optional list of column names to exclude from the select, even if they appear in the requested columns from `inputData`. |  
 | `sheetName` | `string` | Name of the worksheet to create in the workbook. Defaults to `"MAIN"`. |  
 | `pageStack` | `byte` | Number of records to process per internal pagination batch (memory page). Defaults to `250`. |  
@@ -4575,7 +4740,7 @@ public static async Task<List<ViewDataModel>> GetViewsAsync<TEntity, TUsername>(
 **_Returns_**  
 | Type | Description |  
 |-|-|  
-| [`Task<List<ViewDataModel>>`](#748-viewdatamodel) | A list of user-defined table views stored for the specified table. |  
+| [`Task<List<ViewDataModel>>`](#749-viewdatamodel) | A list of user-defined table views stored for the specified table. |  
 
 <br><br>
 
@@ -4620,7 +4785,7 @@ public static async Task SaveViewsAsync<TEntity, TUsername>(
 | `context` | `DbContext` | The database context used to perform insert, update, and delete operations. |  
 | `username` | `TUsername` | The username for which the views will be saved. |  
 | `tableKey` | `string` | The key identifying the table configuration related to the views. |  
-| `views` | [`List<ViewDataModel>`](#748-viewdatamodel) | The list of views to be saved or updated. |  
+| `views` | [`List<ViewDataModel>`](#749-viewdatamodel) | The list of views to be saved or updated. |  
 
 <br><br><br>
 
