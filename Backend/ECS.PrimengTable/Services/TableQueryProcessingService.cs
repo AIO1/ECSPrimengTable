@@ -35,10 +35,10 @@ namespace ECS.PrimengTable.Services {
         /// A <see cref="TablePagedResponseModel"/> containing the filtered, sorted, paginated, and projected data,
         /// along with total record counts for both filtered and unfiltered datasets and the current page that we are on.
         /// </returns>
-        internal static TablePagedResponseModel PerformDynamicQuery<T>(TableQueryRequestModel inputData, IQueryable<T> baseQuery, MethodInfo? stringDateFormatMethod = null, List<string>? defaultSortColumnName = null, List<ColumnSort>? defaultSortOrder = null, List<string>? excludedColumns = null) {
+        internal static TablePagedResponseModel PerformDynamicQuery<T>(TableQueryRequestModel inputData, IQueryable<T> baseQuery, MethodInfo? stringDateFormatMethod = null, List<string>? defaultSortColumnName = null, List<ColumnSort>? defaultSortOrder = null, Dictionary<string, ColumnMetadataOverrideModel>? dynamicAttributes = null, List<string>? excludedColumns = null) {
             long totalRecordsNotFiltered = 0; // Used to track the number of all available records
             long totalRecords = 0; // Used to track the number of all available records after filters are applied
-            GetDynamicQueryBase<T>(ref inputData, ref baseQuery, ref totalRecordsNotFiltered, ref totalRecords, stringDateFormatMethod, defaultSortColumnName, defaultSortOrder);
+            GetDynamicQueryBase<T>(ref inputData, ref baseQuery, ref totalRecordsNotFiltered, ref totalRecords, stringDateFormatMethod, defaultSortColumnName, defaultSortOrder, dynamicAttributes);
             int currentPage = inputData.Page; // Get the current page that the user is viewing
             IQueryable<T> pagedItems = PerformPagination(baseQuery, totalRecords, ref currentPage, inputData.PageSize); // Perform the pagination
             List<dynamic> dataResult = GetDynamicSelect(pagedItems, inputData.Columns!, excludedColumns); // Limit the columns that are going to be selected
@@ -70,7 +70,7 @@ namespace ECS.PrimengTable.Services {
         /// <param name="defaultSortOrder"> Optional list of sort directions (<see cref="ColumnSort"/>) corresponding to the default columns.</param>
         /// <param name="performSort"> Indicates whether sorting should be applied. Defaults to <c>true</c>.</param>
         /// <param name="performFilters">Indicates whether filters should be applied. Defaults to <c>true</c>.</param>
-        internal static void GetDynamicQueryBase<T>(ref TableQueryRequestModel inputData, ref IQueryable<T> baseQuery, ref long totalRecordsNotFiltered, ref long totalRecords, MethodInfo? stringDateFormatMethod = null, List<string>? defaultSortColumnName = null, List<ColumnSort>? defaultSortOrder = null, bool performSort = true, bool performFilters = true) {
+        internal static void GetDynamicQueryBase<T>(ref TableQueryRequestModel inputData, ref IQueryable<T> baseQuery, ref long totalRecordsNotFiltered, ref long totalRecords, MethodInfo? stringDateFormatMethod = null, List<string>? defaultSortColumnName = null, List<ColumnSort>? defaultSortOrder = null, Dictionary<string, ColumnMetadataOverrideModel>? dynamicAttributes = null, bool performSort = true, bool performFilters = true) {
             if(inputData.Columns != null) { // Check if there are any columns defined in the input
                 for(int i = 0; i < inputData.Columns.Count; i++) { // Iterate over each column name
                     string column = inputData.Columns[i]; // Get the current column name
@@ -93,8 +93,8 @@ namespace ECS.PrimengTable.Services {
             }
             totalRecordsNotFiltered = baseQuery.Count(); // Count total records before applying any filters
             if(performFilters) { // Check if filters should be applied
-                baseQuery = QueryFilterService.ApplyGlobalFilter(baseQuery, inputData.GlobalFilter, inputData.Columns!, inputData.DateFormat, inputData.DateTimezone, inputData.DateCulture, stringDateFormatMethod); // Apply a global search filter (searches across all columns)
-                baseQuery = QueryFilterService.ApplyColumnFilters(baseQuery, inputData.Filter, inputData.Columns!, inputData.DateFormat, inputData.DateTimezone, inputData.DateCulture, stringDateFormatMethod); // Apply individual column filters
+                baseQuery = QueryFilterService.ApplyGlobalFilter(baseQuery, inputData.GlobalFilter, inputData.Columns!, inputData.DateFormat, inputData.DateTimezone, inputData.DateCulture, stringDateFormatMethod, dynamicAttributes); // Apply a global search filter (searches across all columns)
+                baseQuery = QueryFilterService.ApplyColumnFilters(baseQuery, inputData.Filter, inputData.Columns!, inputData.DateFormat, inputData.DateTimezone, inputData.DateCulture, stringDateFormatMethod, dynamicAttributes); // Apply individual column filters
             }
             totalRecords = baseQuery.Count(); // Count total records again after filters have been applied
         }

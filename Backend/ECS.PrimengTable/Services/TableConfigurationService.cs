@@ -34,7 +34,7 @@ internal static class TableConfigurationService {
     /// <returns>
     /// A <see cref="TableConfigurationModel"/> containing the column metadata derived from the annotated properties of the specified type.
     /// </returns>
-    internal static TableConfigurationModel GetTableConfiguration<T>(int[]? allowedItemsPerPage = null, string? dateFormat = null, string? dateTimezone = null, string? dateCulture = null, byte? maxViews = null, List<string>? excludedColumns = null, bool convertFieldToLower = true) {
+    internal static TableConfigurationModel GetTableConfiguration<T>(int[]? allowedItemsPerPage = null, string? dateFormat = null, string? dateTimezone = null, string? dateCulture = null, byte? maxViews = null, Dictionary<string, ColumnMetadataOverrideModel>? dynamicAttributes = null, List<string>? excludedColumns = null, bool convertFieldToLower = true) {
         allowedItemsPerPage ??= TableConfigurationDefaults.AllowedItemsPerPage;
         dateFormat ??= TableConfigurationDefaults.DateFormat;
         dateTimezone ??= TableConfigurationDefaults.DateTimezone;
@@ -87,6 +87,7 @@ internal static class TableConfigurationService {
                 DateCulture = colAtt.DateCulture
             });
         }
+        ColumnAttributeOverrideService.ApplyOverridesToColumns(columnsInfo, dynamicAttributes);
         return new TableConfigurationModel {
             ColumnsInfo = columnsInfo,
             AllowedItemsPerPage = allowedItemsPerPage,

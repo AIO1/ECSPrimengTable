@@ -15,7 +15,7 @@ namespace ECS.PrimengTable.Services {
     /// This class is intended for internal use only and should not be accessed directly.
     /// External consumers should use <see cref="EcsPrimengTableService"/> instead.
     /// </remarks>
-    internal class ExcelExportService {
+    internal static class ExcelExportService {
 
         /// <summary>
         /// Generates an Excel report from the provided query and export configuration.
@@ -28,6 +28,10 @@ namespace ECS.PrimengTable.Services {
         /// <param name="stringDateFormatMethod">Optional reflection method used to apply a specific date formatting function to string date columns.</param>
         /// <param name="defaultSortColumnName">Optional list of column names to use for sorting when no explicit sort is provided in the input.</param>
         /// <param name="defaultSortOrder">Optional list of sort directions (<see cref="ColumnSort"/>) matching the default columns.</param>
+        /// <param name="dynamicAttributes">
+        /// Optional column attribute overrides. Keys represent column names, and values are <see cref="ColumnMetadataOverrideModel"/> instances whose properties override the default or attribute-based column metadata.  
+        /// If null, no dynamic overrides are applied.
+        /// </param>
         /// <param name="excludedColumns">Optional list of column names to exclude from the select, even if they appear in the requested columns from <paramref name="inputData"/>.</param>
         /// <param name="sheetName">Name of the worksheet to create in the workbook. Defaults to "MAIN".</param>
         /// <param name="pageStack">Number of records to process per internal pagination batch (memory page). Defaults to 250.</param>
@@ -39,7 +43,7 @@ namespace ECS.PrimengTable.Services {
         /// <item><description><c>statusMessage</c> — status message or error description related to the export process.</description></item>
         /// </list>
         /// </returns>
-        internal static (bool success, byte[]? reportFile, string statusMessage) GenerateExcelReport<T>(ExcelExportRequestModel inputDataAll, IQueryable<T> baseQuery, MethodInfo? stringDateFormatMethod = null, List<string>? defaultSortColumnName = null, List<ColumnSort>? defaultSortOrder = null, List<string>? excludedColumns = null, string sheetName = "MAIN", byte pageStack = 250) {
+        internal static (bool success, byte[]? reportFile, string statusMessage) GenerateExcelReport<T>(ExcelExportRequestModel inputDataAll, IQueryable<T> baseQuery, MethodInfo? stringDateFormatMethod = null, List<string>? defaultSortColumnName = null, List<ColumnSort>? defaultSortOrder = null, Dictionary<string, ColumnMetadataOverrideModel>? dynamicAttributes = null, List<string>? excludedColumns = null, string sheetName = "MAIN", byte pageStack = 250) {
             try {
                 TableQueryRequestModel inputData = new() {
                     Page = inputDataAll.Page,
@@ -56,7 +60,7 @@ namespace ECS.PrimengTable.Services {
                     inputData.Sort = [];
                 }
                 string reportDateFormatted = DateTime.UtcNow.ToString("dd-MMM-yyyy hh:mm:ss", CultureInfo.GetCultureInfo("en-US")); // Generate timestamp for the report
-                TableConfigurationModel columnsInfo = EcsPrimengTableService.GetTableConfiguration<T>(excludedColumns: excludedColumns, convertFieldToLower: false); // Retrieve table configuration (column metadata)
+                TableConfigurationModel columnsInfo = EcsPrimengTableService.GetTableConfiguration<T>(dynamicAttributes: dynamicAttributes, excludedColumns: excludedColumns, convertFieldToLower: false); // Retrieve table configuration (column metadata)
                 if(inputDataAll.AllColumns) { // If exporting all columns, include all column fields from the configuration
                     inputData.Columns = columnsInfo.ColumnsInfo
                         .Where(c => excludedColumns == null || !excludedColumns.Contains(c.Field, StringComparer.OrdinalIgnoreCase))
@@ -74,7 +78,7 @@ namespace ECS.PrimengTable.Services {
                 long totalRecordsNotFiltered = 0; // Initialize counter of total available records
                 long totalRecords = 0; // Initialize counter of filtered record count
                 string fieldName; // Used to track the name of the current column
-                TableQueryProcessingService.GetDynamicQueryBase<T>(ref inputData, ref baseQuery, ref totalRecordsNotFiltered, ref totalRecords, stringDateFormatMethod, defaultSortColumnName, defaultSortOrder, true, inputDataAll.ApplyFilters); // Execute dynamic query pipeline (filter, sort, etc.)
+                TableQueryProcessingService.GetDynamicQueryBase<T>(ref inputData, ref baseQuery, ref totalRecordsNotFiltered, ref totalRecords, stringDateFormatMethod, defaultSortColumnName, defaultSortOrder, dynamicAttributes, true, inputDataAll.ApplyFilters); // Execute dynamic query pipeline (filter, sort, etc.)
                 using(XLWorkbook workbook = new()) { // Create Excel workbook
                     IXLWorksheet worksheet = workbook.AddWorksheet(sheetName); // Add the new worksheet that will have the data
                     int numberOfColumns = inputData.Columns!.Count; // Get the number of columns
@@ -190,10 +194,10 @@ namespace ECS.PrimengTable.Services {
             worksheet.Columns().AdjustToContents(); // Auto-fit columns
 
             // Add extra width so that filter icon is not over titles
-            const double extraWidth = 2.0;
+            const double extraWidth = 3.0;
             for(int c = 1; c <= numberOfColumns; c++) {
                 IXLColumn column = worksheet.Column(c);
-                column.Width = column.Width + extraWidth;
+                column.Width += extraWidth;
             }
         }
 
