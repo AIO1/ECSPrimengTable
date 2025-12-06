@@ -1208,6 +1208,8 @@ A **table legend** can be added to the table footer. It is displayed as a button
 This feature is **configured per table** and supports **rich HTML content**, allowing you to include formatted text, icons or lists within the legend.  
 Its main purpose is to provide a shared column reference for the table, for example to describe symbols, color codes or specific data conventions used across multiple columns, avoiding redundant descriptions in each column.
 
+The button that opens the legend panel can be customized using the same configuration options available for any other table button.
+
 The following image illustrates an example of how a table legend is displayed:
 <p align="center">
 	<img width="315" height="250" alt="Legend" src="https://github.com/user-attachments/assets/35d63f1e-6f81-4fcf-9e46-6b38b8133534" />
@@ -3827,11 +3829,15 @@ And in your HTML:
 ### 6.16 Table legend
 The table legend is configured on the frontend through the **`legend`** object inside the `ITableOptions` interface, which provides the following properties:
 - **`content`** *(Default: `undefined`)*: The content to be displayed in the popover of the legend. Can be HTML rich.
-- **`button`**: Configuration options for the button that displays the popover of the table legend.
+- **`button`**: Configuration options for the legend button. It is an `ITableButton` that has the following default values for this button are:
   - **`icon`** *(Default: `"pi pi-bars"`)*: Icon displayed alongside the button of the table legend. You can use any PrimeIcons class or icons from third-party libraries such as Material Icons or Font Awesome.
-  - **`text`** *(Default: `"Legend"`)*: The text shown in the legend button.
+  - **`label`** *(Default: `"Legend"`)*: The label shown in the legend button.
+  - **`color`** *(Default: `"p-button-primary"`)*: The style used by the button.
 
 To enable this feature, simply provide a non-empty `content` value.
+
+> [!NOTE]
+> The legend button will always take precedence over any custom action, and its click will trigger the display of the popover legend.
 
 <br>
 
@@ -3872,7 +3878,8 @@ export class Home {
       `,
       // button: {
         // icon: "pi pi-bars", // Uncomment to customize the legend button icon
-        // text: "Legend", // Uncomment to customize the legend button text
+        // label: "Legend", // Uncomment to customize the legend button text
+        // You can customize other properties included in the ITableButton
       // }
     }
   });
@@ -5057,9 +5064,7 @@ Configuration options for **ECS PrimeNG table**. Includes settings for table act
 | `clearSortsIcon` | `header` | `string` | `"pi pi-sort-alt-slash"` | Allows customization of the clear sorts button icon. |
 | `isActive` |  | `boolean` | `true` | Controls whether the table is active. When `true`, the table fetches configuration, columns, and data on init. When `false`, it does not automatically fetch or update data, allowing manual manipulations without triggering updates. |
 | `legend` |  | `object` | N/A | Configuration options for the table legend. |
-| `button` | `legend` | `object` | N/A | Configuration options for the button that displays the popover of the table legend. |
-| `icon` | `legend` => `button` | `string` | `"pi pi-bars"` | Icon displayed alongside the button of the table legend. You can use any PrimeIcons class or icons from third-party libraries such as Material Icons or Font Awesome. |
-| `text` | `legend` => `button` | `string` | `"Legend"` | The text shown in the legend button. |
+| `button` | `legend` | `ITableButton` | `{ icon: "pi pi-bars", label: "Legend", color: "p-button-primary" }` | Configuration options for the legend button. |
 | `content` | `legend` | `string` | `undefined` | The content to be displayed in the popover of the legend. Can be HTML rich. |
 | `predefinedFilters` |  | `{ [key: string]: IPredefinedFilter[] }` | `{}` | Predefined filters for table columns. Restricts filter options to a known set of values per column, suitable for columns with limited distinct values. Supports plain text, tags, icons, and images, and works with `list` data types. |
 | `resetTableView` |  | `object` | N/A | Configurations related to the reset table view button. |
