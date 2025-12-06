@@ -95,25 +95,15 @@ export interface ITableOptions {
         content?: string;
 
         /**
-         * Configuration options for the button that displays the popover of the table legend.
+         * Configuration options for the legend button.
+         * 
+         * @default {
+         *   icon: "pi pi-bars",
+         *   label: "Legend",
+         *   color: "p-button-primary"
+         * }
          */
-        button?: {
-            /**
-             * Icon displayed alongside the button of the table legend.
-             * You can use any PrimeIcons class or icons from third-party libraries
-             * such as Material Icons or Font Awesome.
-             *
-             * @default "pi pi-bars"
-             */
-            icon?: string;
-
-            /**
-             * The text shown in the legend button.
-             *
-             * @default "Legend"
-             */
-            text?: string;
-        }
+        button?: ITableButton;
     }
 
     /**
@@ -606,7 +596,8 @@ export const DEFAULT_TABLE_OPTIONS: ITableOptions = {
         content: undefined,
         button: {
             icon: "pi pi-bars",
-            text: "Legend"
+            label: "Legend",
+            color: "p-button-primary"
         }
     },
     header: {

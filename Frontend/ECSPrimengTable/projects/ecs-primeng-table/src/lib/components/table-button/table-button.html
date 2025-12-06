@@ -15,6 +15,6 @@
       [label]="button.label || ''"
       [size]="isActionButton ? 'small': undefined"
       [ngStyle]="isActionButton && !isLastActionButton ? {'margin-right':'10px'} : {}"
-      (onClick)="handleClick()"/>
+      (onClick)="handleClick($event)"/>
   }
 }
