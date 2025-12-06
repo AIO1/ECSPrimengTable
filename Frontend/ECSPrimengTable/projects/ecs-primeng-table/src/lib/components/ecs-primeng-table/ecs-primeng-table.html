@@ -14,10 +14,15 @@
         <!--TEMPLATE FOR THE ACTIONS HEADER COLUMN-->
         <ng-template #actionColumnHeaderTemplate>
             @if ((tableOptions.rows?.action?.buttons?.length ?? 0) > 0) {
-                <th [ngStyle]="{'max-width': (tableOptions.rows?.action?.width ?? 150) + 'px','min-width': (tableOptions.rows?.action?.width ?? 150) + 'px','width': (tableOptions.rows?.action?.width ?? 150) + 'px'}"
+                <th [ngStyle]="{
+                        'text-align': 'center',
+                        'max-width': (tableOptions.rows?.action?.width ?? 150) + 'px',
+                        'min-width': (tableOptions.rows?.action?.width ?? 150) + 'px',
+                        'width': (tableOptions.rows?.action?.width ?? 150) + 'px'
+                    }"
                     pResizableColumn [pResizableColumnDisabled]="!tableOptions.rows?.action?.resizable" pFrozenColumn [frozen]="tableOptions.rows?.action?.frozen ?? false"
-                    [alignFrozen]="getFrozenColumnAlignAsText(tableOptions.rows?.action?.alignmentRight ? FrozenColumnAlign.Right : FrozenColumnAlign.Left)" id="actions-header"
-                    [attr.scope]="'col'" style="text-align: center;">
+                    [alignFrozen]="getFrozenColumnAlignAsText(tableOptions.rows?.action?.positionRight ? FrozenColumnAlign.Right : FrozenColumnAlign.Left)" id="actions-header"
+                    [attr.scope]="'col'">
                     {{ tableOptions.rows?.action?.header ?? ''}}
                 </th>
             }
@@ -27,9 +32,15 @@
         <ng-template #actionColumnTemplate let-rowData="rowData">
             @if ((tableOptions.rows?.action?.buttons?.length ?? 0) > 0) {
                 <td 
-                    [ngStyle]="{'max-width': (tableOptions.rows?.action?.width ?? 150) + 'px','min-width': (tableOptions.rows?.action?.width ?? 150) + 'px','width': (tableOptions.rows?.action?.width ?? 150) + 'px'}"
-                    style="text-align: center; vertical-align: middle;" pFrozenColumn [frozen]="tableOptions.rows?.action?.frozen ?? false"
-                    [alignFrozen]="getFrozenColumnAlignAsText(tableOptions.rows?.action?.alignmentRight ? FrozenColumnAlign.Right : FrozenColumnAlign.Left)">
+                    [ngStyle]="{
+                        'text-align': (getDataAlignHorizontalAsText(tableOptions.rows?.action?.horizontalAlignment ?? DataAlignHorizontal.Center)),
+                        'vertical-align': (getDataAlignVerticalAsText(tableOptions.rows?.action?.verticalAlignment ?? DataAlignVertical.Middle)),
+                        'max-width': (tableOptions.rows?.action?.width ?? 150) + 'px',
+                        'min-width': (tableOptions.rows?.action?.width ?? 150) + 'px',
+                        'width': (tableOptions.rows?.action?.width ?? 150) + 'px'
+                    }"
+                    pFrozenColumn [frozen]="tableOptions.rows?.action?.frozen ?? false"
+                    [alignFrozen]="getFrozenColumnAlignAsText(tableOptions.rows?.action?.positionRight ? FrozenColumnAlign.Right : FrozenColumnAlign.Left)">
                     @for (button of tableOptions.rows?.action?.buttons; track button; let last = $last) {
                         <ecs-table-button [button]="button" [rowData]="rowData" [isActionButton]="true" [isLastActionButton]="last"/>
                     }
@@ -158,7 +169,7 @@
         <!-- LOGIC FOR DRAWING TABLE HEADERS -->
         <ng-template #header let-columns>
             <tr>
-                @if (!tableOptions.rows?.action?.alignmentRight) {
+                @if (!tableOptions.rows?.action?.positionRight) {
                     <ng-container *ngTemplateOutlet="actionColumnHeaderTemplate"></ng-container>
                 }
                 @if (tableOptions.rows?.checkboxSelector?.enabled && !tableOptions.rows?.checkboxSelector?.alignmentRight) {
@@ -213,7 +224,7 @@
                 @if (tableOptions.rows?.checkboxSelector?.enabled && tableOptions.rows?.checkboxSelector?.alignmentRight) {
                     <ng-container [ngTemplateOutlet]="rowSelectorColumnHeaderTemplate"></ng-container>
                 }
-                @if (tableOptions.rows?.action?.alignmentRight) {
+                @if (tableOptions.rows?.action?.positionRight) {
                     <ng-container *ngTemplateOutlet="actionColumnHeaderTemplate"></ng-container>
                 }
             </tr>
@@ -222,7 +233,7 @@
         <!-- LOGIC FOR DRAWING TABLE DATA WHEN THERE IS CONTENTS -->
         <ng-template #body let-rowData let-columns="columns"> 
             <tr [pSelectableRow]="rowData" [ngClass]="tableOptions.rows?.class?.(rowData)" [ngStyle]="tableOptions.rows?.style?.(rowData)">
-                @if (!tableOptions.rows?.action?.alignmentRight) {
+                @if (!tableOptions.rows?.action?.positionRight) {
                     <ng-container *ngTemplateOutlet="actionColumnTemplate; context: { rowData: rowData }"></ng-container>
                 }
                 @if (tableOptions.rows?.checkboxSelector?.enabled && !tableOptions.rows?.checkboxSelector?.alignmentRight) {
@@ -240,7 +251,7 @@
                 @if (tableOptions.rows?.checkboxSelector?.enabled && tableOptions.rows?.checkboxSelector?.alignmentRight) {
                     <ng-container [ngTemplateOutlet]="rowSelectorColumnTemplate" [ngTemplateOutletContext]="{ rowData: rowData }"></ng-container>
                 }
-                @if (tableOptions.rows?.action?.alignmentRight) {
+                @if (tableOptions.rows?.action?.positionRight) {
                     <ng-container *ngTemplateOutlet="actionColumnTemplate; context: { rowData: rowData }"></ng-container>
                 }
             </tr>
