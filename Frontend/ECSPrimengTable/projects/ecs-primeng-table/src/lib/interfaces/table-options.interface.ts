@@ -332,7 +332,7 @@ export interface ITableOptions {
              * 
              * @default false
              */
-            alignmentRight?: boolean;
+            positionRight?: boolean;
 
             /**
              * The fixed column width in pixels.
@@ -363,6 +363,20 @@ export interface ITableOptions {
              * @default undefined
              */
             enabledCondition?: (rowData: any) => boolean;
+
+            /**
+             * How the checkbox inside the selector column is horizontally aligned.
+             * 
+             * @default DataAlignHorizontal.Center
+             */
+            horizontalAlignment?: DataAlignHorizontal;
+
+            /**
+             * How the checkbox inside the selector column is vertically aligned.
+             * 
+             * @default DataAlignVertical.Middle
+             */
+            verticalAlignment?: DataAlignVertical;
         };
 
         /**
@@ -624,11 +638,13 @@ export const DEFAULT_TABLE_OPTIONS: ITableOptions = {
         checkboxSelector: {
             enabled: false,
             header: "Selected",
-            alignmentRight: false,
+            positionRight: false,
             width: 150,
             frozen: true,
             resizable: false,
-            enabledCondition: undefined
+            enabledCondition: undefined,
+            horizontalAlignment: DataAlignHorizontal.Center,
+            verticalAlignment: DataAlignVertical.Middle
         },
         singleSelector: {
             enabled: false,

@@ -16,6 +16,7 @@
             @if ((tableOptions.rows?.action?.buttons?.length ?? 0) > 0) {
                 <th [ngStyle]="{
                         'text-align': 'center',
+                        'vertical-align': 'middle',
                         'max-width': (tableOptions.rows?.action?.width ?? 150) + 'px',
                         'min-width': (tableOptions.rows?.action?.width ?? 150) + 'px',
                         'width': (tableOptions.rows?.action?.width ?? 150) + 'px'
@@ -51,10 +52,15 @@
         <!-- TEMPLATE FOR THE ROW CHECKBOX SELECTOR HEADER COLUMN -->
         <ng-template #rowSelectorColumnHeaderTemplate>
             <th 
-                [ngStyle]="{'max-width': (tableOptions.rows?.checkboxSelector?.width ?? 150) + 'px','min-width': (tableOptions.rows?.checkboxSelector?.width ?? 150) + 'px','width': (tableOptions.rows?.checkboxSelector?.width ?? 150) + 'px'}"
+                [ngStyle]="{
+                    'text-align': 'center',
+                    'vertical-align': 'middle',
+                    'max-width': (tableOptions.rows?.checkboxSelector?.width ?? 150) + 'px',
+                    'min-width': (tableOptions.rows?.checkboxSelector?.width ?? 150) + 'px',
+                    'width': (tableOptions.rows?.checkboxSelector?.width ?? 150) + 'px'
+                }"
                 id="rowSelector-header"  [attr.scope]="'col'" pResizableColumn [pResizableColumnDisabled]="!tableOptions.rows?.checkboxSelector?.resizable" pFrozenColumn 
-                [frozen]="tableOptions.rows?.checkboxSelector?.frozen ?? false" [alignFrozen]="getFrozenColumnAlignAsText(tableOptions.rows?.checkboxSelector?.alignmentRight ? FrozenColumnAlign.Right : FrozenColumnAlign.Left)"
-                style="text-align: center; vertical-align: middle;">
+                [frozen]="tableOptions.rows?.checkboxSelector?.frozen ?? false" [alignFrozen]="getFrozenColumnAlignAsText(tableOptions.rows?.checkboxSelector?.positionRight ? FrozenColumnAlign.Right : FrozenColumnAlign.Left)">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         {{ tableOptions.rows?.checkboxSelector?.header ?? '' }}
                         <p-columnFilter type="boolean" field="selector" display="menu" [showButtons]="false"/>
@@ -65,9 +71,15 @@
         <!--TEMPLATE FOR THE ROW CHECKBOX SELECTOR COLUMN-->
         <ng-template #rowSelectorColumnTemplate let-rowData="rowData">
             <td 
-            [ngStyle]="{'max-width': (tableOptions.rows?.checkboxSelector?.width ?? 150) + 'px', 'min-width': (tableOptions.rows?.checkboxSelector?.width ?? 150) + 'px', 'width': (tableOptions.rows?.checkboxSelector?.width ?? 150) + 'px'}"
-            style="text-align: center; vertical-align: middle;" pFrozenColumn [frozen]="tableOptions.rows?.checkboxSelector?.frozen ?? false" 
-            [alignFrozen]="getFrozenColumnAlignAsText(tableOptions.rows?.checkboxSelector?.alignmentRight ? FrozenColumnAlign.Right : FrozenColumnAlign.Left)">
+            [ngStyle]="{
+                'text-align': (getDataAlignHorizontalAsText(tableOptions.rows?.checkboxSelector?.horizontalAlignment ?? DataAlignHorizontal.Center)),
+                'vertical-align': (getDataAlignVerticalAsText(tableOptions.rows?.checkboxSelector?.verticalAlignment ?? DataAlignVertical.Middle)),
+                'max-width': (tableOptions.rows?.checkboxSelector?.width ?? 150) + 'px',
+                'min-width': (tableOptions.rows?.checkboxSelector?.width ?? 150) + 'px',
+                'width': (tableOptions.rows?.checkboxSelector?.width ?? 150) + 'px'
+            }"
+            pFrozenColumn [frozen]="tableOptions.rows?.checkboxSelector?.frozen ?? false" 
+            [alignFrozen]="getFrozenColumnAlignAsText(tableOptions.rows?.checkboxSelector?.positionRight ? FrozenColumnAlign.Right : FrozenColumnAlign.Left)">
             <p-checkbox 
                 [disabled]="!(tableOptions.rows?.checkboxSelector?.enabledCondition?.(rowData) ?? true)"
                 [binary]="true"
@@ -172,7 +184,7 @@
                 @if (!tableOptions.rows?.action?.positionRight) {
                     <ng-container *ngTemplateOutlet="actionColumnHeaderTemplate"></ng-container>
                 }
-                @if (tableOptions.rows?.checkboxSelector?.enabled && !tableOptions.rows?.checkboxSelector?.alignmentRight) {
+                @if (tableOptions.rows?.checkboxSelector?.enabled && !tableOptions.rows?.checkboxSelector?.positionRight) {
                     <ng-container [ngTemplateOutlet]="rowSelectorColumnHeaderTemplate"></ng-container>
                 }
                 @for (col of columns; track col.header) {
@@ -221,7 +233,7 @@
                         </div>
                     </th>
                 }
-                @if (tableOptions.rows?.checkboxSelector?.enabled && tableOptions.rows?.checkboxSelector?.alignmentRight) {
+                @if (tableOptions.rows?.checkboxSelector?.enabled && tableOptions.rows?.checkboxSelector?.positionRight) {
                     <ng-container [ngTemplateOutlet]="rowSelectorColumnHeaderTemplate"></ng-container>
                 }
                 @if (tableOptions.rows?.action?.positionRight) {
@@ -236,7 +248,7 @@
                 @if (!tableOptions.rows?.action?.positionRight) {
                     <ng-container *ngTemplateOutlet="actionColumnTemplate; context: { rowData: rowData }"></ng-container>
                 }
-                @if (tableOptions.rows?.checkboxSelector?.enabled && !tableOptions.rows?.checkboxSelector?.alignmentRight) {
+                @if (tableOptions.rows?.checkboxSelector?.enabled && !tableOptions.rows?.checkboxSelector?.positionRight) {
                     <ng-container [ngTemplateOutlet]="rowSelectorColumnTemplate" [ngTemplateOutletContext]="{ rowData: rowData }"></ng-container>
                 }
                 @for (col of columns; track col.field) {
@@ -248,7 +260,7 @@
                             [predefinedFiltersCollection]="tableOptions.predefinedFilters"/>
                     </td>
                 }
-                @if (tableOptions.rows?.checkboxSelector?.enabled && tableOptions.rows?.checkboxSelector?.alignmentRight) {
+                @if (tableOptions.rows?.checkboxSelector?.enabled && tableOptions.rows?.checkboxSelector?.positionRight) {
                     <ng-container [ngTemplateOutlet]="rowSelectorColumnTemplate" [ngTemplateOutletContext]="{ rowData: rowData }"></ng-container>
                 }
                 @if (tableOptions.rows?.action?.positionRight) {

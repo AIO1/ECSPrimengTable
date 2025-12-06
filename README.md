@@ -886,12 +886,14 @@ You can associate actions when a user selects or unselects a row using the check
 
 
 The **checkbox select column** has this additional customizable options:
-- **Header title:** Default is `"Selected"`.
-- **Alignment:** Default is left.
-- **Width:** Default is `150px`.
-- **Frozen column:** Default is `true`.
-- **Resizable by user:** Default is `false`.
 - **Enabled condition:** A condition that can be given to determine if the checkbox is enabled or not.
+- **Frozen column:** Default is `true`.
+- **Header title:** Default is `"Selected"`.
+- **Position:** Default is left.
+- **Items horziontal alignment**: Default is `center`.
+- **Items vertical alignment**: Default is `middle`.
+- **Resizable by user:** Default is `false`.
+- **Width:** Default is `150px`.
 
 <p align="center">
   <img width="311" height="362" alt="Checkbox row select example" src="https://github.com/user-attachments/assets/0e387896-6569-46f0-96cb-9f9f68536932" />
@@ -2595,14 +2597,16 @@ By default, this feature is **disabled**. To enable it, configure it from the fr
 
 In your component's `ITableOptions` configuration, inside the `rows` property, use the `checkboxSelector` object with the following options:
 - **`enabled`** *(Default: `false`)*: If `true`, a new column with checkboxes will be displayed. Users can select or unselect rows using these checkboxes. Additionally an option to filter by this column will be enabled.
-- **`header`** *(Default: `"Selected"`)*: The header label for the checkbox selection column.
-- **`alignmentRight`** *(Default: `false`)*: If `true`, the column will appear on the right side of the table. Otherwise, it will appear on the left.
-- **`width`** *(Default: `150`)*: The fixed column width in pixels.
-- **`frozen`** *(Default: `true`)*: If `true`, the column remains visible when horizontally scrolling the table.
-- **`resizable`** *(Default: `false`)*: If `true`, users can resize the column.
 - **`enabledCondition`**: Optional. A function that determines whether the checkbox should be enabled for a given row.
   - **`rowData`** parameter: The row data object.
   - Returns `true` if the button checkbox be enabled; `false` otherwise.
+- **`frozen`** *(Default: `true`)*: If `true`, the column remains visible when horizontally scrolling the table.
+- **`header`** *(Default: `"Selected"`)*: The header label for the checkbox selection column.
+- **`horizontalAlignment`** *(Default: `DataAlignHorizontal.Center`)*: How the checkbox inside the selector column is horizontally aligned.
+- **`positionRight`** *(Default: `false`)*: If `true`, the column will appear on the right side of the table. Otherwise, it will appear on the left.
+- **`verticalAlignment`** *(Default: `DataAlignVertical.Middle`)*: How the checkbox inside the selector column is vertically aligned.
+- **`width`** *(Default: `150`)*: The fixed column width in pixels.
+- **`resizable`** *(Default: `false`)*: If `true`, users can resize the column.
 
 You can subscribe to changes in row checkbox selection using:
 - **`onRowCheckboxChange`**: Triggered whenever a row checkbox is selected or unselected. The emitted object has the following structure:
@@ -2612,11 +2616,11 @@ You can subscribe to changes in row checkbox selection using:
 At any time, you can access the component’s `selectedRowsCheckbox` property, which contains an array of currently selected rows (`rowID`).
 
 > [!NOTE]
-> When the checkbox selection column is aligned to the left, it will always appear **after** the action column (if the action column is also aligned left).
+> When the checkbox selection column is positioned to the left, it will always appear **after** the action column (if the action column is visible and positioned to the left).
 >
-> When aligned to the right, it will always appear **before** the action column (if the action column is visible and aligned right).
+> When positioned to the right, it will always appear **before** the action column (if the action column is visible and positioned to the right).
 >
-> This behavior is consistent only if both action and checkbox row selector columns are frozen at the same time(or if they are unfrozen at the same time).
+> This behavior is consistent only if both action and checkbox row selector columns are frozen at the same time (or if they are unfrozen at the same time).
 
 <br>
 
@@ -2645,11 +2649,13 @@ export class Home {
       checkboxSelector: {
         enabled: true,
         // header: "Selected", // Uncomment to change header
-        // alignmentRight: false, // Uncomment to change the location of the column
+        // positionRight: false, // Uncomment to change the location of the column
         // width: 150, // Uncomment to change column width in px
         // frozen: true, // Uncomment to change frozen status
         // resizable: false, // Uncomment to change column resize behaviour
-        // enabledCondition: (rowData) => (rowData.canBeDeleted === true) // Uncomment to evaluate if the checkbox should be enabled in a row
+        // enabledCondition: (rowData) => (rowData.canBeDeleted === true), // Uncomment to evaluate if the checkbox should be enabled in a row
+        // horizontalAlignment: DataAlignHorizontal.Right, // Uncomment to change the horizontal aligment of the checkbox
+        // verticalAlignment: DataAlignVertical.Top  // Uncomment to change the vertical aligment of the checkbox
       }
     }
   });
@@ -5061,21 +5067,23 @@ Configuration options for **ECS PrimeNG table**. Includes settings for table act
 | `icon` | `resetTableView` | `string` | `"pi pi-eraser"` | Can be used to specifiy a different icon to be used by the reset table view button. You can replace it with any icon from PrimeNG or other libraries such as Font Awesome or Material Icons. |
 | `rows` |  | `object` | N/A | Configurations related to the rows of the table. |
 | `action` | `rows` | `object` | N/A | Configurations related to the action column for the rows. |
-| `positionRight` | `rows` => `action` | `boolean` | `true` | If `true`, the column will appear on the right side of the table; otherwise, it will appear on the left. |
 | `buttons` | `rows` => `action` | `ITableButton[]` | `[]` | Collection of `ITableButton` to be shown in the row actions column. At least one button must be defined to enable the column. |
 | `frozen` | `rows` => `action` | `boolean` | `true` | If `true`, the column remains visible when horizontally scrolling the table. |
 | `header` | `rows` => `action` | `string` | `"Actions"` | The header label for the row actions column. |
 | `horizontalAlignment` | `rows` => `action` | `DataAlignHorizontal` | `DataAlignHorizontal.Center` | How the items inside the action column are horizontally aligned. |
+| `positionRight` | `rows` => `action` | `boolean` | `true` | If `true`, the column will appear on the right side of the table; otherwise, it will appear on the left. |
 | `resizable` | `rows` => `action` | `boolean` | `false` | If `true`, users can resize the column. |
 | `verticalAlignment` | `rows` => `action` | `DataAlignVertical` | `DataAlignVertical.Middle` | How the items inside the action column are vertically aligned. |
 | `width` | `rows` => `action` | `number` | `150` | The fixed column width in pixels. |
 | `checkboxSelector` | `rows` | `object` | N/A | Configurations related to the row checkbox selector. |
-| `alignmentRight` | `rows` => `checkboxSelector` | `boolean` | `false` | If `true`, the column will appear on the right side of the table. Otherwise, it will appear on the left. |
 | `enabled` | `rows` => `checkboxSelector` | `boolean` | `false` | If `true`, a new column with checkboxes will be displayed. Users can select/unselect rows, and an option to filter by this column will be enabled. |
 | `enabledCondition` | `rows` => `checkboxSelector` | `(rowData: any) => boolean` | `undefined` | Function that determines whether the checkbox should be enabled for a given row. |
 | `frozen` | `rows` => `checkboxSelector` | `boolean` | `true` | If `true`, the column remains visible when horizontally scrolling the table. |
 | `header` | `rows` => `checkboxSelector` | `string` | `"Selected"` | The header label for the checkbox selection column. |
+| `horizontalAlignment` | `rows` => `action` | `DataAlignHorizontal` | `DataAlignHorizontal.Center` | How the checkbox inside the selector column is horizontally aligned. |
+| `positionRight` | `rows` => `checkboxSelector` | `boolean` | `false` | If `true`, the column will appear on the right side of the table. Otherwise, it will appear on the left. |
 | `resizable` | `rows` => `checkboxSelector` | `boolean` | `false` | If `true`, users can resize the column. |
+| `verticalAlignment` | `rows` => `action` | `DataAlignVertical` | `DataAlignVertical.Middle` | How the checkbox inside the selector column is vertically aligned. |
 | `width` | `rows` => `checkboxSelector` | `number` | `150` | The fixed column width in pixels. |
 | `class` | `rows` | `(rowData: any) => string \| string[] \| Set<string> \| { [klass: string]: any }` | N/A | Function to dynamically assign CSS classes to a row based on its data. Returns a string, array, Set, or object of class names that are applied in addition to default styles. Useful for highlighting or styling rows conditionally. |
 | `singleSelector` | `rows` | `object` | N/A | Configurations related to the single row selector. |
