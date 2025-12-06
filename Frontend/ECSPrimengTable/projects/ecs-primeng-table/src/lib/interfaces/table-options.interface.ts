@@ -1,4 +1,4 @@
-import { TableViewSaveMode } from "../enums";
+import { DataAlignHorizontal, DataAlignVertical, TableViewSaveMode } from "../enums";
 import { IColumnMetadata, IPredefinedFilter, ITableButton } from "../interfaces";
 
 /** Configuration options for ECS Primeng table */
@@ -271,7 +271,7 @@ export interface ITableOptions {
              * 
              * @default true
              */
-            alignmentRight?: boolean;
+            positionRight?: boolean;
 
             /**
              * The fixed column width in pixels.
@@ -293,6 +293,20 @@ export interface ITableOptions {
              * @default false
              */
             resizable?: boolean;
+
+            /**
+             * How the items inside the action column are horizontally aligned.
+             * 
+             * @default DataAlignHorizontal.Center
+             */
+            horizontalAlignment?: DataAlignHorizontal;
+
+            /**
+             * How the items inside the action column are vertically aligned.
+             * 
+             * @default DataAlignVertical.Middle
+             */
+            verticalAlignment?: DataAlignVertical;
         };
 
         /**
@@ -600,10 +614,12 @@ export const DEFAULT_TABLE_OPTIONS: ITableOptions = {
         action: {
             buttons: [],
             header: "Actions",
-            alignmentRight: true,
+            positionRight: true,
             width: 150,
             frozen: true,
-            resizable: false
+            resizable: false,
+            horizontalAlignment: DataAlignHorizontal.Center,
+            verticalAlignment: DataAlignVertical.Middle
         },
         checkboxSelector: {
             enabled: false,

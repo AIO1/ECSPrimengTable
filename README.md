@@ -949,11 +949,13 @@ An example of a header action button:
 </p>
 
 When at least one row action button is defined, a new column automatically appears to display the buttons for each row. This column has the following customizable options:**  
-- **Header title**: Default is `"Actions"`  
-- **Alignment**: Default is right  
-- **Width**: Default is `150px`  
-- **Frozen column**: Default is `true`  
-- **Resizable by user**: Default is `false`  
+- **Header title**: Default is `"Actions"`.
+- **Position**: Default is `right`.
+- **Items horziontal alignment**: Default is `center`.
+- **Items vertical alignment**: Default is `middle`.
+- **Width**: Default is `150px`.
+- **Frozen column**: Default is `true`.
+- **Resizable by user**: Default is `false`.
 
 An example of the actions columns with row action buttons:  
 <p align="center">
@@ -2892,16 +2894,18 @@ And in your HTML:
 If at least one row action button is provided, an additional column will be added to the table to display these buttons. 
 
 Some properties of this column can be customized via the `actions` object inside the `rows` object of your `ITableOptions` configuration. The available options are:
-- **`header`** *(Default: `"Actions"`)*: The header label for the row actions column.
-- **`alignmentRight`** *(Default: `true`)*: If `true`, the column will appear on the right side of the table. Otherwise, it will appear on the left.
-- **`width`** *(Default: `150`)*: The fixed column width in pixels.
 - **`frozen`** *(Default: `true`)*: If `true`, the column remains visible when horizontally scrolling the table.
+- **`header`** *(Default: `"Actions"`)*: The header label for the row actions column.
+- **`horizontalAlignment`** *(Default: `DataAlignHorizontal.Center`)*: How the items inside the action column are horizontally aligned.
+- **`positionRight`** *(Default: `true`)*: If `true`, the column will appear on the right side of the table. Otherwise, it will appear on the left.
 - **`resizable`** *(Default: `false`)*: If `true`, users can resize the column.
+- **`verticalAlignment`** *(Default: `DataAlignVertical.Middle`)*: How the items inside the action column are vertically aligned.
+- **`width`** *(Default: `150`)*: The fixed column width in pixels.
 
 > [!NOTE]
-> When the row actions column is aligned to the left, it will always appear **at the beginning** of the table.
+> When the row actions column is positioned to the left, it will always appear **at the beginning** of the table.
 >
-> When aligned to the right, it will always appear **at the end** of the table.
+> When positioned to the right, it will always appear **at the end** of the table.
 
 <br><br>
 
@@ -5057,11 +5061,13 @@ Configuration options for **ECS PrimeNG table**. Includes settings for table act
 | `icon` | `resetTableView` | `string` | `"pi pi-eraser"` | Can be used to specifiy a different icon to be used by the reset table view button. You can replace it with any icon from PrimeNG or other libraries such as Font Awesome or Material Icons. |
 | `rows` |  | `object` | N/A | Configurations related to the rows of the table. |
 | `action` | `rows` | `object` | N/A | Configurations related to the action column for the rows. |
-| `alignmentRight` | `rows` => `action` | `boolean` | `true` | If `true`, the column will appear on the right side of the table; otherwise, it will appear on the left. |
+| `positionRight` | `rows` => `action` | `boolean` | `true` | If `true`, the column will appear on the right side of the table; otherwise, it will appear on the left. |
 | `buttons` | `rows` => `action` | `ITableButton[]` | `[]` | Collection of `ITableButton` to be shown in the row actions column. At least one button must be defined to enable the column. |
 | `frozen` | `rows` => `action` | `boolean` | `true` | If `true`, the column remains visible when horizontally scrolling the table. |
 | `header` | `rows` => `action` | `string` | `"Actions"` | The header label for the row actions column. |
+| `horizontalAlignment` | `rows` => `action` | `DataAlignHorizontal` | `DataAlignHorizontal.Center` | How the items inside the action column are horizontally aligned. |
 | `resizable` | `rows` => `action` | `boolean` | `false` | If `true`, users can resize the column. |
+| `verticalAlignment` | `rows` => `action` | `DataAlignVertical` | `DataAlignVertical.Middle` | How the items inside the action column are vertically aligned. |
 | `width` | `rows` => `action` | `number` | `150` | The fixed column width in pixels. |
 | `checkboxSelector` | `rows` | `object` | N/A | Configurations related to the row checkbox selector. |
 | `alignmentRight` | `rows` => `checkboxSelector` | `boolean` | `false` | If `true`, the column will appear on the right side of the table. Otherwise, it will appear on the left. |
