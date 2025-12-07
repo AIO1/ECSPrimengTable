@@ -937,7 +937,7 @@ The customizable properties for action buttons are:
 - **Rounded**: If the button should have round corners or not.
 - **Raised**: If active, adds a shadow to indicate elevation in the button.
 - **Variant**: The default is a normal button, but you can also have buttons that are text or outlined.
-- **Color**: The button color.
+- **Classes**: Extra CSS classes to apply to the button. Multiple classes can be added by separating them with spaces.
 - **Style**: Additional styles to add to the button.
 - **Visible condition**: Allows completely hiding the button if a specific condition is not met. Other conditions (`Enabled condition` and `Hide if condition not met`) are ignored when the button is not visible.
 - **Enabled condition**: Allows disabling the button if a specific condition is not met. Evaluated only when the button is visible.
@@ -2776,7 +2776,7 @@ The available properties are:
 - **rounded**: Optional. If `true`, the button will be round. Defaults to `false`.
 - **raised**: Optional. If `true`, adds a shadow to indicate elevation. Defaults to `false`.
 - **variant**: Optional. Specifies the variant of the button. Can be `null` (default), `"text"`, or `"outlined"`.
-- **color**: Optional. The CSS class to apply for button styling. Example: `"p-button-success"` or `"custom-class"`.
+- **class**: Optional. Extra CSS classes to apply to the button.
 - **style**: Optional. Additional inline CSS styles for the button.
 - **visibleCondition**: Optional. A function that determines whether the button should be visible for a given row.  
   - **rowData** parameter: The row data object (null for header buttons).  
@@ -2842,7 +2842,7 @@ export class Home {
   headerActionButtons: ITableButton[] = [
     {
       icon: 'pi pi-plus',
-      color: 'p-button-success',
+      class: 'p-button-success',
       action: () => {
         // Action to execute when clicked.
         // Example: Open a modal to create a new record.
@@ -2855,7 +2855,7 @@ export class Home {
     {
       icon: 'pi pi-trash',
       tooltip: 'Delete record',
-      color: 'p-button-danger',
+      class: 'p-button-danger',
       action: (rowData) => {
         // Action to execute when clicked, only if condition evaluates to true.
         // Example: Open a confirmation modal before deleting the record.
@@ -2865,7 +2865,7 @@ export class Home {
     }, {
       icon: 'pi pi-file-edit',
       tooltip: 'Edit record',
-      color: 'p-button-primary',
+      class: 'p-button-primary',
       action: (rowData) => {
         // Action to execute when clicked.
         // Example: Open a modal to edit the record.
@@ -3832,7 +3832,6 @@ The table legend is configured on the frontend through the **`legend`** object i
 - **`button`**: Configuration options for the legend button. It is an `ITableButton` that has the following default values for this button are:
   - **`icon`** *(Default: `"pi pi-bars"`)*: Icon displayed alongside the button of the table legend. You can use any PrimeIcons class or icons from third-party libraries such as Material Icons or Font Awesome.
   - **`label`** *(Default: `"Legend"`)*: The label shown in the legend button.
-  - **`color`** *(Default: `"p-button-primary"`)*: The style used by the button.
 
 To enable this feature, simply provide a non-empty `content` value.
 
@@ -5010,7 +5009,7 @@ Interface representing a table action button, applicable for both header and row
 | Property | Type | Description |
 |-|-|-|
 | `action?` | `(rowData: any) => void` | Optional. The action to execute when the button is clicked. `rowData` is the clicked row data, or null for header buttons. |
-| `color?` | `string` | Optional. The CSS class to apply for button styling. Example: `"p-button-success"` or `"custom-class"`. |
+| `class?` | `string` | Optional. Extra CSS classes to apply to the button. |
 | `conditionFailHide?` | `boolean` | Optional. Controls behavior when `enabledCondition` returns false. If `true`, the button will be hidden; if `false` or `undefined`, it will remain visible but disabled. Ignored if `visibleCondition` returns false. |
 | `enabledCondition?` | `(rowData: any) => boolean` | Optional. Determines whether the button should be enabled for a given row. Ignored if `visibleCondition` returns false. |
 | `icon?` | `string` | Optional. The icon to display on the button. Should be a valid icon name from PrimeNG, Material Icons, Font Awesome, or similar libraries. |
@@ -5064,7 +5063,7 @@ Configuration options for **ECS PrimeNG table**. Includes settings for table act
 | `clearSortsIcon` | `header` | `string` | `"pi pi-sort-alt-slash"` | Allows customization of the clear sorts button icon. |
 | `isActive` |  | `boolean` | `true` | Controls whether the table is active. When `true`, the table fetches configuration, columns, and data on init. When `false`, it does not automatically fetch or update data, allowing manual manipulations without triggering updates. |
 | `legend` |  | `object` | N/A | Configuration options for the table legend. |
-| `button` | `legend` | `ITableButton` | `{ icon: "pi pi-bars", label: "Legend", color: "p-button-primary" }` | Configuration options for the legend button. |
+| `button` | `legend` | `ITableButton` | `{ icon: "pi pi-bars", label: "Legend" }` | Configuration options for the legend button. |
 | `content` | `legend` | `string` | `undefined` | The content to be displayed in the popover of the legend. Can be HTML rich. |
 | `predefinedFilters` |  | `{ [key: string]: IPredefinedFilter[] }` | `{}` | Predefined filters for table columns. Restricts filter options to a known set of values per column, suitable for columns with limited distinct values. Supports plain text, tags, icons, and images, and works with `list` data types. |
 | `resetTableView` |  | `object` | N/A | Configurations related to the reset table view button. |
