@@ -103,5 +103,10 @@ namespace ECS.PrimengTable.Models {
         /// Overrides the culture applied when formatting date values.
         /// </summary>
         public string? DateCulture { get; set; }
+
+        /// <summary>
+        /// Optional date format override for this column in exports.
+        /// </summary>
+        public string? ExportDateFormat { get; set; }
     }
 }

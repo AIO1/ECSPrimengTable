@@ -120,19 +120,24 @@ namespace ECS.PrimengTable.Attributes {
         public double InitialWidth { get; set; }
 
         /// <summary>
-        /// Optional date format override for this column.
+        /// Optional date format.
         /// </summary>
         public string? DateFormat { get; set; }
 
         /// <summary>
-        /// Optional timezone override.
+        /// Optional date timezone.
         /// </summary>
         public string? DateTimezone { get; set; }
 
         /// <summary>
-        /// Optional culture override.
+        /// Optional date culture.
         /// </summary>
         public string? DateCulture { get; set; }
+
+        /// <summary>
+        /// Optional date format for this column in exports.
+        /// </summary>
+        public string? ExportDateFormat { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ColumnAttributes"/> class.
@@ -159,9 +164,10 @@ namespace ECS.PrimengTable.Attributes {
         /// <param name="cellOverflowBehaviour">Defines how cell content behaves when it overflows. Defaults to <see cref="CellOverflowBehaviour.Hidden"/>.</param>
         /// <param name="cellOverflowBehaviourAllowUserEdit">If true, user can modify overflow behavior. Disabled for Boolean columns. Defaults to true.</param>
         /// <param name="initialWidth">Initial width of the column in pixels. If <=0 and frozen, defaults to 100. Defaults to 0.</param>
-        /// <param name="dateFormat">Optional date format override for this column.</param>
-        /// <param name="dateTimezone">Optional timezone override.</param>
-        /// <param name="dateCulture">Optional culture override.</param>
+        /// <param name="dateFormat">Optional date format.</param>
+        /// <param name="dateTimezone">Optional date timezone.</param>
+        /// <param name="dateCulture">Optional date culture.</param>
+        /// <param name="exportDateFormat">Optional date format for this column in exports.</param>
         /// <exception cref="ArgumentException">Thrown if an invalid dataAlign or dataType value is provided.</exception>
         public ColumnAttributes(
             string header = "",
@@ -188,7 +194,8 @@ namespace ECS.PrimengTable.Attributes {
             double initialWidth = 0,
             string? dateFormat = null,
             string? dateTimezone = null,
-            string? dateCulture = null
+            string? dateCulture = null,
+            string? exportDateFormat = null
         ) {
             Header = header;
             DataType = dataType;
@@ -215,6 +222,7 @@ namespace ECS.PrimengTable.Attributes {
             DateFormat = dataType == DataType.Date ? dateFormat : null;
             DateTimezone = dataType == DataType.Date ? dateTimezone : null;
             DateCulture = dataType == DataType.Date ? dateCulture : null;
+            ExportDateFormat = dataType == DataType.Date ? exportDateFormat : null;
         }
     }
 }

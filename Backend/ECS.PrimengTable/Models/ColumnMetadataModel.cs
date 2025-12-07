@@ -118,18 +118,23 @@ namespace ECS.PrimengTable.Models {
         public double InitialWidth { get; set; }
 
         /// <summary>
-        /// Optional date format override for this column.
+        /// Optional date format for this column.
         /// </summary>
         public string? DateFormat { get; set; }
 
         /// <summary>
-        /// Optional timezone override.
+        /// Optional date timezone.
         /// </summary>
         public string? DateTimezone { get; set; }
 
         /// <summary>
-        /// Optional culture override.
+        /// Optional date culture.
         /// </summary>
         public string? DateCulture { get; set; }
+
+        /// <summary>
+        /// Optional date format for this column in exports.
+        /// </summary>
+        public string? ExportDateFormat { get; set; }
     }
 }

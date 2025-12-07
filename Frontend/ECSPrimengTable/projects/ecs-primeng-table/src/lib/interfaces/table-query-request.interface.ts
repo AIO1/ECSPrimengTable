@@ -32,4 +32,7 @@ export interface ITableQueryRequest {
 
     /** The culture/locale used for formatting dates and numbers. */
     dateCulture: string;
+
+    /** The date format used in exports. */
+    exportDateFormat: string;
 }

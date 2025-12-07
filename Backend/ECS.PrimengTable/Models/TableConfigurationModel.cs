@@ -34,5 +34,10 @@
         /// Maximum number of views allowed for a table configuration.
         /// </summary>
         public byte MaxViews { get; set; }
+
+        /// <summary>
+        /// Date format string used for displaying dates in exports.
+        /// </summary>
+        public string ExportDateFormat { get; set; } = null!;
     }
 }
