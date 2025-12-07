@@ -463,7 +463,7 @@ The **ECS PrimeNG Table** component gives you full control over how dates are di
 
   The table below summarizes the symbols you can use when defining the **Format** for dates.
 
-  **Note:** Not all symbols are guaranteed to behave consistently in the front-end, as some may be interpreted differently by Angular or other client-side components. Always test your chosen format in the UI.
+  **Note:** Not all symbols are guaranteed to behave consistently in the front-end, as some may be interpreted differently by Angular or other client-side components or exports to Excel. Always test your chosen format in the UI.
   
 <div align="center">
 
@@ -516,6 +516,36 @@ You can configure this customization per table, and **override it per column if 
 > - Directly within the **date format** (e.g., including the timezone offset).
 >
 > Keeping formats consistent helps avoid misunderstandings and improves overall readability.
+
+<br><br>
+
+
+
+#### Date configuration behavior
+The **ECS PrimeNG Table** provides multiple layers of date configuration control, allowing you to customize how dates appear both on-screen and when exported to Excel. This flexibility exists mainly because **Excel does not interpret date formats the same way the table does**, so each environment may require its own format configuration to ensure correct and predictable results. The layers of configuration offered are as follows:
+- Global date configurations for table rendering: Define a default date format, culture and timezone that applies to all date columns in the UI. This ensures consistent presentation across the entire table unless a column explicitly overrides it.
+- Per-column date configurations override: Each column can provide its own format, culture and timezone for UI rendering. This lets you handle cases where a specific field requires different formatting (for example, server timestamps vs. local display).
+- Global date format for Excel export: You can specify a **table-level export format** that will be applied to date columns when generating Excel files. This format is intended for Excel consumption and may differ from the on-screen format to accommodate Excel's formatting rules.
+- Per-column date format override for Excel export: Each column may define a date format specifically for Excel output. When present, this column-level export format takes precedence over the table-level export format.
+
+<br><br>
+
+
+
+#### Resolution priority
+When showing dates on UI or export, the final configuration for a given date column is resolved in the following order:
+1. Column-level (can be different between UI and export).
+2. Table-level (can be different between UI and export).
+3. Fallback to default configurations.
+
+This priority ensures that dates will alwyas have a defined date configuration and that column-specific needs can override global settings.
+
+<br><br>
+
+
+
+#### Recommendations with dates
+Prefer a consistent global table format for UI readability, and only use per-column overrides when necessary. For Excel, prefer explicit export formats and include timezone or culture hints in column names when applicable to avoid ambiguity on the consumer side.
 
 <br><br>
 
@@ -1101,6 +1131,11 @@ Users can customize the export with the following options:
 
 Once satisfied with the configuration, users can click **Export** to generate the Excel file, which will be automatically downloaded to their device.
 
+Programmatically, the export process can be setup to use **specific date formats** for Excel, independent of the UI display. This means you can:
+- Define a **global Excel date format** that applies to all date columns.
+- Override the format **per column**, allowing certain columns to have a different Excel format than the rest.
+- Ensure that exported Excel files display dates consistently according to your preferred formatting rules, regardless of how dates appear in the on-screen table.
+
 <br><br>
 
 
@@ -1485,6 +1520,7 @@ internal class TableConfigurationDefaults {
     public static readonly string DateTimezone = "+00:00";
     public static readonly string DateCulture = "en-US";
     public static readonly byte MaxViews = 10;
+    public static readonly string ExportDateFormat = "dd-mmm-yyyy hh:mm:ss";
 }
 ```
 
@@ -1763,6 +1799,7 @@ For maximum flexibility, it is recommended to store the user’s preferences for
 - **Date format**: A string, e.g. `"dd-MMM-yyyy HH:mm:ss zzzz"`
 - **Date timezone**: A string, e.g. `"+00:00"`
 - **Date culture**: A string, e.g. `"en-US"`
+- **Date format for Excel reports**: A string, e.g. `"dd-MMM-yyyy HH:mm:ss"`
 
 Let’s assume that these values are stored in a variable named `userPreferences` and that you are working with a `TestDto`.
 
@@ -1778,7 +1815,7 @@ namespace ECSPrimengTableExample.Services {
         public TableConfigurationModel GetTableConfiguration() {
             var userPreferences = getUserDataFromDatabase(); // Get the user preferences from the database
             return EcsPrimengTableService.GetTableConfiguration<TestDto>(null, userPreferences.dateFormat,
-                userPreferences.dateTimezone, userPreferences.dateCulture);
+                userPreferences.dateTimezone, userPreferences.dateCulture, userPreferences.exportDateFormat);
         }
     }
 }
@@ -1789,8 +1826,9 @@ namespace ECSPrimengTableExample.Services {
 > - **Date format**: `"dd-MMM-yyyy HH:mm:ss zzzz"`
 > - **Date timezone**: `"+00:00"`
 > - **Date culture**: `"en-US"`
+> - **Date format for Excel reports**: `"dd-MMM-yyyy HH:mm:ss"`
 
-It is possible to override the global table date format for individual columns directly from the backend by specifying the corresponding fields in the `ColumnAttributes` of the DTO used to build the table.
+It is possible to override the global table date format for individual columns directly from the backend by specifying the relevant fields in the `ColumnAttributes` of the DTO used to build the table. Additionally, different date formats, time zones, and display settings can be applied specifically for the Excel export, providing maximum flexibility.
 
 <br><br>
 
@@ -3355,10 +3393,12 @@ namespace ECSPrimengTableExample.Services {
     }
 }
 ```
-Just like with dynamic queries, the method `EcsPrimengTableService.GenerateExcelReport` accepts three optional arguments:
+Just like with other services, the method `EcsPrimengTableService.GenerateExcelReport` accepts some optional arguments:
 - A **database function** to format dates as strings (to ensure consistency between backend and frontend).
 - A **list of default ordering columns**.
 - Their **initial ordering direction** (ascending or descending).
+- A **dictionary** to override specific columns properties during export.
+- A list of columns that will be excluded during export.
 
 You now need an endpoint in your controller that calls the service and returns the Excel file to the client. A minimal implementation could look like this:
 ```c#
@@ -3385,10 +3425,11 @@ public class TestController : ControllerBase {
     }
 }
 ```
-**Technical note:**  
+**_Technical notes:_**
 - The service returns the generated Excel file as a `byte[]`.
 - In the controller, the `File()` method is used to return the file with the correct MIME type for Excel (`application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`).
 - Exception handling ensures that unexpected errors return a clear message with HTTP status `500`.
+- The date format used is the one defined in the table configuration under the `exportDateFormat` setting.
 
 Once the backend endpoint is in place, the next step is configuring the frontend. At a minimum, you must provide the backend endpoint URL for Excel report generation.
 
@@ -4210,9 +4251,10 @@ Marks a property to define its table column behavior in ECS PrimeNG tables. Incl
 | `dataTooltipCustomColumnSource` | `string` | `""` | Optional column name to fetch custom tooltip content. |
 | `dataTooltipShow` | `bool` | `true` | If true, displays cell content as tooltip on hover. |
 | `dataType` | [`DataType`](#715-datatype) | `Text` | The type of data in the column, used for filtering and formatting. |
-| `dateCulture` | `string?` | `null` | Optional culture override. |
-| `dateFormat` | `string?` | `null` | Optional date format override for this column. |
-| `dateTimezone` | `string?` | `null` | Optional timezone override. |
+| `dateCulture` | `string?` | `null` | Optional date culture. |
+| `dateFormat` | `string?` | `null` | Optional date format. |
+| `dateTimezone` | `string?` | `null` | Optional date timezone. |
+| `exportDateFormat` | `string?` | `null` | Optional date format for this column in exports. |
 | `filterPredefinedValuesName` | `string` | `""` | Name used in TypeScript to store predefined filter values. |
 | `frozenColumnAlign` | [`FrozenColumnAlign`](#716-frozencolumnalign) | `None` | Indicates if the column is frozen and its alignment. |
 | `header` | `string` | `""` | The name displayed for the column in the table. |
@@ -4303,9 +4345,10 @@ Contains information about the field, header, type, alignment, visibility, filte
 | `DataTooltipCustomColumnSource` | `string` | Gets or sets the column name to fetch custom tooltip content. |
 | `DataTooltipShow` | `bool` | Gets or sets a value indicating whether the column displays cell content as tooltip on hover. |
 | `DataType` | [`DataType`](#715-datatype) | Gets or sets the data type of the column. |
-| `DateCulture` | `string?` | Gets or sets an optional culture override. |
-| `DateFormat` | `string?` | Gets or sets an optional date format override for this column. |
-| `DateTimezone` | `string?` | Gets or sets an optional timezone override. |
+| `DateCulture` | `string?` | Gets or sets an optional date culture. |
+| `DateFormat` | `string?` | Gets or sets an optional date format for this column. |
+| `DateTimezone` | `string?` | Gets or sets an optional timezone. |
+| `ExportDateFormat` | `string?` | `null` | Gets or sets an optional date format for this column in exports. |
 | `Field` | `string` | Gets or sets the field associated with the column. |
 | `FilterPredefinedValuesName` | `string` | Gets or sets the name used in TypeScript to store predefined filter values. |
 | `FrozenColumnAlign` | [`FrozenColumnAlign`](#716-frozencolumnalign) | Gets or sets the alignment of a frozen column. |
@@ -4347,6 +4390,7 @@ Only non-null properties are applied, allowing partial and targeted overrides.
 | `DateCulture` | `string?` | Overrides the culture used when formatting date values. |
 | `DateFormat` | `string?` | Overrides the date format for this column. |
 | `DateTimezone` | `string?` | Overrides the timezone applied to date values for this column. |
+| `ExportDateFormat` | `string?` | `null` | Overrides the date format for this column in exports. |
 | `Header` | `string?` | Overrides the header displayed for the column. |
 | `StartHidden` | `bool?` | Overrides whether the column starts hidden. |
 
@@ -4407,6 +4451,7 @@ Represents the configuration of a table including column metadata, pagination, a
 | `DateCulture` | `string` | Culture used for date localization in the table. |
 | `DateFormat` | `string` | Date format string used for displaying dates in the table. |
 | `DateTimezone` | `string` | Timezone used for date formatting in the table. |
+| `ExportDateFormat` | `string` | Date format string used for displaying dates in exports. |
 | `MaxViews` | `byte` | Maximum number of views allowed for a table configuration. |
 
 <br><br>
@@ -4446,6 +4491,7 @@ Represents a table query request, including pagination, sorting, filtering, and 
 | `DateCulture` | `string` | Culture string used for date localization. |
 | `DateFormat` | `string` | Date format string used for date values in the query. |
 | `DateTimezone` | `string` | Timezone string used for date formatting. |
+| `ExportDateFormat` | `string` | Date format string used for date values in the export. |
 | `Filter` | [`Record<string, ColumnFilterModel[]>`](#741-columnfiltermodel) | Dictionary of column filters. The key is the column field name, and the value is a list of filters applied to that column. |
 | `GlobalFilter` | `string?` | Optional global filter applied to all columns. |
 | `Page` | `int` | The page number to retrieve (1-based index). |
@@ -4566,6 +4612,7 @@ public static TableConfigurationModel GetTableConfiguration<T>(
     string? dateFormat = null,
     string? dateTimezone = null,
     string? dateCulture = null,
+    string? exportDateFormat = null,
     byte? maxViews = null,
     Dictionary<string, ColumnMetadataOverrideModel>? dynamicAttributes = null,
     List<string>? excludedColumns = null,
@@ -4589,6 +4636,7 @@ public static TableConfigurationModel GetTableConfiguration<T>(
 | `dateFormat` | `string?` | Optional date format string used for display. Defaults to `TableConfigurationDefaults.DateFormat`. |
 | `dateTimezone` | `string?` | Optional timezone identifier used for date formatting. Defaults to `TableConfigurationDefaults.DateTimezone`. |
 | `dateCulture` | `string?` | Optional culture code for date localization. Defaults to `TableConfigurationDefaults.DateCulture`. |
+| `exportDateFormat` | `string?` | Optional date format string used for display in exports. Defaults to `TableConfigurationDefaults.ExportDateFormat`. |
 | `maxViews` | `byte?` | Optional maximum number of saved views allowed per table. Defaults to `TableConfigurationDefaults.MaxViews`. |
 | `dynamicAttributes` | `Dictionary<string, ColumnMetadataOverrideModel>?` | Optional column attribute overrides. Keys represent column names, and values are [ColumnMetadataOverrideModel](#743-columnmetadataoverridemodel) instances whose properties override the default or attribute-based column metadata. If null, no dynamic overrides are applied. |
 | `excludedColumns` | `List<string>?` | Optional list of column names to exclude from the generated configuration. Useful for client-specific visibility rules or restricted data contexts. |
@@ -4967,6 +5015,7 @@ Provides configuration options for column behavior, appearance, and user interac
 | `dateFormat` | `string \| null` | Optional date format override for this column. |
 | `dateTimezone` | `string \| null` | Optional timezone override. |
 | `dataType` | [`DataType`](#814-datatype) | The type of data contained in the column. |
+| `exportDateFormat` | `string \| null` | Optional date format for exports override for this column. |
 | `field` | `string` | The key or identifier for the column's data field. |
 | `filterPredefinedValuesName` | `string` | Name of predefined filter values, if any. |
 | `frozenColumnAlign` | [`FrozenColumnAlign`](#815-frozencolumnalign) | Alignment for frozen columns (left or right). |

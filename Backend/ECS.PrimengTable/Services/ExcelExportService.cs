@@ -54,7 +54,8 @@ namespace ECS.PrimengTable.Services {
                     Columns = inputDataAll.Columns,
                     DateFormat = inputDataAll.DateFormat,
                     DateTimezone = inputDataAll.DateTimezone,
-                    DateCulture = inputDataAll.DateCulture
+                    DateCulture = inputDataAll.DateCulture,
+                    ExportDateFormat = inputDataAll.ExportDateFormat
                 }; // Build a TableQueryRequestModel from the provided export input
                 if(!inputDataAll.ApplySorts) {
                     inputData.Sort = [];
@@ -120,8 +121,19 @@ namespace ECS.PrimengTable.Services {
             inputData.PageSize = pageStack; // Set how many records to process per page (chunk size)
             int currentPage = -1; // Track the current page index
             int loopStartPage = -1; // Used to detect when pagination is finished
-            int numberOfColumns = inputData.Columns!.Count; // Total number of columns to write                           
+            int numberOfColumns = inputData.Columns!.Count; // Total number of columns to write
             Dictionary<string, DataType> columnTypeLookup = columnsInfo.ColumnsInfo.ToDictionary(c => c.Field, c => c.DataType); // Build lookup dictionary: Field -> DataType
+            Dictionary<string, string?> columnExportDateFormatLookup =
+                columnsInfo.ColumnsInfo
+                    .ToDictionary(c => c.Field,
+                        c => {
+                            var prop = c.GetType().GetProperty("ExportDateFormat"); // Check if the property exists
+                            if(prop == null) { // If property doesn't exist, return null
+                                return (string?)null;
+                            }
+                            return (string?)prop.GetValue(c); // Return the property value (may also be null)
+                        }
+                    );
             while(true) { // Continue fetching pages until no more records are returned
                 loopStartPage = currentPage; // Save current page index before fetching
                 currentPage++; // Move to next page
@@ -140,7 +152,11 @@ namespace ECS.PrimengTable.Services {
                             IXLAlignment colStyle = worksheet.Column(col + 1).Style.Alignment;
                             colStyle.Horizontal = XLAlignmentHorizontalValues.Left;
                             if(dataType == DataType.Date) {
-                                worksheet.Column(col + 1).Style.NumberFormat.Format = "dd-mmm-yyyy hh:mm:ss"; // Apply the date format
+                                string finalDateFormat =
+                                    columnExportDateFormatLookup.TryGetValue(fieldName, out var columnFormat) && !string.IsNullOrEmpty(columnFormat)
+                                    ? columnFormat // column-specific format
+                                    : inputData.ExportDateFormat ?? "dd-mmm-yyyy hh:mm:ss"; // fallback logic
+                                worksheet.Column(col + 1).Style.NumberFormat.Format = finalDateFormat;
                             } else if (dataType == DataType.Boolean) {
                                 colStyle.Horizontal = XLAlignmentHorizontalValues.Center;
                             }

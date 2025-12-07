@@ -5,5 +5,6 @@
         public static readonly string DateTimezone = "+00:00";
         public static readonly string DateCulture = "en-US";
         public static readonly byte MaxViews = 10;
+        public static readonly string ExportDateFormat = "dd-mmm-yyyy hh:mm:ss";
     }
 }

@@ -49,5 +49,10 @@
         /// Culture string used for date localization.
         /// </summary>
         public string DateCulture { get; set; } = null!;
+
+        /// <summary>
+        /// Date format string used for date values in the export.
+        /// </summary>
+        public string ExportDateFormat { get; set; } = null!;
     }
 }

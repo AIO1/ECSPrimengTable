@@ -43,6 +43,7 @@ namespace ECS.PrimengTable.Services {
         /// <param name="dateFormat">Optional date format string used for display. Defaults to <see cref="TableConfigurationDefaults.DateFormat"/>.</param>
         /// <param name="dateTimezone">Optional timezone identifier used for date formatting. Defaults to <see cref="TableConfigurationDefaults.DateTimezone"/>.</param>
         /// <param name="dateCulture">Optional culture code for date localization. Defaults to <see cref="TableConfigurationDefaults.DateCulture"/>.</param>
+        /// <param name="exportDateFormat">Optional date format string used for display in exports. Defaults to <see cref="TableConfigurationDefaults.ExportDateFormat"/>.</param>
         /// <param name="maxViews">Optional maximum number of saved views allowed per table. Defaults to <see cref="TableConfigurationDefaults.MaxViews"/>.</param>
         /// <param name="dynamicAttributes">
         /// Optional column attribute overrides. Keys represent column names, and values are <see cref="ColumnMetadataOverrideModel"/> instances whose properties override the default or attribute-based column metadata.  
@@ -58,12 +59,13 @@ namespace ECS.PrimengTable.Services {
             string? dateFormat = null,
             string? dateTimezone = null,
             string? dateCulture = null,
+            string? exportDateFormat = null,
             byte? maxViews = null,
             Dictionary<string, ColumnMetadataOverrideModel>? dynamicAttributes = null,
             List<string>? excludedColumns = null,
             bool convertFieldToLower = true
         ) {
-            return TableConfigurationService.GetTableConfiguration<T>(allowedItemsPerPage, dateFormat, dateTimezone, dateCulture, maxViews, dynamicAttributes, excludedColumns, convertFieldToLower);
+            return TableConfigurationService.GetTableConfiguration<T>(allowedItemsPerPage, dateFormat, dateTimezone, dateCulture, exportDateFormat, maxViews, dynamicAttributes, excludedColumns, convertFieldToLower);
         }
 
         /// <summary>

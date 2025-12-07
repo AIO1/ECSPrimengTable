@@ -107,6 +107,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
   dateFormat: string = "dd-MMM-yyyy HH:mm:ss zzzz";
   dateTimezone: string = "+00:00";
   dateCulture: string = "en-US";
+  exportDateFormat: string = "dd-MMM-yyyy HH:mm:ss"
 
   columns: IColumnMetadata[] = [];
   columnsCantBeHidden: IColumnMetadata[] = [];
@@ -212,6 +213,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
     this.dateFormat = body.dateFormat;
     this.dateTimezone = body.dateTimezone;
     this.dateCulture = body.dateCulture;
+    this.exportDateFormat = body.exportDateFormat;
     this.currentPage = 0;
     this.initialConfigurationFetched = true;
     this.maxViews = body.maxViews;
@@ -484,7 +486,8 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
       columns: this.tableOptions.columns!.shown!.map(col => col.field), // Set the columns to show
       dateFormat: this.dateFormat,
       dateTimezone: this.dateTimezone,
-      dateCulture: this.dateCulture
+      dateCulture: this.dateCulture,
+      exportDateFormat: this.exportDateFormat
     };
     this.tableService.fetchTableData(this.tableOptions.urlTableData!, requestData)
       .pipe(
@@ -893,6 +896,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
       dateFormat: this.dateFormat,
       dateTimezone: this.dateTimezone,
       dateCulture: this.dateCulture,
+      exportDateFormat: this.exportDateFormat,
       allColumns: event.allColumns,
       applyFilters: filtersMustBeApplied,
       applySorts: event.applySorts,

@@ -34,12 +34,13 @@ internal static class TableConfigurationService {
     /// <returns>
     /// A <see cref="TableConfigurationModel"/> containing the column metadata derived from the annotated properties of the specified type.
     /// </returns>
-    internal static TableConfigurationModel GetTableConfiguration<T>(int[]? allowedItemsPerPage = null, string? dateFormat = null, string? dateTimezone = null, string? dateCulture = null, byte? maxViews = null, Dictionary<string, ColumnMetadataOverrideModel>? dynamicAttributes = null, List<string>? excludedColumns = null, bool convertFieldToLower = true) {
+    internal static TableConfigurationModel GetTableConfiguration<T>(int[]? allowedItemsPerPage = null, string? dateFormat = null, string? dateTimezone = null, string? dateCulture = null, string? exportDateFormat = null, byte? maxViews = null, Dictionary<string, ColumnMetadataOverrideModel>? dynamicAttributes = null, List<string>? excludedColumns = null, bool convertFieldToLower = true) {
         allowedItemsPerPage ??= TableConfigurationDefaults.AllowedItemsPerPage;
         dateFormat ??= TableConfigurationDefaults.DateFormat;
         dateTimezone ??= TableConfigurationDefaults.DateTimezone;
         dateCulture ??= TableConfigurationDefaults.DateCulture;
         maxViews ??= TableConfigurationDefaults.MaxViews;
+        exportDateFormat ??= TableConfigurationDefaults.ExportDateFormat;
         List <ColumnMetadataModel> columnsInfo = []; // Prepare the list to be returned
         PropertyInfo[] properties = typeof(T).GetProperties(); // Get the properties of the provided class
         var excluded = excludedColumns != null
@@ -94,7 +95,8 @@ internal static class TableConfigurationService {
             DateFormat = dateFormat,
             DateTimezone = dateTimezone,
             DateCulture = dateCulture,
-            MaxViews = (byte)maxViews
+            MaxViews = (byte)maxViews,
+            ExportDateFormat = exportDateFormat
         };
     }
 

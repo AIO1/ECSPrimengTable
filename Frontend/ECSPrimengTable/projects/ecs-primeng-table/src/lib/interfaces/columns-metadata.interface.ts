@@ -82,4 +82,8 @@ export interface IColumnMetadata {
 
     /** Optional culture override. */
     dateCulture: string | null;
+
+    /** Optional date format for exports override for this column. */
+    exportDateFormat: string | null;
+
 }

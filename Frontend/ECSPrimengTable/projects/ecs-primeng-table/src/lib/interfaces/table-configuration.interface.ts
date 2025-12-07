@@ -25,4 +25,8 @@ export interface ITableConfiguration {
 
     /** Maximum number of table views that can be saved or tracked. */
     maxViews: number;
+
+    /** The format used for displaying dates in the exports. */
+    exportDateFormat: string;
+
 }
