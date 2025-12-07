@@ -3,6 +3,7 @@ import { Component, Input } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
 import { ECSPrimengTableService } from '../ecs-primeng-table/ecs-primeng-table.service';
+import { ITableButton } from '../../interfaces';
 
 @Component({
   selector: 'ecs-table-button',
@@ -33,5 +34,19 @@ export class TableButton {
         this.tableService.handleButtonsClick(this.button.action, this.rowData);
       }
     }
+  }
+
+  getButtonStyle(button: ITableButton, isActionButton: boolean, isLastActionButton: boolean) {
+    const styles: any = {};
+    if (button.style) { // Add inline styles from button.style
+        button.style.split(';').forEach(part => {  /* Parse inline CSS: "padding: 4px; color:red" */
+            const [prop, value] = part.split(':').map(x => x.trim());
+            if (prop && value) styles[prop] = value;
+        });
+    }
+    if (isActionButton && !isLastActionButton) { // Add margin-right for action buttons
+        styles['margin-right'] = '10px';
+    }
+    return styles;
   }
 }

@@ -41,10 +41,9 @@ export interface ITableButton {
     variant?: string;
 
     /**
-     * Optional. The CSS class to apply for button styling.
-     * Example: "p-button-success" or "custom-class".
+     * Optional. Extra CSS classes to apply to the button.
      */
-    color?: string;
+    class?: string;
     
     /**
      * Optional. Additional inline CSS styles for the button.

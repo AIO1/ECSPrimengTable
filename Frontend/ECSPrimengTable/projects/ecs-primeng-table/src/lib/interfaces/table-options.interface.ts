@@ -596,8 +596,7 @@ export const DEFAULT_TABLE_OPTIONS: ITableOptions = {
         content: undefined,
         button: {
             icon: "pi pi-bars",
-            label: "Legend",
-            color: "p-button-primary"
+            label: "Legend"
         }
     },
     header: {
