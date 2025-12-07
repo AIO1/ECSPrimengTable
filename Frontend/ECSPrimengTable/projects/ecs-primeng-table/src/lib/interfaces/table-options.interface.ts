@@ -513,6 +513,36 @@ export interface ITableOptions {
          * @default undefined
          */
         urlSave?: string;
+
+        /**
+         * A collection of custom CSS classes to apply to the button that opens the views menu.
+         * Multiple classes can be provided as a space-separated string.
+         * 
+         * @default undefined
+         */
+        selectViewButtonClass?: string;
+
+        /**
+         * CSS classes to apply to the button used to reapply a view.
+         * Multiple classes can be provided as a space-separated string.
+         * 
+         * @default undefined
+         */
+        reloadViewButtonClass?: string;
+
+        /**
+         * The icon that the reapply view button has.
+         * 
+         * @default "pi pi-refresh"
+         */
+        reloadViewButtonIcon?: string;
+
+        /**
+         * The text that is displayed when no view is selected.
+         * 
+         * @default "--- Select a view ---"
+         */
+        noViewSelectedText?: string;
     };
 
     /**
@@ -655,7 +685,11 @@ export const DEFAULT_TABLE_OPTIONS: ITableOptions = {
         saveMode: TableViewSaveMode.None,
         saveKey: undefined,
         urlGet: undefined,
-        urlSave: undefined
+        urlSave: undefined,
+        selectViewButtonClass: undefined,
+        reloadViewButtonClass: undefined,
+        reloadViewButtonIcon: "pi pi-refresh",
+        noViewSelectedText: "--- Select a view ---"
     },
     resetTableView: {
         enabled: true,

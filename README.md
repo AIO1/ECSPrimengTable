@@ -1128,8 +1128,13 @@ If views are enabled, users will see the following menu in the middle of the tab
 </p>
 
 This menu shows the currently applied view:
-- A text showing "---Select a view---" displays the name of the currently applied view (if a view is being applied).
-- The **replay button** reapplies the last configuration of the selected view.
+- **Current view text:** Displays the name of the currently applied view.  
+  - When no view is selected, a default placeholder text `"--- Select a view ---"` is shown.  
+  - The default text can be customized using the appropriate option.  
+  - Additional CSS classes can be applied to the button for further customization.
+- **Replay button:** Reapplies the last configuration of the selected view.  
+  - Supports multiple customization options, including custom CSS classes.  
+  - The button icon can also be customized if needed.
 
 When the text of the menu is pressed, the following modal is shown:
 <p align="center">
@@ -3444,12 +3449,16 @@ There are three possible storage strategies:
 3. **Database storage** – requires additional backend and database configuration.
 
 Regardless of the storage type, configuration is done via the `views` object inside your `ITableOptions`. The available options are:
+- **`noViewSelectedText`** *(Default: `"--- Select a view ---"`)*: The text that is displayed when no view is selected.
+- **`reloadViewButtonClass`** *(Default: `undefined`)*: CSS classes to apply to the button used to reapply a view. Multiple classes can be provided as a space-separated string.
+- **`reloadViewButtonIcon`** *(Default: `"pi pi-refresh"`)*: The icon that the reapply view button has..
 - **`saveMode`** *(Default: `TableViewSaveMode.None`)*: Determines where views are stored. Possible values are:
   - **`TableViewSaveMode.None`**: Views are disabled. The view menu will not be displayed.
   - **`TableViewSaveMode.SessionStorage`**: Saves the view state in the browser’s `sessionStorage`. Data is cleared when the tab is closed. Not accessible from other devices.
   - **`TableViewSaveMode.LocalStorage`**: Saves the view state in the browser’s `localStorage`. Persists across browser sessions, but will be lost if the user clears local data. Not accessible from other devices.
   - **`TableViewSaveMode.DatabaseStorage`**: Saves the view state in a backend database. Requires extra backend/database setup but allows views to be shared across devices.
 - **`saveKey`** *(Default: `undefined`)*: A unique identifier for the table. Required if views are enabled.
+- **`selectViewButtonClass`** *(Default: `undefined`)*: A collection of custom CSS classes to apply to the button that opens the views menu. Multiple classes can be provided as a space-separated string.
 - **`urlGet`** *(Default: `undefined`)*: Backend endpoint for retrieving saved views (only used with `DatabaseStorage`).
 - **`urlSave`** *(Default: `undefined`)*: Backend endpoint for saving views (only used with `DatabaseStorage`).
 
@@ -5101,8 +5110,12 @@ Configuration options for **ECS PrimeNG table**. Includes settings for table act
 | `fitToContainer` | `verticalScroll` | `boolean` | `true` | Automatically adjusts the table’s height to fit its container. When `true`, the table dynamically calculates its maximum height. Ignored if a `cssFormula` is provided. |
 | `height` | `verticalScroll` | `number` | `0` | Fixed vertical height for the table when `fitToContainer` is `false`. Ignored if a `cssFormula` is provided or if `fitToContainer` is `true`. Enables vertical scrolling with a fixed height when a dynamic fit is not desired. |
 | `views` | | `object` | N/A | Configurations related to saved table views. |
+| `noViewSelectedText` | `views` | `string` | `"--- Select a view ---"` | The text that is displayed when no view is selected. |
+| `reloadViewButtonClass` | `views` | `string` | `undefined` | CSS classes to apply to the button used to reapply a view. Multiple classes can be provided as a space-separated string. |
+| `reloadViewButtonIcon` | `views` | `string` | `"pi pi-refresh"` | The icon that the reapply view button has. |
 | `saveKey` | `views` | `string` | `undefined` | Key used to identify the table when saving and retrieving its views. Each table should have a unique key to avoid conflicts between tables. If `undefined`, the table will not save or load any views. |
 | `saveMode` | `views` | `TableViewSaveMode` | `TableViewSaveMode.None` | Determines how the table views are saved. Options: `None` (no saving), `SessionStorage` (cleared when tab closes), `LocalStorage` (persistent), or `DatabaseStorage` (saved via backend using `urlGet` and `urlSave`). |
+| `selectViewButtonClass` | `views` | `string` | `undefined` | A collection of custom CSS classes to apply to the button that opens the views menu. Multiple classes can be provided as a space-separated string. |
 | `urlGet` | `views` | `string` | `undefined` | Endpoint URL to fetch saved views from the database. Only used if `saveMode` is `TableViewSaveMode.DatabaseStorage`. The `saveKey` is sent to identify the correct table views. |
 | `urlSave` | `views` | `string` | `undefined` | Endpoint URL to save table views to the database. Only used if `saveMode` is `TableViewSaveMode.DatabaseStorage`. The `saveKey` is sent to identify the correct table views. |
 

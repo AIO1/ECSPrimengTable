@@ -124,8 +124,14 @@
                 @if(tableViewsEnabled()){
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <p-buttongroup>
-                            <p-button (click)="viewsModalShow=true;" [label]="tableViewCurrentSelectedAlias ? tableViewCurrentSelectedAlias : '--- Select a view ---'" class="viewButton"/>
-                            <p-button icon="pi pi-refresh" (click)="viewLoad(tableViewCurrentSelectedAlias!)" [disabled]="!tableViewCurrentSelectedAlias" pTooltip="Apply view again" [showDelay]="700" tooltipPosition="top"/>
+                            <p-button (click)="viewsModalShow=true;"
+                                [label]="tableViewCurrentSelectedAlias 
+                                    ? tableViewCurrentSelectedAlias 
+                                    : (tableOptions.views?.noViewSelectedText || '--- Select a view ---')"
+                                [class]="'viewButton' + (tableOptions.views?.selectViewButtonClass ? ' ' + tableOptions.views!.selectViewButtonClass : '')"/>
+                            <p-button (click)="viewLoad(tableViewCurrentSelectedAlias!)"  [disabled]="!tableViewCurrentSelectedAlias" pTooltip="Apply view again" [showDelay]="700" tooltipPosition="top"
+                                [icon]="tableOptions.views?.reloadViewButtonIcon || 'pi pi-refresh'"
+                                [class]="tableOptions.views?.reloadViewButtonClass || ''"/>
                         </p-buttongroup>
                     </div>
                 }
