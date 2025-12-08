@@ -134,6 +134,17 @@ namespace ECS.PrimengTable.Services {
                             return (string?)prop.GetValue(c); // Return the property value (may also be null)
                         }
                     );
+            Dictionary<string, string?> columnExportDateTimezoneLookup =
+                columnsInfo.ColumnsInfo
+                    .ToDictionary(c => c.Field,
+                        c => {
+                            var prop = c.GetType().GetProperty("DateTimezone"); // Check if the property exists
+                            if(prop == null) { // If property doesn't exist, return null
+                                return (string?)null;
+                            }
+                            return (string?)prop.GetValue(c); // Return the property value (may also be null)
+                        }
+                    );
             while(true) { // Continue fetching pages until no more records are returned
                 loopStartPage = currentPage; // Save current page index before fetching
                 currentPage++; // Move to next page
@@ -168,7 +179,10 @@ namespace ECS.PrimengTable.Services {
                             cell.Value = dataType switch {
                                 DataType.Text => cellValue.ToString(),
                                 DataType.Numeric => Convert.ToDouble(cellValue),
-                                DataType.Date when cellValue is DateTime => cellValue,
+                                DataType.Date when cellValue is DateTime dt => ConvertDateForExcel(
+                                    dt,
+                                    ResolveFinalTimezone(fieldName, columnExportDateTimezoneLookup, inputData.DateTimezone)
+                                ),
                                 DataType.Boolean => useIconInBools
                                     ? (Convert.ToBoolean(cellValue) ? "✔" : "✘")
                                     : Convert.ToBoolean(cellValue),
@@ -230,6 +244,27 @@ namespace ECS.PrimengTable.Services {
                 columnNumber = (columnNumber - modulo) / 26; // Reduce the column number for the next iteration
             }
             return columnLetter.ToString(); // Return the resulting Excel column string (e.g., "A", "AA", "ZZ")
+        }
+
+        private static DateTime ConvertDateForExcel(DateTime utcDate, string? targetTimezoneOffset) {
+            if(string.IsNullOrWhiteSpace(targetTimezoneOffset)) { // If no timezone defined, keep original UTC as-is
+                return utcDate;
+            }
+            string cleanOffset = targetTimezoneOffset.Replace("+", "");
+            TimeSpan offset = TimeSpan.Parse(cleanOffset, CultureInfo.InvariantCulture); // Parse "02:00", "-01:00", etc.
+            DateTimeOffset dto = new(DateTime.SpecifyKind(utcDate, DateTimeKind.Utc)); // Convert from UTC to target offset
+            DateTimeOffset converted = dto.ToOffset(offset);
+            return converted.DateTime; // Excel needs DateTime, not DateTimeOffset
+        }
+
+        private static string? ResolveFinalTimezone(string fieldName, Dictionary<string, string?> columnExportDateTimezoneLookup, string? inputTimezone) {
+            if(columnExportDateTimezoneLookup.TryGetValue(fieldName, out var colTz) && !string.IsNullOrWhiteSpace(colTz)) { // Column-specific timezone has priority
+                return colTz;
+            }
+            if(!string.IsNullOrWhiteSpace(inputTimezone)) { // Fallback to the table timezone
+                return inputTimezone;
+            }
+            return null; // If nothing is defined, return null which means "keep UTC"
         }
     }
 }
