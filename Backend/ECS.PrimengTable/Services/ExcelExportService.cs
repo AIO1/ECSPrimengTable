@@ -1,6 +1,4 @@
 ﻿using ClosedXML.Excel;
-using DocumentFormat.OpenXml.Office2013.Drawing.ChartStyle;
-using DocumentFormat.OpenXml.Spreadsheet;
 using ECS.PrimengTable.Enums;
 using ECS.PrimengTable.Models;
 using System.Globalization;
