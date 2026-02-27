@@ -1,6 +1,4 @@
 ﻿using ClosedXML.Excel;
-using DocumentFormat.OpenXml.Office2013.Drawing.ChartStyle;
-using DocumentFormat.OpenXml.Spreadsheet;
 using ECS.PrimengTable.Enums;
 using ECS.PrimengTable.Models;
 using System.Globalization;
@@ -60,7 +58,7 @@ namespace ECS.PrimengTable.Services {
                 if(!inputDataAll.ApplySorts) {
                     inputData.Sort = [];
                 }
-                string reportDateFormatted = DateTime.UtcNow.ToString("dd-MMM-yyyy hh:mm:ss", CultureInfo.GetCultureInfo("en-US")); // Generate timestamp for the report
+                string reportDateFormatted = DateTime.UtcNow.ToString("dd-MMM-yyyy HH:mm:ss", CultureInfo.GetCultureInfo("en-US")); // Generate timestamp for the report
                 TableConfigurationModel columnsInfo = EcsPrimengTableService.GetTableConfiguration<T>(dynamicAttributes: dynamicAttributes, excludedColumns: excludedColumns, convertFieldToLower: false); // Retrieve table configuration (column metadata)
                 if(inputDataAll.AllColumns) { // If exporting all columns, include all column fields from the configuration
                     inputData.Columns = columnsInfo.ColumnsInfo
