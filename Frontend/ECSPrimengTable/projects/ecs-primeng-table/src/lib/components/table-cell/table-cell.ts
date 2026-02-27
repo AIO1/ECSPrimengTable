@@ -84,8 +84,14 @@ export class TableCell {
     const effectiveTimezone = dateTimezone ?? this.dateTimezone;
     const effectiveCulture = dateCulture ?? this.dateCulture;
     if(value){ // If value is not undefined
-      const dateUtc = new Date(value + 'Z'); // Make sure the date is treated as UTC
-      formattedDate = this.datePipe.transform(dateUtc, effectiveFormat, effectiveTimezone, effectiveCulture); // Perform the date masking
+      let dateToParse = value;
+      if (typeof value === 'string' && !value.endsWith('Z') && !/[+-]\d{2}:\d{2}$/.test(value)) { // Check if the date does not contain Z
+        dateToParse += 'Z';
+      }
+      const dateUtc = new Date(dateToParse); 
+      if (!isNaN(dateUtc.getTime())) { // Check that the date is valid before performing transformation
+          formattedDate = this.datePipe.transform(dateUtc, effectiveFormat, effectiveTimezone, effectiveCulture); // Perform the date masking
+      }
     }
     return formattedDate ?? ''; // Returns the date formatted, or as empty string if an issue was found (or value was undefined).
   }
