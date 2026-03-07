@@ -839,9 +839,9 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
     if (!sameColumnsAsBefore) {
       this.tableOptions.isActive = false;
       this.clearSorts(this.dt, true);
+      this.clearFilters(this.dt, true, false);
       setTimeout(() => {
         this.tableOptions.isActive = true;
-        this.clearSorts(this.dt, true);
       }, 1);
     }
   }
