@@ -501,7 +501,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
       });
   }
 
-  private modifyFiltersWithoutGlobalAndSelectedRows(filters: any, overrideOption: number = -1): any {
+  modifyFiltersWithoutGlobalAndSelectedRows(filters: any, overrideOption: number = -1): any {
     if (this.globalSearchText === "") { // If the global search text is an empty string
       this.globalSearchText = null; // Set it to null
     }
