@@ -686,13 +686,14 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
    */
   onPredefinedFilterChange(filterName: string, selectedValues: IPredefinedFilter[]): void {
     const filters = { ...this.dt.filters }; // Create a shallow copy of the current filters to avoid mutating the original filters directly
+    const newValue = selectedValues && selectedValues.length ? selectedValues.map(value => value.value) : null; // Convert empty selection to null so PrimeNG removes the filter instead of applying an empty array
     if (Array.isArray(filters[filterName])) { // Check if the filter for the given filterName is an array
-        (filters[filterName] as FilterMetadata[]).forEach(criteria => { // If it is an array, iterate over each filter criteria
-            criteria.value = selectedValues.map(value => value.value); // Update the value of each criteria with the values from selectedValues
-        });
+      (filters[filterName] as FilterMetadata[]).forEach(criteria => { // If it is an array, iterate over each filter criteria
+          criteria.value = newValue; // Update the value of each criteria with the values from selectedValues
+      });
     } else if (filters[filterName]) { // Check if the filter for the given filterName exists and is not an array
-        const criteria = filters[filterName] as FilterMetadata; // Cast the filter criteria to FilterMetadata
-        criteria.value = selectedValues.map(value => value.value); // Update the value of the criteria with the values from selectedValues
+      const criteria = filters[filterName] as FilterMetadata; // Cast the filter criteria to FilterMetadata
+      criteria.value = newValue; // Update the value of the criteria with the values from selectedValues
     }
     this.dt.filters = filters; // Update the data table's filters with the modified filters object
     this.dt._filter(); // Trigger the filtering operation on the data table to apply the new filters
