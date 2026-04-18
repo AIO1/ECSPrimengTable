@@ -51,6 +51,13 @@ export interface ITableOptions {
     data?: any[];
 
     /**
+     * Defines the icon shown in the column header when a description is present. If not specified, the default information icon will be used.
+     * 
+     * @default "pi pi-info-circle"
+     */
+    columnDescriptionIcon?: string;
+
+    /**
      * Configuration options for the table description section.
      */
     description?: {
@@ -617,6 +624,7 @@ export const DEFAULT_TABLE_OPTIONS: ITableOptions = {
     urlTableConfiguration: undefined,
     urlTableData: undefined,
     data: [],
+    columnDescriptionIcon: "pi pi-info-circle",
     description: {
         icon: "pi pi-info-circle",
         tooltip: true,

@@ -715,6 +715,8 @@ These columns remain **visible at all times**, even when the user scrolls the ta
 #### 4.3.9 Descriptions
 Columns can include a **description** to provide additional context. When a column has a description, an **information icon** (<img width="18" height="18" alt="info icon" src="https://github.com/user-attachments/assets/3c3d602b-c4b9-4c7c-b3e7-d7906767916d"/>) will appear on the right side of the column header.
 
+The icon used for column descriptions can be customized at the table level through the table configuration options. If no custom icon is provided, the default information icon will be used.
+
 If the user hovers the mouse over this icon, a **tooltip** will be displayed showing the column’s description.
 
 This feature is especially useful for columns that may require extra details to help users better understand the data being presented.
@@ -2028,6 +2030,9 @@ When a column has a `frozenColumnAlign` value other than `None`, the following r
 #### 6.3.9 Descriptions
 If you want a column to include a description, it must be defined in the backend within your DTO class by modifying the column's `ColumnAttributes`. The relevant property is:
 - **`columnDescription`**: Defaults to an empty string. If a value is provided, an info icon will appear in the column header. When the user hovers over this icon, a tooltip will be displayed showing the specified description in the frontend.
+
+The icon displayed for column descriptions can be customized at the table level from the frontend using the `ITableOptions` configuration:
+- **`columnDescriptionIcon`** *(Default: `"pi pi-info-circle"`)*: Defines the icon shown in the column header when a description is present. If not specified, the default information icon will be used.
 
 <br><br>
 
@@ -5101,6 +5106,7 @@ Configuration options for **ECS PrimeNG table**. Includes settings for table act
 | `selectorIcon` | `columns` | `string` | `"pi pi-pen-to-square"` | Icon used for the column selector button. Can be replaced with any PrimeNG, Font Awesome, or Material Icon. |
 | `selectorOrderByColumnName` | `columns` | `boolean` | `true` | When `true`, columns in the selector are displayed alphabetically (A–Z). When `false`, columns keep the order provided by the backend. |
 | `shown` | `columns` | `IColumnMetadata[]` | `[]` | Array of columns that must be displayed in the table, including non-selectable and user-selected columns. |
+| `columnDescriptionIcon` |  | `string` | `"pi pi-info-circle"` | Defines the icon shown in the column header when a description is present. If not specified, the default information icon will be used. |
 | `data` |  | `any[]` | `[]` | The array of data to be displayed in the table. Each item should represent a row and match the table's column structure. |
 | `description` |  | `object` | N/A | Configuration options for the table description section. |
 | `icon` | `description` | `string` | `"pi pi-info-circle"` | Icon displayed alongside the table description. You can use any PrimeIcons class or icons from third-party libraries such as Material Icons or Font Awesome. |

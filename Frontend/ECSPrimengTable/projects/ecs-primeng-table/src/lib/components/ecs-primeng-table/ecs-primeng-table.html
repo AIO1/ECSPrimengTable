@@ -233,7 +233,7 @@
                                     }
                                 }
                                 @if (col.columnDescription && col.columnDescription.length > 0) {
-                                    <i [pTooltip]="col.columnDescription" tooltipPosition="top" class="pi pi-info-circle"></i>
+                                    <i [pTooltip]="col.columnDescription" tooltipPosition="top" [class]="tableOptions.columnDescriptionIcon || 'pi pi-info-circle'"></i>
                                 }
                             </div>
                         </div>
