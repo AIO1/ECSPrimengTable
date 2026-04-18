@@ -1,5 +1,5 @@
-import { definePreset } from '@primeng/themes';
-import Lara from '@primeng/themes/lara';
+import { definePreset } from '@primeuix/themes';
+import Lara from '@primeuix/themes/aura';
 
 export const Preset = definePreset(Lara, {
   semantic: {

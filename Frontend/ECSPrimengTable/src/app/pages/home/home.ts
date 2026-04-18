@@ -111,6 +111,7 @@ export class Home implements OnInit {
             name: data.statusName,
             displayTag: true,
             tagStyle: {
+              color: '#ffffff',
               background: `rgb(${data.colorR}, ${data.colorG}, ${data.colorB})`
             }
           };
