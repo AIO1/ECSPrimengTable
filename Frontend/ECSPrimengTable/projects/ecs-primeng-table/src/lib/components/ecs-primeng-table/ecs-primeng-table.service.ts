@@ -227,8 +227,11 @@ export class ECSPrimengTableService {
 
     computeTableWidth(dt: Table): any {
         let tableWidth = 0;
-        if (dt.columnResizeMode === 'expand') {
-            tableWidth = DomHandler.getOuterWidth(dt.tableViewChild?.nativeElement);
+        if (dt.columnResizeMode() === 'expand') {
+            const viewChildElement = dt.tableViewChild();
+            if (viewChildElement) {
+                tableWidth = DomHandler.getOuterWidth(viewChildElement.nativeElement);
+            }
         }
         return tableWidth;
     }

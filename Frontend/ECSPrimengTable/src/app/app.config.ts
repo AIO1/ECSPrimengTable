@@ -9,7 +9,7 @@ import { SharedService } from './core/services/shared.service';
 import { ECSPrimengTableHttpService, ECSPrimengTableNotificationService } from 'ecs-primeng-table';
 import { NotificationService } from './core/services/notification.service';
 import { HttpService } from './core/services/http.service';
-import { HTTP_INTERCEPTORS, provideHttpClient, withFetch, withInterceptorsFromDi } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { SpinnerInterceptor } from './core/interceptors/spinner.interceptor';
 
 import { DatePipe, registerLocaleData } from '@angular/common';
@@ -19,6 +19,7 @@ registerLocaleData(en);
 export const appConfig: ApplicationConfig = {
   providers: [
     providePrimeNG({
+        license: 'PRIMEUI-LICENSE-KEY',
         theme: {
           preset: Preset,
           options: {
@@ -31,8 +32,7 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes, withComponentInputBinding()),
     provideHttpClient(
-      withInterceptorsFromDi(),
-      withFetch()
+      withInterceptorsFromDi()
     ),
     {
       provide: HTTP_INTERCEPTORS,

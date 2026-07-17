@@ -42,7 +42,7 @@
             Export columns
         </div>
         <div style="justify-self: start;">
-            <p-selectButton [(ngModel)]="option_exportColumns_selected" [options]="option_exportColumns" optionLabel="label" optionValue="value" allowEmpty="false"/>
+            <p-selectbutton [(ngModel)]="option_exportColumns_selected" [options]="option_exportColumns" optionLabel="label" optionValue="value" allowEmpty="false"/>
         </div>
 
         <div style="justify-self: end;">
@@ -52,14 +52,14 @@
             Filters to apply
         </div>
         <div style="justify-self: start;">
-            <p-selectButton [(ngModel)]="option_applyCurrentFilters_selected" [options]="option_applyCurrentFilters" optionLabel="label" optionValue="value" allowEmpty="false" [disabled]="filterSelectorDisabled()"/>
+            <p-selectbutton [(ngModel)]="option_applyCurrentFilters_selected" [options]="option_applyCurrentFilters" optionLabel="label" optionValue="value" allowEmpty="false" [disabled]="filterSelectorDisabled()"/>
         </div>
 
         <div style="justify-self: end;">
             Sorts to apply
         </div>
         <div style="justify-self: start;">
-            <p-selectButton [(ngModel)]="option_applyCurrentSorts_selected" [options]="option_applyCurrentSorts" optionLabel="label" optionValue="value" allowEmpty="false"/>
+            <p-selectbutton [(ngModel)]="option_applyCurrentSorts_selected" [options]="option_applyCurrentSorts" optionLabel="label" optionValue="value" allowEmpty="false"/>
         </div>
 
         @if(rowCheckboxSelectorActive){
@@ -67,7 +67,7 @@
                 Selected rows
             </div>
             <div style="justify-self: start;">
-                <p-selectButton [(ngModel)]="option_selectedRowsExport_selected" [options]="option_selectedRowsExport" optionLabel="label" optionValue="value" allowEmpty="false" (onChange)="onChangeExportRows($event)"/>
+                <p-selectbutton [(ngModel)]="option_selectedRowsExport_selected" [options]="option_selectedRowsExport" optionLabel="label" optionValue="value" allowEmpty="false" (onChange)="onChangeExportRows($event)"/>
             </div>
         }
     </div>

@@ -63,7 +63,7 @@
                 [frozen]="tableOptions.rows?.checkboxSelector?.frozen ?? false" [alignFrozen]="getFrozenColumnAlignAsText(tableOptions.rows?.checkboxSelector?.positionRight ? FrozenColumnAlign.Right : FrozenColumnAlign.Left)">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         {{ tableOptions.rows?.checkboxSelector?.header ?? '' }}
-                        <p-columnFilter type="boolean" field="selector" display="menu" [showButtons]="false"/>
+                        <p-columnfilter type="boolean" field="selector" display="menu" [showButtons]="false"/>
                     </div>
             </th>
         </ng-template>
@@ -140,18 +140,18 @@
                     <!--GLOBAL FILTER-->
                     @if (tableOptions.globalFilter?.enabled) {
                         <p-iconField iconPosition="left" class="ml-auto" [ngClass]="{'p-input-icon-right': globalSearchText}">
-                            <p-inputIcon>
+                            <p-inputicon>
                                 <i class="pi pi-search"></i>
-                            </p-inputIcon>
+                            </p-inputicon>
                             <input pInputText type="text" 
                                 (input)="dt.filterGlobal($any($event.target).value, 'contains')"  autocomplete="off" 
                                 [maxlength]="tableOptions.globalFilter?.maxLength ?? null" placeholder='Search keyword' [(ngModel)]="globalSearchText"
                                 style="width: 220px;"/>
                             <!-- Right icon (only if there is text) -->
                             @if (globalSearchText) {
-                                <p-inputIcon position="right">
+                                <p-inputicon position="right">
                                     <i class="pi pi-times" style="cursor: pointer;"  (click)="clearFilters(dt, true, true); $event.stopPropagation()"></i>
-                                </p-inputIcon>
+                                </p-inputicon>
                             }
                         </p-iconField>
                     }
@@ -207,19 +207,19 @@
                             </div>
                             <div style="display: flex; align-items: center; gap: 5px;">
                                 @if (col.canBeSorted) {
-                                    <p-sortIcon [field]="col.field"></p-sortIcon>
+                                    <p-sorticon [field]="col.field"></p-sorticon>
                                 }
                                 @if(col.canBeFiltered){
                                     @if (!col.filterPredefinedValuesName || col.filterPredefinedValuesName.length === 0) {
-                                        <p-columnFilter [type]="getDataTypeAsText(col.dataType)" [field]="col.field" display="menu" [showButtons]="false"/>
+                                        <p-columnfilter [type]="getDataTypeAsText(col.dataType)" [field]="col.field" display="menu" [showButtons]="false"/>
                                     } @else {
-                                        <p-columnFilter
+                                        <p-columnfilter
                                             [type]="getDataTypeAsText(col.dataType)" [field]="col.field" display="menu"
                                             [showButtons]="false" matchMode="in" operator="or" [showMatchModes]="false"
                                             [showOperator]="false" [showAddButton]="false" [showClearButton]="false" [showApplyButton]="false">
                                             <ng-template #filter>
-                                                <p-multiSelect
-                                                    [style]="{ minWidth: '400px' }" [(ngModel)]="predefinedFiltersSelectedValuesCollection[col.filterPredefinedValuesName]"
+                                                <p-select
+                                                    [style]="{ minWidth: '400px' }" [multiple]="true" [(ngModel)]="predefinedFiltersSelectedValuesCollection[col.filterPredefinedValuesName]"
                                                     [options]="getPredefinedFilterValues(col.filterPredefinedValuesName)" placeholder="Any value"
                                                     (onChange)="onPredefinedFilterChange(col.field, $event.value)" optionLabel="name">
                                                     <ng-template #item let-option >
@@ -227,9 +227,9 @@
                                                             <ecs-table-predefined-filters [option]="option" [col]="col" [selectable]="false" [rowData]="null"/>
                                                         </div>
                                                     </ng-template>
-                                                </p-multiSelect>
+                                                </p-select>
                                             </ng-template>
-                                        </p-columnFilter>
+                                        </p-columnfilter>
                                     }
                                 }
                                 @if (col.columnDescription && col.columnDescription.length > 0) {

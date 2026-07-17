@@ -14,18 +14,18 @@
                     </div>
                     <div style="display: flex; align-items: center;">
                         <p-iconField iconPosition="left" [ngClass]="{'p-input-icon-right': globalSearchText}">
-                            <p-inputIcon>
+                            <p-inputicon>
                                 <i class="pi pi-search"></i>
-                            </p-inputIcon>
+                            </p-inputicon>
                             <input pInputText type="text" 
                                 (input)="filterColumnModal($event)" autocomplete="off" 
                                 [maxlength]="globalSearchMaxLength" placeholder="Search column name" [(ngModel)]="globalSearchText"
                                 style="width: 220px;"/>
                             <!-- Right icon (only if there is text) -->
                             @if (globalSearchText) {
-                                <p-inputIcon position="right">
+                                <p-inputicon position="right">
                                     <i class="pi pi-times" style="cursor: pointer;" (click)="clearGlobalFilter(dt_columnDialog); $event.stopPropagation()"></i>
-                                </p-inputIcon>
+                                </p-inputicon>
                             }
                         </p-iconField>
                     </div>
@@ -50,25 +50,25 @@
                     </td>
                     <td pFrozenColumn style="max-width: 250px; min-width: 250px; width: 250px;">{{rowData.header}}</td>
                     <td style="max-width: 150px; min-width: 150px; width: 150px; text-align: center;">
-                        <p-selectButton [(ngModel)]="rowData.cellOverflowBehaviour" [options]="cellOverflowBehaviourOptions" optionValue="val" optionLabel="icon" [disabled]="rowData.cellOverflowBehaviourDisabled" allowEmpty="false">
+                        <p-selectbutton [(ngModel)]="rowData.cellOverflowBehaviour" [options]="cellOverflowBehaviourOptions" optionValue="val" optionLabel="icon" [disabled]="rowData.cellOverflowBehaviourDisabled" allowEmpty="false">
                             <ng-template #item let-item>
                                 <i [class]="item.icon" style="margin: -20px;" [pTooltip]="item.name" [showDelay]="400" tooltipPosition="top"></i>
                             </ng-template>
-                        </p-selectButton>
+                        </p-selectbutton>
                     </td>
                     <td style="max-width: 160px; min-width: 160px; width: 160px; text-align: center;">
-                        <p-selectButton [(ngModel)]="rowData.dataAlignHorizontal" [options]="dataAlignHorizontalOptions" optionValue="val" optionLabel="icon" [disabled]="rowData.dataAlignHorizontalDisabled" allowEmpty="false">
+                        <p-selectbutton [(ngModel)]="rowData.dataAlignHorizontal" [options]="dataAlignHorizontalOptions" optionValue="val" optionLabel="icon" [disabled]="rowData.dataAlignHorizontalDisabled" allowEmpty="false">
                             <ng-template #item let-item>
                                 <i [class]="item.icon" style="margin: -20px;" [pTooltip]="item.name" [showDelay]="400" tooltipPosition="top"></i>
                             </ng-template>
-                        </p-selectButton>
+                        </p-selectbutton>
                     </td>
                     <td style="max-width: 150px; min-width: 150px; width: 150px; text-align: center;">
-                        <p-selectButton [(ngModel)]="rowData.dataAlignVertical" [options]="dataAlignVerticalOptions" optionValue="val" optionLabel="icon" [disabled]="rowData.dataAlignVerticalDisabled" allowEmpty="false">
+                        <p-selectbutton [(ngModel)]="rowData.dataAlignVertical" [options]="dataAlignVerticalOptions" optionValue="val" optionLabel="icon" [disabled]="rowData.dataAlignVerticalDisabled" allowEmpty="false">
                             <ng-template #item let-item>
                                 <i [class]="item.icon" style="margin: -20px;" [pTooltip]="item.name" [showDelay]="400" tooltipPosition="top"></i>
                             </ng-template>
-                        </p-selectButton>
+                        </p-selectbutton>
                     </td>
                 </tr>
             </ng-template>

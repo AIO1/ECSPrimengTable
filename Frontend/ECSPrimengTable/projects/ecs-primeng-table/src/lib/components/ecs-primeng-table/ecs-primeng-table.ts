@@ -10,7 +10,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { InputTextModule } from 'primeng/inputtext';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
-import { MultiSelectModule } from 'primeng/multiselect';
+import { SelectModule } from 'primeng/select';
 import { CheckboxModule } from 'primeng/checkbox';
 import { PaginatorModule } from 'primeng/paginator';
 import { FilterMetadata } from 'primeng/api';
@@ -41,7 +41,7 @@ import { ViewsManagement } from "../views-management/views-management";
     InputTextModule,
     IconFieldModule,
     InputIconModule,
-    MultiSelectModule,
+    SelectModule,
     CheckboxModule,
     PaginatorModule,
     TableCell,
