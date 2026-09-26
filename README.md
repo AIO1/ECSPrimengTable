@@ -1423,6 +1423,178 @@ In practice, this feature enables you to dynamically customize almost every attr
 
 
 ---
+### 4.19 Optional state when returning from a detail page
+
+Enable `statePersistence` to remember a table's column filters, global search,
+sorting, current page and page size while the user stays inside a list/detail
+scope. It is **disabled by default**:
+
+```ts
+tableOptions = createTableOptions({
+  statePersistence: {
+    enabled: true, // false disables automatic save/restore
+    key: 'people-list'
+  },
+  urlTableConfiguration: 'People/GetTableConfiguration',
+  urlTableData: 'People/GetTableData'
+});
+```
+
+**Disable persistence**
+
+Omit `statePersistence` or set `enabled: false`:
+
+```ts
+statePersistence: {
+  enabled: false,
+  key: 'people-list'
+}
+```
+
+When enabled, both a non-empty key and a parent scope provider are required;
+otherwise the component reports a configuration error. Disabled tables do not
+require a state service provider.
+
+Changing `enabled` to false does not clear filters already on screen. It prevents
+saving them on departure and clears the remembered entry for that key when the
+table is destroyed. On the next initialization, a disabled table does not restore
+that entry. Re-enabling applies to subsequent navigation; it does not immediately
+load old filters into the visible table.
+
+Each table needs a unique key within its scope. Include any context identifier
+(e.g. customer ID) in the key when the same table displays different datasets.
+
+**Define the scope in the consuming application**
+
+Provide `ECSPrimengTableStateService` on a parent **component** that remains
+mounted while switching between the list and its detail pages:
+
+```ts
+import { Component } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
+import { ECSPrimengTableStateService } from '@eternalcodestudio/primeng-table';
+
+@Component({
+  selector: 'app-people-scope',
+  standalone: true,
+  imports: [RouterOutlet],
+  providers: [ECSPrimengTableStateService],
+  template: '<router-outlet />'
+})
+export class PeopleScope {}
+```
+
+Group the related routes under that component (using your own list/detail
+components):
+
+```ts
+import { Routes } from '@angular/router';
+
+const routes: Routes = [
+  {
+    path: 'people',
+    component: PeopleScope,
+    children: [
+      { path: '', pathMatch: 'full', component: PeopleList },
+      { path: ':id/edit', component: PersonDetail }
+    ]
+  },
+  { path: 'invoices', component: InvoiceList }
+];
+```
+
+Use Angular Router to move between the list and its detail without reloading the
+application. For example, inside the list component:
+
+```ts
+import { inject } from '@angular/core';
+import { Router } from '@angular/router';
+
+private readonly router = inject(Router);
+
+editPerson(row: { rowID: string }): void {
+  void this.router.navigate(['/people', row.rowID, 'edit']);
+}
+```
+
+Connect a row button's `action` to `this.editPerson(row)`. Return from the detail
+with `routerLink="/people"` (import `RouterLink`) or `router.navigate(['/people'])`.
+A full page reload, including navigation through `window.location`, discards the
+in-memory scope.
+
+| Navigation | Result |
+|---|---|
+| People list → person detail → people list | Restore the last query and fetch fresh data |
+| People list → invoices → people list | Start with no previous transient query |
+| Person detail → invoices → people list | Start with no previous transient query |
+| Persistence disabled | Use the normal table startup behavior |
+
+The table saves when the list component is destroyed. The parent's service stays
+alive during navigation to a detail. Leaving that parent destroys the service and
+discards its states. Browser reloads and new tabs start fresh: this feature uses
+memory only, not sessionStorage, localStorage or the database.
+
+Do not provide the service at the application root, in `app.config.ts`, or on
+the list component itself. A root provider would retain state across unrelated
+screens; a list provider would be destroyed on the way to its detail. Use the
+parent component's `providers`, not the route configuration's `providers`, so
+the lifetime follows the component. This assumes normal Angular route
+destruction; a custom RouteReuseStrategy that detaches the parent must explicitly
+manage its state lifetime.
+
+**Restoration and existing views**
+
+Restoration happens after the backend configuration and startup views have loaded,
+before the first data query. Current column metadata is retained; filters/sorts
+for removed fields are ignored. Dates stay Date objects and predefined filter
+selections are restored.
+
+Transient state takes precedence over a saved view marked for startup. Without
+transient state (including when disabled), existing saved-view behavior is
+unchanged. Leaving a scope clears only transient state; explicitly saved views
+remain available and can still be applied at startup.
+
+Row data, row selections and the selected-row filter are not cached. Column
+layout is still managed through the existing views feature. Resetting the table
+also clears its remembered query. To clear stored entries explicitly, inject
+`ECSPrimengTableStateService` in the scope and call `clear('people-list')` or
+`clear()` for all entries; this does not reset an already visible table. Use
+`resetTableView()` on that table to reset its current query.
+
+**Try the included demo**
+
+The [demo routes](Frontend/ECSPrimengTable/src/app/app.routes.ts) use `/home` as
+the people scope, `/home/:id/edit` for its detail and `/other` outside that scope.
+The [scope components](Frontend/ECSPrimengTable/src/app/pages/home/navigation-demo.ts)
+provide the state service and a shared checkbox setting. The
+[list component](Frontend/ECSPrimengTable/src/app/pages/home/home.ts) assigns that
+setting to `tableOptions.statePersistence`.
+
+1. Start the API and frontend following [Setup the environment](#2-setup-the-environment-to-try-the-demo).
+2. Open `/home`. **Conservar filtros al volver del detalle** is checked in the demo; the library still defaults to disabled.
+3. Apply a column filter or global search, then click a row's edit/pencil button.
+4. Click **Volver al listado de personas**. Filters, sorting and pagination are restored and fresh data is fetched.
+5. Click **Ir a otra sección (salir del ámbito)** and return to the list. The transient query has been discarded.
+6. Uncheck **Conservar filtros al volver del detalle**, filter again and repeat the detail/return navigation. The query is not restored.
+
+The detail page only demonstrates navigation; it does not edit records. A manually
+saved view marked for startup can still supply filters independently of this
+feature. Unmark that view when testing a completely unfiltered startup.
+
+The demo's checkbox setting survives list/detail navigation because it belongs
+to the scope. Leaving the scope creates new settings when you return.
+
+From `Frontend/ECSPrimengTable`, run the automated tests with:
+
+```sh
+npm run test:state
+```
+
+This builds the library and runs tests covering restoration, scope disposal,
+disabled persistence, startup views, reset and deferred initialization.
+
+---
+
 ## 5 Feature-to-Code mapping
 The purpose of this section is to provide a table that maps the features described earlier to their corresponding technical implementation. Use the table below as a reference to perform this mapping.
 
@@ -5218,6 +5390,9 @@ Configuration options for **ECS PrimeNG table**. Includes settings for table act
 
 | Property | Parent | Type | Default | Description |
 |-|-|-|-|-|
+| `statePersistence` | | `object` | `{ enabled: false }` | Optional in-memory query state within a list/detail scope. See [4.19](#419-optional-state-when-returning-from-a-detail-page). |
+| `enabled` | `statePersistence` | `boolean` | `false` | Save on table destruction and restore on initialization in the same scope. |
+| `key` | `statePersistence` | `string` | `undefined` | Unique table/context key within the scope. Required when enabled, together with a parent component provider for `ECSPrimengTableStateService`. |
 | `copyToClipboardTime` |  | `number` | `0.5` | Defines the number of seconds the user must hold the mouse button on a cell before its content is copied to the clipboard. Set to a value <= 0 to turn off this feature entirely. |
 | `columns` |  | `object` | N/A | Configurations related to the columns of the table. |
 | `selectorEnabled` | `columns` | `boolean` | `true` | Enables or disables the column selector feature. When `true`, a button appears in the top-left corner, opening a modal that lets users show/hide columns, adjust cell overflow behavior, and change horizontal/vertical alignment per column. When `false`, the selector button is not available. |

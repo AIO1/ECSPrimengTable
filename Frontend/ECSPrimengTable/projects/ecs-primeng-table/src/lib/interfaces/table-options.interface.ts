@@ -3,6 +3,18 @@ import { IColumnMetadata, IPredefinedFilter, ITableButton } from "../interfaces"
 
 /** Configuration options for ECS Primeng table */
 export interface ITableOptions {
+    /**
+     * Optional in-memory query state, shared only within a parent component scope.
+     * Provide ECSPrimengTableStateService on the parent containing list/detail routes.
+     * Leaving that parent destroys the state. Disabled by default.
+     */
+    statePersistence?: {
+        /** Save on list destruction and restore before the first data request. @default false */
+        enabled?: boolean;
+        /** Unique table/context key within the scope. Required when enabled. */
+        key?: string;
+    };
+
 
     /**
      * Controls whether the table is active.
@@ -621,6 +633,7 @@ export interface ITableOptions {
 /** Default configuration options for ECS Primeng table */
 export const DEFAULT_TABLE_OPTIONS: ITableOptions = {
     isActive: true,
+    statePersistence: { enabled: false },
     urlTableConfiguration: undefined,
     urlTableData: undefined,
     data: [],

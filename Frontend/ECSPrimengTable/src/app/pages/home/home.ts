@@ -1,4 +1,6 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Router } from '@angular/router';
+import { NavigationDemoSettings } from './navigation-demo';
+import { Component, OnInit, ViewChild, inject } from '@angular/core';
 import { ITableButton, ECSPrimengTable, IPredefinedFilter, TableViewSaveMode, ITableOptions, createTableOptions } from 'ecs-primeng-table';
 import { SharedService } from '../../core/services/shared.service';
 import { IEmploymentStatus } from './employment-status.interface';
@@ -12,6 +14,8 @@ import { IEmploymentStatus } from './employment-status.interface';
   templateUrl: './home.html'
 })
 export class Home implements OnInit {
+  private readonly router = inject(Router);
+  private readonly navigationSettings = inject(NavigationDemoSettings);
   constructor(private readonly sharedService: SharedService){}
   @ViewChild('dt') dt!: ECSPrimengTable; // Get the reference to the object table
 
@@ -40,7 +44,7 @@ export class Home implements OnInit {
       icon: 'pi pi-file-edit',
       tooltip: 'Edit record',
       action: (rowData) => {
-        this.sharedService.showToast("success","Clicked on edit row",`The record ID is\n\n${rowData.rowID}\n\nHere you could open a modal for the user to edit this record (you can retrieve data through the ID) and then call 'this.dt.updateDataExternal()' to refresh the table data.`);
+        void this.router.navigate(['/home', rowData.rowID, 'edit']);
       }
     }
   ];
@@ -99,6 +103,7 @@ export class Home implements OnInit {
     }
   });
   ngOnInit(): void {
+    this.tableOptions.statePersistence = this.navigationSettings.persistence;
     this.getEmploymentStatus(); // Retrieve the possible employment status
   }
   private getEmploymentStatus(){

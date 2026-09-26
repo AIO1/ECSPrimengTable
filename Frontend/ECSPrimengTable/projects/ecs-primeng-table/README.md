@@ -63,3 +63,37 @@ Alternatively, return `header: 'columns.username'` from the backend and define
 `{ "columns": { "username": "Usuario" } }` in the Spanish JSON file.
 
 For the complete integration guide, see [Multilanguage column headers](https://github.com/competergiga/ECSPrimengTable/blob/Angular19/README.md#324-multilanguage-column-headers-angular-19).
+
+## Optional navigation state
+
+Set `statePersistence: { enabled: true, key: "people-list" }` in `createTableOptions` to preserve filters, global search, sorting and pagination when returning from a detail page. It is disabled by default. Provide `ECSPrimengTableStateService` on the parent component containing both list and detail routes. Leaving that component clears its in-memory state. Do not provide it at application root or on the list itself.
+
+See the [scope setup and navigation examples](https://github.com/competergiga/ECSPrimengTable/blob/Angular19/README.md#419-optional-state-when-returning-from-a-detail-page).
+
+### Enable or disable
+
+```ts
+tableOptions = createTableOptions({
+  statePersistence: {
+    enabled: true, // Set false or omit this option to disable.
+    key: 'people-list'
+  }
+  // Add your existing endpoints and other table options.
+});
+```
+
+Register `providers: [ECSPrimengTableStateService]` on a parent component with a
+`<router-outlet />` and put both list and detail routes under it. Use Angular
+Router navigation between them. An enabled table requires a non-empty key and
+this scope provider.
+
+Returning from a detail restores the query and fetches fresh rows. Leaving the
+scope for another section discards that query, as does a browser reload. Setting
+`enabled` to false does not clear filters currently on screen; it prevents their
+preservation for the next navigation. Explicitly saved startup views remain
+independent of this option.
+
+The `/home` demo includes a checkbox for enabled/disabled behavior, a row edit
+button opening a navigation-only detail and an **Ir a otra sección** link to
+leave the scope. Run `npm run test:state` from the frontend workspace for the
+automated tests.
