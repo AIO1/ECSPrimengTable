@@ -17,7 +17,7 @@ is overwritten: `field`, cell values, filters, saved views and server-side Excel
 exports keep their existing behavior. Other UI labels are not translated.
 
 The consuming application loads its dictionaries from JSON files. The demo uses
-`src/assets/i18n/es.json` and `src/assets/i18n/en.json`, copied to `assets/i18n/`
+`src/assets/i18n/es.json`, `en.json`, `fr.json` and `it.json`, copied to `assets/i18n/`
 by the existing Angular assets configuration. Keys match the existing backend
 headers, so no backend changes are required.
 
@@ -55,9 +55,11 @@ provideTranslateService({
 If the application already uses ngx-translate, reuse its provider and add the
 header keys to its existing JSON dictionaries instead of configuring another loader.
 
-Call `TranslateService.use('en')` or `use('es')` to switch languages without fetching
+Call `TranslateService.use('en')`, `use('es')`, `use('fr')` or `use('it')` to switch languages without fetching
 the table configuration again. Missing translations use the fallback language,
 then the original key with ngx-translate's default missing-translation handler.
 
 Alternatively, return `header: 'columns.username'` from the backend and define
 `{ "columns": { "username": "Usuario" } }` in the Spanish JSON file.
+
+For the complete integration guide, see [Multilanguage column headers](https://github.com/competergiga/ECSPrimengTable/blob/Angular19/README.md#324-multilanguage-column-headers-angular-19).

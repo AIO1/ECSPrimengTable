@@ -397,7 +397,125 @@ This tells the **ECS PrimeNG table** package to use your custom services for han
 
 
 
+#### 3.2.4 Multilanguage column headers (Angular 19)
+
+This fork supports column header translations with **ngx-translate**. The consuming application owns the language configuration and JSON dictionaries. The component renders each backend column's `header` using `header | translate`.
+
+Translation applies to column names in the grid and in the column selector. The selector searches translated names and, when `columns.selectorOrderByColumnName` is enabled, sorts by those names. Changing language updates the labels without fetching the table configuration again.
+
+**Install the dependencies**
+
+For this Angular 19 branch, install ngx-translate v17 in the consuming application:
+
+```sh
+npm install @ngx-translate/core@^17 @ngx-translate/http-loader@^17
+```
+
+The library requires `@ngx-translate/core`. The application uses `@ngx-translate/http-loader` to load JSON files. If your application already configures ngx-translate, reuse its existing providers and dictionaries.
+
+**Create the language files**
+
+The demo includes these dictionaries:
+
+| Language | File |
+|---|---|
+| English | [en.json](Frontend/ECSPrimengTable/src/assets/i18n/en.json) |
+| Spanish | [es.json](Frontend/ECSPrimengTable/src/assets/i18n/es.json) |
+| French | [fr.json](Frontend/ECSPrimengTable/src/assets/i18n/fr.json) |
+| Italian | [it.json](Frontend/ECSPrimengTable/src/assets/i18n/it.json) |
+
+Use the exact `header` returned by the backend as the JSON key. For example, the existing backend sends `header: "Username"`.
+
+`src/assets/i18n/es.json`:
+
+```json
+{
+  "Username": "Usuario",
+  "Age": "Edad",
+  "Employment status": "Situación laboral",
+  "Employment status list": "Lista de situaciones laborales",
+  "Birthdate": "Fecha de nacimiento",
+  "Payed taxes?": "¿Impuestos pagados?"
+}
+```
+
+In `en.json`, the same keys map to their English labels, such as `"Username": "Username"`. Keep the keys identical in all language files; only translate the values. No backend changes are needed with this approach.
+
+Ensure Angular copies the dictionaries into the application build. This demo already includes `"src/assets"` in its `angular.json` build `assets` array. In another application, configure an equivalent asset mapping so the files are served at `assets/i18n/<language>.json`.
+
+**Configure the consuming application**
+
+Add the translation provider to your existing `app.config.ts` providers, preserving your router, PrimeNG and other application providers:
+
+```ts
+import { ApplicationConfig } from '@angular/core';
+import { provideHttpClient } from '@angular/common/http';
+import { provideTranslateService } from '@ngx-translate/core';
+import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideHttpClient(),
+    provideTranslateService({
+      lang: 'es',
+      fallbackLang: 'en',
+      loader: provideTranslateHttpLoader({
+        prefix: './assets/i18n/',
+        suffix: '.json'
+      })
+    })
+  ]
+};
+```
+
+If `provideHttpClient()` is already configured with interceptors or other options, keep that existing configuration instead of adding it again. The table component uses the application's translation service; it does not configure a separate loader.
+
+See the demo's [app.config.ts](Frontend/ECSPrimengTable/src/app/app.config.ts) for the complete setup.
+
+**Change the language**
+
+Set `lang` to `'en'`, `'es'`, `'fr'` or `'it'` to choose the startup language. To switch while the application is running, inject `TranslateService` into your component and call `use()`:
+
+```ts
+import { inject } from '@angular/core';
+import { TranslateService } from '@ngx-translate/core';
+
+// Inside your application component class:
+private readonly translate = inject(TranslateService);
+
+changeLanguage(language: 'en' | 'es' | 'fr' | 'it'): void {
+  this.translate.use(language);
+}
+```
+
+For example, connect your language selector to `changeLanguage('fr')`. The loader requests the French dictionary and the table updates its column names.
+
+**Using semantic translation keys**
+
+For new APIs, you can also return a key such as `header: "columns.username"` while keeping `field: "username"` unchanged. Define the corresponding dictionary entry:
+
+```json
+{
+  "columns": {
+    "username": "Usuario"
+  }
+}
+```
+
+For the .NET backend, this can be configured with `[ColumnAttributes("columns.username")]`. Choose either literal header keys or semantic keys and use matching keys in the dictionaries.
+
+**Fallback and scope**
+
+If a key is missing in the active language, ngx-translate tries `fallbackLang`. With the default missing-translation handler, a key missing in both languages is displayed as-is. All configured language files must still exist and be valid JSON; fallback is not a replacement for fixing failed HTTP requests.
+
+Only backend column `header` labels are translated. Cell values, descriptions, buttons, the built-in action/selection headers and other interface text keep their existing behavior. Date formatting still uses the table's date configuration. Original metadata, field identifiers, filtering requests and saved views are preserved. Server-generated Excel headers are not translated by this frontend feature.
+
+To check the demo, load it in Spanish and verify that `Username` appears as `Usuario`. Open **Modify columns** and search for `Usuario`. Then change the active language and verify the labels again.
+
+<br><br><br>
+
 ---
+
 ## 4 Functional overview
 The goal of this section is to provide a **user-level overview** of all the features included in the **ECS PrimeNG table**. It allows you to quickly understand what the table can offer and how these functionalities can be utilized in your projects. This section provides a clear, at a glance view of everything available without diving into code.
 
