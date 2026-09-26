@@ -203,7 +203,7 @@
                         [id]="col.field + '-header'" [attr.scope]="'col'">
                         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                             <div style="margin-right: 15px;">
-                                <span>{{ col.header }}</span>
+                                <span>{{ col.header | translate }}</span>
                             </div>
                             <div style="display: flex; align-items: center; gap: 5px;">
                                 @if (col.canBeSorted) {
@@ -298,7 +298,7 @@
         </ng-template>
     </p-table>
 </div>
-<ecs-column-selector [visible]="showColumnSelector" [columnModalData]="columnModalData" [filteredColumnData]="filteredColumnData" (visibleChange)="showColumnSelector=false" (applyChanges)="applyColumnModalChanges($event)"/>
+<ecs-column-selector [visible]="showColumnSelector" [columnModalData]="columnModalData" [filteredColumnData]="filteredColumnData" [orderByHeader]="tableOptions.columns?.selectorOrderByColumnName === true" (visibleChange)="showColumnSelector=false" (applyChanges)="applyColumnModalChanges($event)"/>
 <ecs-export-excel [visible]="showExportModal" [rowCheckboxSelectorActive]="tableOptions.rows?.checkboxSelector?.enabled ?? false" [excelReportTitle]="excelReportTitle" [allowTitleUserEdit]="tableOptions.excelReport?.titleAllowUserEdit ?? false" (visibleChange)="showExportModal=false" (exportToExcel)="generateExcelReport($event)"/>
 <ecs-views-management [visible]="viewsModalShow" [tableViews_menuItems]="tableViews_menuItems" 
     (onViewSelect)="viewLoad($event)" (onViewCreate)="viewCreate($event)" (onViewDelete)="viewDelete($event)" (onViewEditAlias)="viewEditAlias($event)" (onViewUpdateData)="viewUpdateData($event)" (onViewUpdateActiveStartup)="viewUpdateActiveStartup($event)"

@@ -11,7 +11,7 @@ export interface IColumnMetadata {
     /** The key or identifier for the column's data field. */
     field: string;
 
-    /** The display name of the column header. */
+    /** Display name or ngx-translate key. Translated only for display; field and metadata are preserved. */
     header: string;
 
     /** The type of data contained in the column. */

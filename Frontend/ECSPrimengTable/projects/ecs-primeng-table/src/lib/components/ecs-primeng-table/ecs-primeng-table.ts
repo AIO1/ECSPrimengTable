@@ -1,4 +1,5 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Output, ViewChild, ViewEncapsulation } from '@angular/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpResponse } from '@angular/common/http';
@@ -33,6 +34,7 @@ import { ViewsManagement } from "../views-management/views-management";
 @Component({
   selector: 'ecs-primeng-table',
   imports: [
+    TranslatePipe,
     CommonModule,
     FormsModule,
     TableModule,
@@ -793,11 +795,6 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
         dataAlignVerticalDisabled: !column.dataAlignVerticalAllowUserEdit
       };
     });
-    if (this.tableOptions.columns?.selectorOrderByColumnName === true) { // Sort columns by header only if order by column name is true
-      tempData = tempData.slice().sort((a, b) => {
-        return a.header.toUpperCase().localeCompare(b.header.toUpperCase()); // Sort by header text (A-Z)
-      });
-    }
     this.columnModalData = [...tempData];
     this.filteredColumnData = this.columnModalData;
     this.showColumnSelector=true;

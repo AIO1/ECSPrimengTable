@@ -4,8 +4,8 @@
         <span class="white-space-nowrap"><b>MODIFY COLUMNS</b></span>
     </ng-template>
     <div style="padding: 10px;">
-        <p-table #dt_columnDialog [value]="columnModalData" [scrollable]="true" size="small" showGridlines stripedRows 
-            [globalFilterFields]="['header']" scrollHeight="calc(80vh - 220px)" (onFilter)="onColumnModalFilter($event)">
+        <p-table #dt_columnDialog [value]="filteredColumnData" [scrollable]="true" size="small" showGridlines stripedRows
+            scrollHeight="calc(80vh - 220px)">
             <ng-template #caption>
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div style="display: flex; align-items: center; gap: 10px">
@@ -48,7 +48,7 @@
                             [binary]="true"
                             [disabled]="rowData.selectDisabled"/>
                     </td>
-                    <td pFrozenColumn style="max-width: 250px; min-width: 250px; width: 250px;">{{rowData.header}}</td>
+                    <td pFrozenColumn style="max-width: 250px; min-width: 250px; width: 250px;">{{rowData.header | translate}}</td>
                     <td style="max-width: 150px; min-width: 150px; width: 150px; text-align: center;">
                         <p-selectButton [(ngModel)]="rowData.cellOverflowBehaviour" [options]="cellOverflowBehaviourOptions" optionValue="val" optionLabel="icon" [disabled]="rowData.cellOverflowBehaviourDisabled" allowEmpty="false">
                             <ng-template #item let-item>
