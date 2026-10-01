@@ -1,4 +1,4 @@
-﻿using Data.PrimengTableReusableComponent;
+using Data.PrimengTableReusableComponent;
 using ECS.PrimengTable.Enums;
 using ECS.PrimengTable.Models;
 using ECS.PrimengTable.Services;
@@ -64,7 +64,8 @@ namespace ECSPrimengTableExample.Services {
                     EmploymentStatusName = u.EmploymentStatus != null ? u.EmploymentStatus.StatusName : null,
                     EmploymentStatusNameList = u.EmploymentStatusList,
                     Birthdate = u.Birthdate,
-                    PayedTaxes = u.PayedTaxes
+                    PayedTaxes = u.PayedTaxes,
+                    ESL_tooltip = u.EmploymentStatus != null ? u.EmploymentStatus.ColorR.ToString() : null
                 });
         }
     }

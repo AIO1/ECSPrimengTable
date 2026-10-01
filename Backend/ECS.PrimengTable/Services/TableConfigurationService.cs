@@ -1,4 +1,4 @@
-﻿using ECS.PrimengTable.Attributes;
+using ECS.PrimengTable.Attributes;
 using ECS.PrimengTable.Models;
 using System.Reflection;
 
@@ -68,6 +68,7 @@ internal static class TableConfigurationService {
                 DataAlignVerticalAllowUserEdit = colAtt.DataAlignVerticalAllowUserEdit,
                 CanBeHidden = colAtt.CanBeHidden,
                 StartHidden = colAtt.StartHidden,
+                VisibleOnlyIn = colAtt.VisibleOnlyIn,
                 CanBeResized = colAtt.CanBeResized,
                 CanBeReordered = colAtt.CanBeReordered,
                 CanBeSorted = colAtt.CanBeSorted,

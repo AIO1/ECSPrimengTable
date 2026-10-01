@@ -81,3 +81,9 @@ Registra `providers: [ECSPrimengTableStateService]` en un componente padre con u
 Al volver del detalle, se restaura la consulta y se solicitan los datos actualizados. Al salir del ámbito hacia otra sección, se descarta la consulta, al igual que al recargar el navegador. Establecer `enabled` en `false` no borra los filtros que aparecen en pantalla: impide que se conserven para la siguiente navegación. Las vistas de inicio guardadas explícitamente son independientes de esta opción.
 
 La demo de `/home` incluye una casilla para activar o desactivar este comportamiento, un botón de edición de fila que abre un detalle destinado a probar la navegación y un enlace **Ir a otra sección** para salir del ámbito. Ejecuta `npm run test:state` desde el directorio de trabajo del frontend para ejecutar las pruebas automatizadas.
+
+## Opciones responsive
+
+Los menús de cabecera y fila son opcionales y están desactivados por defecto. Actívalos con `responsive.headerMenu` y `responsive.rowMenu`. El atributo opcional `VisibleOnlyIn` del DTO define la visibilidad inicial por tamaño y mantiene las columnas disponibles en el selector.
+
+Consulta [configuración, prioridades y ejemplos](../../../../README.es.md#10-menús-adaptables-y-visibilidad-inicial-de-columnas).

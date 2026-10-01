@@ -5474,3 +5474,77 @@ Configuration options for **ECS PrimeNG table**. Includes settings for table act
 ---
 ## 9 Editing ECS PrimeNG table and integrating locally
 WIP
+
+
+## 10 Responsive menus and initial column visibility
+
+All new behavior is optional. Without the new settings, existing applications keep their header buttons, row buttons and column visibility. The categories refer to **browser viewport width in CSS pixels**, not hardware or user-agent detection.
+
+### Frontend options
+
+```ts
+tableOptions = createTableOptions({
+  responsive: {
+    headerMenu: true,
+    rowMenu: true,
+    tabletMinWidth: 768,
+    desktopMinWidth: 1200,
+    headerMenuLabel: 'Table actions',
+    rowMenuLabel: 'Row actions'
+  }
+  // Keep your existing endpoints and other options.
+});
+```
+
+| Option | Default | Meaning |
+|---|---|---|
+| `headerMenu` | `false` | On Mobile/Tablet, put header actions in a hamburger menu on the right. Global search stays visible. |
+| `rowMenu` | `false` | On Mobile/Tablet, put each row's actions in a vertical kebab menu. The action column uses 56 px, returning to its configured width on Desktop. |
+| `tabletMinWidth` | `768` | Inclusive lower bound for Tablet. |
+| `desktopMinWidth` | `1200` | Inclusive lower bound for Desktop. |
+| `headerMenuLabel` | `'Table actions'` | Accessible name of the header trigger. |
+| `rowMenuLabel` | `'Row actions'` | Accessible name of each row trigger. |
+
+Mobile is below 768 px, Tablet is 768–1199 px, and Desktop starts at 1200 px with the defaults. Custom widths must be finite and satisfy `0 < tabletMinWidth < desktopMinWidth`; otherwise initialization throws a configuration error. Use the same breakpoint configuration across grids to classify the viewport consistently.
+
+Header and row menus can be enabled independently. Built-in and custom actions preserve their visible/enabled conditions and callbacks. Custom entries use `label`, then `tooltip`, then `Action N`: provide a meaningful label or tooltip for icon-only buttons. Row callbacks receive the corresponding row; header callbacks receive `null`. Menus attach to `body` to avoid clipping and support keyboard navigation and Escape.
+
+### Backend DTO
+
+```csharp
+using ECS.PrimengTable.Attributes;
+using ECS.PrimengTable.Enums;
+
+[ColumnAttributes("Email",
+    VisibleOnlyIn = new[] { DeviceType.Desktop, DeviceType.Tablet })]
+public string Email { get; set; } = string.Empty;
+
+[ColumnAttributes("Internal notes",
+    VisibleOnlyIn = new[] { DeviceType.Desktop })]
+public string Notes { get; set; } = string.Empty;
+```
+
+`VisibleOnlyIn` is an optional named property; existing constructor signatures are unchanged. It accepts one, two or all three values. Both frontend and backend expose `DeviceType` with `Mobile = 0`, `Tablet = 1`, `Desktop = 2`. The wire property is `visibleOnlyIn`; default System.Text.Json serialization omits it when null. Updated frontends also accept old APIs without this field. Column defaults work independently of the menu flags.
+
+Precedence:
+
+1. `CanBeHidden = false` keeps mandatory columns visible on every viewport.
+2. `StartHidden = true` keeps selectable columns initially hidden, preserving existing behavior.
+3. Missing, null or empty `VisibleOnlyIn` adds no restriction.
+4. Otherwise, the column starts visible only in the listed categories.
+
+Hidden columns remain available in the selector. This is a display default, not an authorization rule. A saved view or explicit column-selector choice overrides responsive defaults. Without customization, crossing a breakpoint recalculates defaults and requests visible fields while retaining query filters, sorting and pagination. After customization, resizing changes only the menus. Resetting the table restores defaults for the current viewport.
+
+Column layout remains managed through saved views; navigation-state persistence still stores query state only. Dynamic overrides support `ColumnMetadataOverrideModel.VisibleOnlyIn`; use an empty array to clear a restriction. No database migration is needed.
+
+### Demo and validation
+
+The `home` demo explicitly enables both menus; library defaults remain disabled. Use the DTO example above to configure individual columns.
+
+From `Frontend/ECSPrimengTable`, run `npm run test:responsive` and `npm run test:state`. From the repository root, backend checks run without SQL:
+
+```sh
+dotnet run --project Backend/ECS.PrimengTable.ResponsiveTests -p:GeneratePackageOnBuild=false
+```
+
+The optional `tests/responsive.browser.mjs` uses Playwright and intercepted test responses without SQL. Build the library and demo (`ng build ECSPrimengTable --configuration development`), then run `node tests/responsive.browser.mjs` with Playwright available. `PLAYWRIGHT_MODULE` and `BROWSER_EXECUTABLE` can point to existing installations.

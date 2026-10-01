@@ -17,9 +17,9 @@
                 <th [ngStyle]="{
                         'text-align': 'center',
                         'vertical-align': 'middle',
-                        'max-width': (tableOptions.rows?.action?.width ?? 150) + 'px',
-                        'min-width': (tableOptions.rows?.action?.width ?? 150) + 'px',
-                        'width': (tableOptions.rows?.action?.width ?? 150) + 'px'
+                        'max-width': actionColumnWidth + 'px',
+                        'min-width': actionColumnWidth + 'px',
+                        'width': actionColumnWidth + 'px'
                     }"
                     pResizableColumn [pResizableColumnDisabled]="!tableOptions.rows?.action?.resizable" pFrozenColumn [frozen]="tableOptions.rows?.action?.frozen ?? false"
                     [alignFrozen]="getFrozenColumnAlignAsText(tableOptions.rows?.action?.positionRight ? FrozenColumnAlign.Right : FrozenColumnAlign.Left)" id="actions-header"
@@ -36,14 +36,22 @@
                     [ngStyle]="{
                         'text-align': (getDataAlignHorizontalAsText(tableOptions.rows?.action?.horizontalAlignment ?? DataAlignHorizontal.Center)),
                         'vertical-align': (getDataAlignVerticalAsText(tableOptions.rows?.action?.verticalAlignment ?? DataAlignVertical.Middle)),
-                        'max-width': (tableOptions.rows?.action?.width ?? 150) + 'px',
-                        'min-width': (tableOptions.rows?.action?.width ?? 150) + 'px',
-                        'width': (tableOptions.rows?.action?.width ?? 150) + 'px'
+                        'max-width': actionColumnWidth + 'px',
+                        'min-width': actionColumnWidth + 'px',
+                        'width': actionColumnWidth + 'px'
                     }"
                     pFrozenColumn [frozen]="tableOptions.rows?.action?.frozen ?? false"
                     [alignFrozen]="getFrozenColumnAlignAsText(tableOptions.rows?.action?.positionRight ? FrozenColumnAlign.Right : FrozenColumnAlign.Left)">
+                    @if (compactRows) {
+                        @if (hasRowMenuActions(rowData)) {
+                            <button pButton type="button" icon="pi pi-ellipsis-v" [attr.aria-label]="tableOptions.responsive?.rowMenuLabel || 'Row actions'"
+                                aria-haspopup="menu" [attr.aria-expanded]="responsiveRowMenu.visible && rowMenuRow === rowData"
+                                (click)="openRowMenu($event, rowData)" class="ecs-responsive-trigger"></button>
+                        }
+                    } @else {
                     @for (button of tableOptions.rows?.action?.buttons; track button; let last = $last) {
                         <ecs-table-button [button]="button" [rowData]="rowData" [isActionButton]="true" [isLastActionButton]="last"/>
+                    }
                     }
                 </td>
             }
@@ -91,7 +99,27 @@
 
         <!-- LOGIC FOR DRAWING TABLE ACTIONS ABOVE THE HEADER -->
         <ng-template #caption>
-            <div #headerContainer style="display: flex; justify-content: space-between; align-items: center;">
+            <div #headerContainer [class.ecs-compact-header]="compactHeader" style="display: flex; justify-content: space-between; align-items: center;">
+                @if (compactHeader) {
+                    @if (tableOptions.globalFilter?.enabled) {
+                        <p-iconField iconPosition="left" class="ecs-responsive-search">
+                            <p-inputIcon><i class="pi pi-search"></i></p-inputIcon>
+                            <input pInputText type="text" aria-label="Search keyword" placeholder="Search keyword" autocomplete="off"
+                                [maxlength]="tableOptions.globalFilter?.maxLength ?? null" [(ngModel)]="globalSearchText"
+                                (input)="dt.filterGlobal($any($event.target).value, 'contains')"/>
+                            @if (globalSearchText) {
+                                <p-inputIcon position="right"><button type="button" class="ecs-clear-search" aria-label="Clear search" (click)="clearFilters(dt, true, true)"><i class="pi pi-times"></i></button></p-inputIcon>
+                            }
+                        </p-iconField>
+                    }
+                    @if (tableOptions.description?.text) {
+                        <i [class]="tableOptions.description!.icon" [pTooltip]="tableOptions.description!.text" [escape]="false"></i>
+                    }
+                    <button pButton type="button" icon="pi pi-bars" [attr.aria-label]="tableOptions.responsive?.headerMenuLabel || 'Table actions'"
+                        aria-haspopup="menu" [attr.aria-expanded]="responsiveHeaderMenu.visible"
+                        (click)="openHeaderMenu($event)" class="ecs-responsive-trigger ecs-header-menu-trigger"></button>
+                } @else {
+
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <!--CHOOSE COLUMNS TO SHOW-->
                     @if (tableOptions.columns?.selectorEnabled) {
@@ -181,6 +209,7 @@
                         </td>
                     }
                 </div>
+                }
             </div>
         </ng-template>
 
@@ -303,3 +332,6 @@
 <ecs-views-management [visible]="viewsModalShow" [tableViews_menuItems]="tableViews_menuItems" 
     (onViewSelect)="viewLoad($event)" (onViewCreate)="viewCreate($event)" (onViewDelete)="viewDelete($event)" (onViewEditAlias)="viewEditAlias($event)" (onViewUpdateData)="viewUpdateData($event)" (onViewUpdateActiveStartup)="viewUpdateActiveStartup($event)"
     (visibleChange)="viewsModalShow=false"/>
+<!-- Body-level overlays avoid clipping inside scrollable and frozen table cells. -->
+<p-menu #responsiveHeaderMenu [model]="headerMenuItems" [popup]="true" appendTo="body" styleClass="ecs-responsive-menu"/>
+<p-menu #responsiveRowMenu [model]="rowMenuItems" [popup]="true" appendTo="body" styleClass="ecs-responsive-menu"/>

@@ -97,3 +97,9 @@ The `/home` demo includes a checkbox for enabled/disabled behavior, a row edit
 button opening a navigation-only detail and an **Ir a otra sección** link to
 leave the scope. Run `npm run test:state` from the frontend workspace for the
 automated tests.
+
+## Responsive options
+
+Header and row menus are optional and disabled by default. Enable `responsive.headerMenu` and `responsive.rowMenu`. The optional DTO attribute `VisibleOnlyIn` sets initial visibility by viewport while keeping columns available in the selector.
+
+See [configuration, precedence and examples](../../../../README.md#10-responsive-menus-and-initial-column-visibility).

@@ -1,4 +1,4 @@
-﻿using ECS.PrimengTable.Attributes;
+using ECS.PrimengTable.Attributes;
 using ECS.PrimengTable.Enums;
 
 namespace ECSPrimengTableExample.DTOs {
@@ -15,7 +15,9 @@ namespace ECSPrimengTableExample.DTOs {
         [ColumnAttributes("Age", dataType: DataType.Numeric, columnDescription: "The age of the user")]
         public byte? Age { get; set; }
 
-        [ColumnAttributes("Employment status", filterPredefinedValuesName: "employmentStatusPredefinedFilter", columnDescription: "A predefined filter that shows the employment status of the user")]
+        [ColumnAttributes("Employment status", filterPredefinedValuesName: "employmentStatusPredefinedFilter", columnDescription: "A predefined filter that shows the employment status of the user",
+         dataTooltipCustomColumnSource :"ESL_tooltip")
+        ]
         public string? EmploymentStatusName { get; set; }
 
         [ColumnAttributes("Employment status list", dataType: DataType.List, dataAlignHorizontal: DataAlignHorizontal.Left, filterPredefinedValuesName: "employmentStatusPredefinedFilterList", columnDescription: "A list of employment statuses separated by ; in the database")]
@@ -26,5 +28,9 @@ namespace ECSPrimengTableExample.DTOs {
 
         [ColumnAttributes("Payed taxes?", dataType: DataType.Boolean, startHidden: true, columnDescription: "If the user has payed his taxes or not. You've got to pay your taxes :)")]
         public bool PayedTaxes { get; set; }
+
+        [ColumnAttributes("ESL_tooltip",sendColumnAttributes :false,  dataType: DataType.Text, startHidden: true )]
+        public string? ESL_tooltip { get; set; }
+
     }
 }

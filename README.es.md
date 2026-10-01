@@ -5605,3 +5605,77 @@ Opciones de configuración para **ECS PrimeNG table**. Incluye configuraciones p
 <a id="9-editing-ecs-primeng-table-and-integrating-locally"></a>
 ## 9 Edición de ECS PrimeNG Table e integración local
 WIP
+
+
+## 10 Menús adaptables y visibilidad inicial de columnas
+
+Todas las funciones nuevas son opcionales. Sin configurar estas opciones, las aplicaciones conservan sus botones de cabecera, botones de fila y visibilidad de columnas actuales. Las categorías se basan en el **ancho de la ventana del navegador en píxeles CSS**, no en el dispositivo físico.
+
+### Opciones del frontend
+
+```ts
+tableOptions = createTableOptions({
+  responsive: {
+    headerMenu: true,
+    rowMenu: true,
+    tabletMinWidth: 768,
+    desktopMinWidth: 1200,
+    headerMenuLabel: 'Acciones de la tabla',
+    rowMenuLabel: 'Acciones de la fila'
+  }
+  // Conserva tus endpoints y las demás opciones existentes.
+});
+```
+
+| Opción | Valor predeterminado | Función |
+|---|---|---|
+| `headerMenu` | `false` | En Mobile/Tablet, agrupa las acciones de cabecera en un menú de hamburguesa a la derecha. La búsqueda global permanece visible. |
+| `rowMenu` | `false` | En Mobile/Tablet, agrupa las acciones de fila en un menú de tres puntos verticales. La columna de acciones ocupa 56 px y recupera su ancho configurado en Desktop. |
+| `tabletMinWidth` | `768` | Ancho mínimo de Tablet, incluido. |
+| `desktopMinWidth` | `1200` | Ancho mínimo de Desktop, incluido. |
+| `headerMenuLabel` | `'Table actions'` | Nombre accesible del botón de menú de cabecera. |
+| `rowMenuLabel` | `'Row actions'` | Nombre accesible de cada botón de menú de fila. |
+
+Con los valores predeterminados, Mobile corresponde a menos de 768 px, Tablet a 768–1199 px y Desktop comienza en 1200 px. Los anchos personalizados deben ser finitos y cumplir `0 < tabletMinWidth < desktopMinWidth`; de lo contrario, se produce un error de configuración. Usa los mismos puntos de corte en todos los grids si quieres que clasifiquen la ventana de igual forma.
+
+Los dos menús se activan por separado. Las acciones incorporadas y personalizadas mantienen sus condiciones de visibilidad, activación y sus funciones. Las opciones personalizadas utilizan `label`, después `tooltip` y, como último recurso, `Action N`. Proporciona una etiqueta o tooltip descriptivo a los botones que solo tienen icono. Las acciones de fila reciben la fila correspondiente y las de cabecera reciben `null`. Los menús se añaden a `body` para evitar recortes y admiten navegación por teclado y cierre con Escape.
+
+### DTO del backend
+
+```csharp
+using ECS.PrimengTable.Attributes;
+using ECS.PrimengTable.Enums;
+
+[ColumnAttributes("Email",
+    VisibleOnlyIn = new[] { DeviceType.Desktop, DeviceType.Tablet })]
+public string Email { get; set; } = string.Empty;
+
+[ColumnAttributes("Internal notes",
+    VisibleOnlyIn = new[] { DeviceType.Desktop })]
+public string Notes { get; set; } = string.Empty;
+```
+
+`VisibleOnlyIn` es una propiedad opcional con nombre: no cambia la firma del constructor existente. Admite uno, dos o los tres valores. El frontend y el backend exponen `DeviceType` con `Mobile = 0`, `Tablet = 1` y `Desktop = 2`. El campo enviado es `visibleOnlyIn`; System.Text.Json lo omite cuando es nulo con la configuración predeterminada. El frontend actualizado también admite APIs antiguas sin ese campo. La visibilidad de columnas funciona independientemente de los menús.
+
+Prioridad de las reglas:
+
+1. `CanBeHidden = false` mantiene las columnas obligatorias visibles en todos los tamaños.
+2. `StartHidden = true` mantiene inicialmente ocultas las columnas seleccionables, respetando el comportamiento existente.
+3. Si `VisibleOnlyIn` no se define, es nulo o contiene un array vacío, no añade restricciones.
+4. En los demás casos, la columna comienza visible solo en las categorías indicadas.
+
+Las columnas ocultas siguen disponibles en el selector. Es un valor inicial de presentación, no una regla de autorización. Una vista guardada o una elección explícita en el selector tiene prioridad sobre los valores responsive. Sin personalización, al cruzar un punto de corte se recalculan las columnas y se solicitan los campos visibles conservando filtros, ordenación y paginación. Con personalización, el cambio de tamaño solo adapta los menús. Restablecer la tabla recupera los valores iniciales del tamaño actual.
+
+La distribución de columnas sigue gestionándose mediante vistas guardadas; la conservación del estado durante la navegación continúa almacenando solo la consulta. Las sobrescrituras dinámicas admiten `ColumnMetadataOverrideModel.VisibleOnlyIn`; usa un array vacío para quitar la restricción. No hace falta modificar la base de datos.
+
+### Demo y comprobaciones
+
+La demo de `home` activa explícitamente ambos menús; la biblioteca los mantiene desactivados por defecto. Utiliza el ejemplo de DTO anterior para configurar columnas individuales.
+
+Desde `Frontend/ECSPrimengTable`, ejecuta `npm run test:responsive` y `npm run test:state`. Desde la raíz del repositorio, las comprobaciones del backend no requieren SQL:
+
+```sh
+dotnet run --project Backend/ECS.PrimengTable.ResponsiveTests -p:GeneratePackageOnBuild=false
+```
+
+La prueba opcional `tests/responsive.browser.mjs` usa Playwright y respuestas de prueba interceptadas, sin SQL. Compila la biblioteca y la demo (`ng build ECSPrimengTable --configuration development`) y ejecuta `node tests/responsive.browser.mjs` con Playwright disponible. Puedes indicar instalaciones existentes mediante `PLAYWRIGHT_MODULE` y `BROWSER_EXECUTABLE`.

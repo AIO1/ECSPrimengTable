@@ -7,7 +7,8 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "test:state": "ng build ecs-primeng-table && node --test tests/navigation-state.test.mjs"
+    "test:state": "ng build ecs-primeng-table && node --test tests/navigation-state.test.mjs",
+    "test:responsive": "ng build ecs-primeng-table && node --test tests/responsive.test.mjs"
   },
   "prettier": {
     "overrides": [

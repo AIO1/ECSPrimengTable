@@ -1,4 +1,4 @@
-import { CellOverflowBehaviour, DataAlignHorizontal, DataAlignVertical, DataType, FrozenColumnAlign } from "../enums";
+import { DeviceType, CellOverflowBehaviour, DataAlignHorizontal, DataAlignVertical, DataType, FrozenColumnAlign } from "../enums";
 
 /**
  * Represents the metadata for a column in a table.
@@ -34,6 +34,9 @@ export interface IColumnMetadata {
 
     /** Determines if the column should initially be hidden. */
     startHidden: boolean;
+
+    /** Optional initial visibility. Empty/omitted preserves startHidden; mandatory columns remain visible. */
+    visibleOnlyIn?: DeviceType[] | null;
 
     /** Determines if the column can be resized by the user. */
     canBeResized: boolean;

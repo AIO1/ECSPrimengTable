@@ -15,13 +15,14 @@ import { InputIconModule } from 'primeng/inputicon';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { CheckboxModule } from 'primeng/checkbox';
 import { PaginatorModule } from 'primeng/paginator';
-import { FilterMetadata } from 'primeng/api';
+import { FilterMetadata, MenuItem } from 'primeng/api';
 import { ButtonGroupModule } from 'primeng/buttongroup';
 import { PopoverModule } from 'primeng/popover';
+import { Menu, MenuModule } from 'primeng/menu';
 
 import { ECSPrimengTableService } from './ecs-primeng-table.service';
-import { CellOverflowBehaviour, DataAlignHorizontal, DataAlignVertical, DataType, FrozenColumnAlign, TableViewSaveMode } from '../../enums';
-import { IColumnMetadata, IPredefinedFilter, ITableConfiguration, ITablePagedResponse, ITableQueryRequest, IExcelExportRequest, ITableView, ITableViewData, ITableOptions, DEFAULT_TABLE_OPTIONS } from '../../interfaces';
+import { DeviceType, CellOverflowBehaviour, DataAlignHorizontal, DataAlignVertical, DataType, FrozenColumnAlign, TableViewSaveMode } from '../../enums';
+import { ITableButton, IColumnMetadata, IPredefinedFilter, ITableConfiguration, ITablePagedResponse, ITableQueryRequest, IExcelExportRequest, ITableView, ITableViewData, ITableOptions, DEFAULT_TABLE_OPTIONS } from '../../interfaces';
 import { dataAlignHorizontalAsText, dataAlignVerticalAsText, dataTypeAsText, frozenColumnAlignAsText } from '../../utils';
 import { ECSPrimengTableNotificationService, ECSPrimengTableStateService } from '../../services';
 import { TableCell } from '../table-cell/table-cell';
@@ -54,7 +55,8 @@ import { ViewsManagement } from "../views-management/views-management";
     ExportExcel,
     ButtonGroupModule,
     ViewsManagement,
-    PopoverModule
+    PopoverModule,
+    MenuModule
   ],
   standalone: true,
   templateUrl: './ecs-primeng-table.html',
@@ -131,6 +133,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit, OnDestroy {
   private maxViews = 0;
   ngOnInit(): void {
     this.validateStatePersistence();
+    this.updateResponsiveViewport();
     this.fetchTableConfiguration();
   }
   @ViewChild('tableContainer', { static: false }) tableContainer!: ElementRef;
@@ -138,6 +141,116 @@ export class ECSPrimengTable implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('paginatorContainer', { static: false }) paginatorContainer!: ElementRef;
   ngAfterViewInit() {
     this.calculateScrollHeight();
+  }
+
+  deviceType: DeviceType = DeviceType.Desktop;
+  private columnSelectionCustomized = false;
+  headerMenuItems: MenuItem[] = [];
+  rowMenuItems: MenuItem[] = [];
+  rowMenuRow: any;
+  @ViewChild('responsiveHeaderMenu') responsiveHeaderMenu?: Menu;
+  @ViewChild('responsiveRowMenu') responsiveRowMenu?: Menu;
+
+  get compactHeader(): boolean {
+    return !!this.tableOptions.responsive?.headerMenu && this.deviceType !== DeviceType.Desktop;
+  }
+
+  get compactRows(): boolean {
+    return !!this.tableOptions.responsive?.rowMenu && this.deviceType !== DeviceType.Desktop;
+  }
+
+  get actionColumnWidth(): number {
+    return this.compactRows ? 56 : (this.tableOptions.rows?.action?.width ?? 150);
+  }
+
+  private isInitiallyVisible(column: IColumnMetadata): boolean {
+    if (!column.canBeHidden) return true;
+    if (column.startHidden) return false;
+    const devices = column.visibleOnlyIn;
+    return !devices?.length || devices.some(device =>
+      device === this.deviceType || String(device).toLowerCase() === DeviceType[this.deviceType].toLowerCase());
+  }
+
+  private updateResponsiveViewport(): void {
+    const options = this.tableOptions.responsive;
+    const tablet = options?.tabletMinWidth ?? 768;
+    const desktop = options?.desktopMinWidth ?? 1200;
+    if (!Number.isFinite(tablet) || !Number.isFinite(desktop) || tablet <= 0 || desktop <= tablet) {
+      throw new Error('ECS table responsive widths must be finite and 0 < tabletMinWidth < desktopMinWidth.');
+    }
+    const width = typeof window === 'undefined' ? desktop : window.innerWidth;
+    const next = width < tablet ? DeviceType.Mobile : width < desktop ? DeviceType.Tablet : DeviceType.Desktop;
+    if (next === this.deviceType) return;
+    this.deviceType = next;
+    this.responsiveHeaderMenu?.hide();
+    this.responsiveRowMenu?.hide();
+    if (!this.initialConfigurationFetched || this.columnSelectionCustomized ||
+        !this.columns.some(column => column.visibleOnlyIn?.length)) return;
+    const selected = this.columns.filter(column => column.canBeHidden && this.isInitiallyVisible(column));
+    const shown = this.tableService.orderColumnsWithFrozens(this.columnsCantBeHidden.concat(selected));
+    const previous = this.tableOptions.columns?.shown ?? [];
+    if (shown.length === previous.length && shown.every((column, i) => column.field === previous[i].field)) return;
+    this.columnsSelected = selected;
+    this.tableOptions.columns!.shown = shown;
+    this.showColumnSelector = false;
+    // Request newly visible fields without resetting filters, sorting or pagination.
+    if (this.initialStateApplied) this.fetchTableData(this.tableLazyLoadEventInformation);
+  }
+
+  private buttonVisible(button: ITableButton, row: any): boolean {
+    return (button.visibleCondition?.(row) ?? true) &&
+      ((button.enabledCondition?.(row) ?? true) || !button.conditionFailHide);
+  }
+
+  hasRowMenuActions(row: any): boolean {
+    return (this.tableOptions.rows?.action?.buttons ?? []).some(button => this.buttonVisible(button, row));
+  }
+
+  private buttonMenuItems(buttons: ITableButton[], row: any): MenuItem[] {
+    return buttons.filter(button => this.buttonVisible(button, row)).map((button, index) => ({
+      label: button.label || button.tooltip || ('Action ' + (index + 1)),
+      icon: button.icon,
+      disabled: !(button.enabledCondition?.(row) ?? true),
+      command: () => {
+        if (this.buttonVisible(button, row) && (button.enabledCondition?.(row) ?? true) && button.action) {
+          this.tableService.handleButtonsClick(button.action, row);
+        }
+      }
+    }));
+  }
+
+  openRowMenu(event: Event, row: any): void {
+    event.stopPropagation();
+    this.responsiveHeaderMenu?.hide();
+    if (this.responsiveRowMenu?.visible && this.rowMenuRow === row) {
+      this.responsiveRowMenu.hide();
+      return;
+    }
+    // Use one overlay for all rows. Replacing the model binds every action to this row.
+    this.rowMenuRow = row;
+    this.rowMenuItems = this.buttonMenuItems(this.tableOptions.rows?.action?.buttons ?? [], row);
+    const wasOpen = this.responsiveRowMenu?.visible;
+    this.responsiveRowMenu?.show(event);
+    if (wasOpen) this.responsiveRowMenu?.alignOverlay();
+  }
+
+  openHeaderMenu(event: Event): void {
+    this.responsiveRowMenu?.hide();
+    const options = this.tableOptions;
+    const items: MenuItem[] = [];
+    if (options.columns?.selectorEnabled) items.push({ label: 'Modify columns', icon: options.columns.selectorIcon, command: () => this.columnSelectorShow() });
+    if (options.header?.clearSortsEnabled) items.push({ label: 'Clear sorts', icon: options.header.clearSortsIcon, disabled: !this.hasToClearSorts(this.dt), command: () => this.clearSorts(this.dt) });
+    if (options.header?.clearFiltersEnabled) items.push({ label: 'Clear filters', icon: options.header.clearFiltersIcon, disabled: !this.hasToClearFilters(this.dt, this.globalSearchText), command: () => this.clearFilters(this.dt) });
+    if (this.tableViewsEnabled()) {
+      items.push({ label: this.tableViewCurrentSelectedAlias || options.views?.noViewSelectedText || 'Select a view', icon: 'pi pi-bookmark', command: () => { this.viewsModalShow = true; } });
+      items.push({ label: 'Apply view again', icon: options.views?.reloadViewButtonIcon || 'pi pi-refresh', disabled: !this.tableViewCurrentSelectedAlias, command: () => this.viewLoad(this.tableViewCurrentSelectedAlias!) });
+    }
+    if (options.excelReport?.url?.trim()) items.push({ label: 'Export to Excel', icon: 'pi pi-file-excel', command: () => this.openExcelExport() });
+    if (options.resetTableView?.enabled) items.push({ label: 'Reset table view', icon: options.resetTableView.icon, command: () => this.resetTableView() });
+    items.push({ label: 'Refresh data', icon: 'pi pi-refresh', command: () => this.refreshData(event) });
+    items.push(...this.buttonMenuItems(options.header?.buttons ?? [], null));
+    this.headerMenuItems = items;
+    this.responsiveHeaderMenu?.toggle(event);
   }
 
   private validateStatePersistence(): void {
@@ -232,6 +345,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit, OnDestroy {
 
   @HostListener('window:resize')
   onResize() {
+    this.updateResponsiveViewport();
     this.calculateScrollHeight();
   }
   
@@ -309,7 +423,8 @@ export class ECSPrimengTable implements OnInit, AfterViewInit, OnDestroy {
     this.currentRowsPerPage = Math.min(...this.allowedRowsPerPage); // Update the current rows per page to use the minimum value of allowed rows per page by default
     this.columns = body.columnsInfo; // Update columns with fetched data
     this.columnsCantBeHidden = this.columns.filter((col: any) => !col.canBeHidden); // Filter columns that cannot be hidden
-    this.columnsSelected = this.columns.filter((col: any) => !col.startHidden && col.canBeHidden); // Selected columns that are not hidden by default
+    this.columnSelectionCustomized = false;
+    this.columnsSelected = this.columns.filter(col => col.canBeHidden && this.isInitiallyVisible(col)); // Selected columns that are not hidden by default
     this.tableOptions.columns!.shown = this.tableService.orderColumnsWithFrozens(this.columnsCantBeHidden.concat(this.columnsSelected));
     this.dateFormat = body.dateFormat;
     this.dateTimezone = body.dateTimezone;
@@ -417,6 +532,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit, OnDestroy {
       this.notification.showToast("error","VIEW TO LOAD DOESN'T EXIST","The view to load doesn't exist");
       return;
     }
+    this.columnSelectionCustomized = true;
     let viewData: ITableViewData = viewToLoad.viewData;
     this.columnsSelected = viewData.columnsShown
         .map(data => this.columns.find((col: any) => col.field === data.field))
@@ -569,6 +685,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit, OnDestroy {
     if (!this.initialConfigurationFetched || !this.initialStateApplied) {
       return;
     }
+    this.responsiveRowMenu?.hide();
     this.tableLazyLoadEventInformation = event; // Store the event information for later use
     if (event.rows != null && event.rows !== undefined) {
       this.currentRowsPerPage = event.rows;
@@ -905,6 +1022,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit, OnDestroy {
   }
 
   applyColumnModalChanges(selectedColumns: IColumnMetadata[]) {
+    this.columnSelectionCustomized = true;
     const existingColumns = this.dt.columns!;
     const columnsToKeep = new Set<string>();
 

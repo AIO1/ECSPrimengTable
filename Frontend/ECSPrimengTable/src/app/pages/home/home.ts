@@ -57,6 +57,12 @@ export class Home implements OnInit {
   };
   tableOptions: ITableOptions = createTableOptions({
     isActive: false,
+    responsive: {
+      headerMenu: true,
+      rowMenu: true,
+      tabletMinWidth: 768,
+      desktopMinWidth: 1200
+    },
     urlTableConfiguration: "Test/GetTableConfiguration",
     urlTableData: "Test/GetTableData",
     excelReport: {
