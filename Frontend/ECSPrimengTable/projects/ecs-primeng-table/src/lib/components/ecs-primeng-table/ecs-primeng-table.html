@@ -263,7 +263,7 @@
                         [alignFrozen]="getFrozenColumnAlignAsText(col.frozenColumnAlign)" [style.text-align]="getDataAlignHorizontalAsText(col.dataAlignHorizontal)" [style.vertical-align]="getDataAlignVerticalAsText(col.dataAlignVertical)">
                         <ecs-table-cell [col]="col" [rowData]="rowData" [globalSearchText]="globalSearchText" 
                             [dateFormat]="dateFormat" [dateTimezone]="dateTimezone" [dateCulture]="dateCulture"
-                            [predefinedFiltersCollection]="tableOptions.predefinedFilters"/>
+                            [predefinedFiltersCollection]="tableOptions.predefinedFilters ?? {}"/>
                     </td>
                 }
                 @if (tableOptions.rows?.checkboxSelector?.enabled && tableOptions.rows?.checkboxSelector?.positionRight) {

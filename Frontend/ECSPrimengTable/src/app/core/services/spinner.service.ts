@@ -1,30 +1,25 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { Injectable, signal } from '@angular/core';
+
 @Injectable({
   providedIn: 'root'
 })
 export class SpinnerService {
   private requestCount = 0;
-  private readonly spinnerSubject = new BehaviorSubject<boolean>(false);
-  spinner$ = this.spinnerSubject.asObservable();
-
-  private hideTimeout: any; 
+  private readonly _isVisible = signal<boolean>(false);
+  readonly isVisible = this._isVisible.asReadonly();
 
   show() {
-    if (this.hideTimeout) {
-      clearTimeout(this.hideTimeout);
-    }
     this.requestCount++;
     if (this.requestCount === 1) {
-      this.spinnerSubject.next(true);
+      this._isVisible.set(true);
     }
   }
+
   hide() {
     this.requestCount--;
+    this.requestCount = Math.max(0, this.requestCount);
     if (this.requestCount === 0) {
-      this.hideTimeout = setTimeout(() => {
-        this.spinnerSubject.next(false);
-      }, 100);
+      this._isVisible.set(false);
     }
   }
 }

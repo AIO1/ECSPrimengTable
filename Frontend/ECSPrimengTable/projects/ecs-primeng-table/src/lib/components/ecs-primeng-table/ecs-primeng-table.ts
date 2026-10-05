@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Output, ViewChild, ViewEncapsulation } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Output, ViewChild, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpResponse } from '@angular/common/http';
@@ -61,7 +61,8 @@ import { ViewsManagement } from "../views-management/views-management";
 export class ECSPrimengTable implements OnInit, AfterViewInit {
   constructor(
     private tableService: ECSPrimengTableService,
-    private notification: ECSPrimengTableNotificationService
+    private notification: ECSPrimengTableNotificationService,
+    private cdr: ChangeDetectorRef
   ) {}
   @Input() tableOptions: ITableOptions = DEFAULT_TABLE_OPTIONS;
   @Output() onRowCheckboxChange = new EventEmitter<{
@@ -147,6 +148,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
       const viewportHeight = window.innerHeight;
       const topOffset = containerRect.top + window.scrollY;
       this.tableOptions.verticalScroll.height = (viewportHeight - topOffset - paginatorHeight - headerHeight)-60;
+      this.cdr.markForCheck();
     }
   }
   get scrollHeightValue(): string {
@@ -233,6 +235,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
       }, 0);
       this.fetchTableViews();
     }
+    this.cdr.markForCheck();
   }
 
   refreshData(event: any){
@@ -342,6 +345,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
     this.tableViewCurrentSelectedAlias = tableViewAlias;
     this.notification.showToast("info","TABLE VIEW RESTORED",`The table view '${this.tableViewCurrentSelectedAlias}' has been restored.`);
     this.viewsModalShow = false;
+    this.cdr.markForCheck();
     this.fetchTableData(this.tableLazyLoadEventInformation);
   }
 
@@ -581,6 +585,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
     this.totalRecords = body.totalRecords; // Update the total number of records
     this.totalRecordsNotFiltered = body.totalRecordsNotFiltered; // Update the total records not filtered
     this.currentPage = body.page; // Update the current page
+    this.cdr.markForCheck();
   }
 
   clearFilters(dt: Table, force: boolean = false, onlyGlobalFilter: boolean = false): void{
@@ -697,6 +702,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
     }
     this.dt.filters = filters; // Update the data table's filters with the modified filters object
     this.dt._filter(); // Trigger the filtering operation on the data table to apply the new filters
+    this.cdr.markForCheck();
   }
 
   /**
@@ -836,7 +842,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
     );
 
     this.updateColumnsSpecialProperties(this.columnModalData);
-
+    this.cdr.markForCheck();
     if (!sameColumnsAsBefore) {
       this.tableOptions.isActive = false;
       this.clearSorts(this.dt, true);

@@ -1,73 +1,67 @@
-@if (value !== null && value !== undefined) {
-  @if (col.filterPredefinedValuesName && col.filterPredefinedValuesName.length > 0) {
+@if (value() !== null && value() !== undefined) {
+  @if (col().filterPredefinedValuesName && col().filterPredefinedValuesName.length > 0) {
     <div [ngStyle]="{
-            'justify-content': getDataAlignHorizontalAsText(col.dataAlignHorizontal),
-            'align-items': getDataAlignVerticalAsText(col.dataAlignVertical)
+            'justify-content': getDataAlignHorizontalAsText(col().dataAlignHorizontal),
+            'align-items': getDataAlignVerticalAsText(col().dataAlignVertical)
         }">
-      @if (col.dataType === DataType.List){
-        @for (item of getListValues(col, rowData); track item) {
-          @if (getPredfinedFilterMatch(col, item); as option) {
+      @if (col().dataType === DataType.List){
+        @for (item of listValues(); track item) {
+          @if (getPredfinedFilterMatch(col(), item); as option) {
             <div style="display: inline-block; margin-right: 0.5rem;"
-                [pTooltip]="col.dataTooltipCustomColumnSource && col.dataTooltipCustomColumnSource.length > 0 
-                    ? rowData[col.dataTooltipCustomColumnSource] 
+                [pTooltip]="col().dataTooltipCustomColumnSource && col().dataTooltipCustomColumnSource.length > 0 
+                    ? rowData()[col().dataTooltipCustomColumnSource] 
                     : item"
-                [tooltipDisabled]="!col.dataTooltipShow"
+                [tooltipDisabled]="!col().dataTooltipShow"
                 [showDelay]="700"
                 tooltipPosition="top">
-                <ecs-table-predefined-filters [option]="option" [col]="col" [selectable]="true" [rowData]="rowData" [globalSearchText]="globalSearchText"/>
+                <ecs-table-predefined-filters [option]="option" [col]="col()" [selectable]="true" [rowData]="rowData()" [globalSearchText]="globalSearchText()"/>
             </div>
           }
         }
       } @else {
-        @if (getPredfinedFilterMatch(col, value); as option) {
+        @if (getPredfinedFilterMatch(col(), value()); as option) {
           <div style="display: inline-block;"
-            [pTooltip]="col.dataTooltipCustomColumnSource && col.dataTooltipCustomColumnSource.length > 0 
-              ? rowData[col.dataTooltipCustomColumnSource] 
-              : value"
-            [tooltipDisabled]="!col.dataTooltipShow"
+            [pTooltip]="tooltipText()"
+            [tooltipDisabled]="!col().dataTooltipShow"
             [showDelay]="700"
             tooltipPosition="top">
-            <ecs-table-predefined-filters [option]="option" [col]="col" [selectable]="true" [rowData]="rowData" [globalSearchText]="globalSearchText"/>
+            <ecs-table-predefined-filters [option]="option" [col]="col()" [selectable]="true" [rowData]="rowData()" [globalSearchText]="globalSearchText()"/>
           </div>
         }
       }
     </div>
   } @else {
-    @switch (col.dataType) {
+    @switch (col().dataType) {
       @case (DataType.Boolean) {
         <i class="pi"
-          [pTooltip]="col.dataTooltipCustomColumnSource && col.dataTooltipCustomColumnSource.length > 0 
-            ? rowData[col.dataTooltipCustomColumnSource] 
-            : value"
-          [tooltipDisabled]="!col.dataTooltipShow || !col.dataTooltipCustomColumnSource || col.dataTooltipCustomColumnSource.length === 0"
+          [pTooltip]="tooltipText()"
+          [tooltipDisabled]="!col().dataTooltipShow || !col().dataTooltipCustomColumnSource || col().dataTooltipCustomColumnSource.length === 0"
           [showDelay]="700"
           tooltipPosition="top"
-          [style.color]="value ? 'green' : 'red'"
-          [ngClass]="{ 'pi-check-circle': value, 'pi-times-circle': !value }">
+          [style.color]="value() ? 'green' : 'red'"
+          [ngClass]="{ 'pi-check-circle': value(), 'pi-times-circle': !value() }">
         </i>
       }
       @case (DataType.Date) {
         <div 
-          [innerHtml]="highlightText(formatDate(value, col.dateFormat, col.dateTimezone, col.dateCulture), col, globalSearchText)"
-          [pTooltip]="col.dataTooltipCustomColumnSource && col.dataTooltipCustomColumnSource.length > 0 
-            ? rowData[col.dataTooltipCustomColumnSource] 
-            : formatDate(value, col.dateFormat, col.dateTimezone, col.dateCulture)"
-          [tooltipDisabled]="!col.dataTooltipShow"
+          [innerHtml]="highlightText(formattedDateValue(), col(), globalSearchText())"
+          [pTooltip]="col().dataTooltipCustomColumnSource && col().dataTooltipCustomColumnSource.length > 0 
+            ? rowData()[col().dataTooltipCustomColumnSource] 
+            : formattedDateValue()"
+          [tooltipDisabled]="!col().dataTooltipShow"
           [showDelay]="700"
           tooltipPosition="top">
-          {{ formatDate(value, col.dateFormat, col.dateTimezone, col.dateCulture) }}
+          {{ formattedDateValue() }}
         </div>
       }
       @default {
         <div
-          [innerHtml]="highlightText(value, col, globalSearchText)"
-          [pTooltip]="col.dataTooltipCustomColumnSource && col.dataTooltipCustomColumnSource.length > 0 
-            ? rowData[col.dataTooltipCustomColumnSource] 
-            : value"
-          [tooltipDisabled]="!col.dataTooltipShow"
+          [innerHtml]="highlightText(value(), col(), globalSearchText())"
+          [pTooltip]="tooltipText()"
+          [tooltipDisabled]="!col().dataTooltipShow"
           [showDelay]="700"
           tooltipPosition="top">
-          {{ value }}
+          {{ value() }}
         </div>
       }
     }

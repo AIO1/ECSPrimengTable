@@ -1,132 +1,121 @@
-import { Component, Input } from '@angular/core';
-import { DataAlignHorizontal, DataAlignVertical, DataType } from '../../enums';
+import { Component, input, computed, inject } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { TooltipModule } from 'primeng/tooltip';
+import { DataAlignHorizontal, DataAlignVertical, DataType } from '../../enums';
 import { dataAlignHorizontalAsText, dataAlignVerticalAsText, highlightText } from '../../utils';
 import { IColumnMetadata, IPredefinedFilter } from '../../interfaces';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { TablePredefinedFilters } from "../table-predefined-filters/table-predefined-filters";
+
 @Component({
   selector: 'ecs-table-cell',
+  standalone: true,
   imports: [
     CommonModule,
     TooltipModule,
     TablePredefinedFilters
-],
-  standalone: true,
-  templateUrl: './table-cell.html'
+  ],
+  templateUrl: './table-cell.html',
+  providers: [DatePipe]
 })
 export class TableCell {
-  constructor(
-    private datePipe: DatePipe,
-    private sanitizer: DomSanitizer
-  ) {}
-  @Input() col: any;
-  @Input() rowData: any;
-  @Input() globalSearchText: string | null = null;
-  @Input() predefinedFiltersCollection?: { [key: string]: IPredefinedFilter[] } = {}; // Contains a collection of the values that need to be shown for predefined column filters
-  @Input() dateFormat: string = "dd-MMM-yyyy HH:mm:ss zzzz";
-  @Input() dateTimezone: string = "+00:00";
-  @Input() dateCulture: string = "en-US";
+  private datePipe = inject(DatePipe);
+  private sanitizer = inject(DomSanitizer);
+  col = input.required<any>();
+  rowData = input.required<any>();
+  globalSearchText = input<string | null>(null);
+  predefinedFiltersCollection = input<{ [key: string]: IPredefinedFilter[] }>({});
+  dateFormat = input<string>("dd-MMM-yyyy HH:mm:ss zzzz");
+  dateTimezone = input<string>("+00:00");
+  dateCulture = input<string>("en-US");
 
   DataType = DataType;
 
-  get value() {
-    return this.rowData[this.col.field];
-  }
+  value = computed(() => {
+    const row = this.rowData();
+    const column = this.col();
+    return row && column ? row[column.field] : null;
+  });
 
-  get tooltipText() {
-    if (this.col.dataTooltipCustomColumnSource && this.col.dataTooltipCustomColumnSource.length > 0) {
-      return this.rowData[this.col.dataTooltipCustomColumnSource];
+  tooltipText = computed(() => {
+    const column = this.col();
+    const row = this.rowData();
+    const val = this.value();
+
+    if (column?.dataTooltipCustomColumnSource && column.dataTooltipCustomColumnSource.length > 0) {
+      return row[column.dataTooltipCustomColumnSource];
     }
-    return this.value;
+    return val;
+  });
+
+  listValues = computed<string[]>(() => {
+    const val = this.value();
+    return val ? String(val).split(';').map((v: string) => v.trim()) : [];
+  });
+
+  formattedDateValue = computed<string>(() => {
+    const val = this.value();
+    const column = this.col();
+    return this.formatDate(
+      val, 
+      column?.dateFormat, 
+      column?.dateTimezone, 
+      column?.dateCulture
+    );
+  });
+
+  getDataAlignHorizontalAsText(dataAlignHorizontal: DataAlignHorizontal): string {
+    return dataAlignHorizontalAsText(dataAlignHorizontal) || 'flex-start';
   }
 
-  getListValues(col: any, rowData: any): string[] {
-    const value = rowData[col.field];
-    return value ? value.split(';').map((v: any) => v.trim()) : [];
+  getDataAlignVerticalAsText(dataAlignVertical: DataAlignVertical): string {
+    return dataAlignVerticalAsText(dataAlignVertical) || 'center';
   }
 
-  getDataAlignHorizontalAsText(dataAlignHorizontal: DataAlignHorizontal){
-      dataAlignHorizontalAsText(dataAlignHorizontal);
-  }
-  getDataAlignVerticalAsText(dataAlignVertical: DataAlignVertical){
-      dataAlignVerticalAsText(dataAlignVertical);
-  }
-  
-
-  /**
-   * Formats a date value using either column-level overrides or global settings.
-   * The incoming value is assumed to represent a UTC date.
-   *
-   * @param {any} value - The date value to be formatted.
-   * @param {string | null} dateFormat - Optional column-level override for the date format.
-   * @param {string | null} dateTimezone - Optional column-level override for the timezone used in formatting.
-   * @param {string | null} dateCulture - Optional column-level override for the culture used in formatting.
-   *
-   * @returns {string} - The formatted date string using the effective (column or global) settings,
-   *                     or an empty string if the value is invalid or undefined.
-   *
-   * @example
-   * // Example using only global settings:
-   * const result = formatDate(dateValue, null, null, null);
-   *
-   * @example
-   * // Example using column-level overrides:
-   * const result = formatDate(dateValue, 'dd/MM/yyyy', 'UTC', 'en-GB');
-   */
-  formatDate(value: any, dateFormat: string | null, dateTimezone : string | null, dateCulture : string | null): string{
-    if(!value){ // If no value, return empty
-       return '';
+  formatDate(value: any, dateFormat: string | null, dateTimezone: string | null, dateCulture: string | null): string {
+    if (!value) {
+      return '';
     }
-    let formattedDate = undefined; // By default, formattedDate will be undefined
-    const effectiveFormat = dateFormat ?? this.dateFormat;
-    const effectiveTimezone = dateTimezone ?? this.dateTimezone;
-    const effectiveCulture = dateCulture ?? this.dateCulture;
-    if(value){ // If value is not undefined
-      let dateToParse = value;
-      if (typeof value === 'string' && !value.endsWith('Z') && !/[+-]\d{2}:\d{2}$/.test(value)) { // Check if the date does not contain Z
-        dateToParse += 'Z';
-      }
-      const dateUtc = new Date(dateToParse); 
-      if (!isNaN(dateUtc.getTime())) { // Check that the date is valid before performing transformation
-          formattedDate = this.datePipe.transform(dateUtc, effectiveFormat, effectiveTimezone, effectiveCulture); // Perform the date masking
-      }
+    let formattedDate: string | null = null;
+    const effectiveFormat = dateFormat ?? this.dateFormat();
+    const effectiveTimezone = dateTimezone ?? this.dateTimezone();
+    const effectiveCulture = dateCulture ?? this.dateCulture();
+
+    let dateToParse = value;
+    if (typeof value === 'string' && !value.endsWith('Z') && !/[+-]\d{2}:\d{2}$/.test(value)) {
+      dateToParse += 'Z';
     }
-    return formattedDate ?? ''; // Returns the date formatted, or as empty string if an issue was found (or value was undefined).
+    const dateUtc = new Date(dateToParse);
+    if (!isNaN(dateUtc.getTime())) {
+      formattedDate = this.datePipe.transform(dateUtc, effectiveFormat, effectiveTimezone, effectiveCulture);
+    }
+    return formattedDate ?? '';
   }
 
   getPredefinedFilterTooltip(colMetadata: IColumnMetadata, value: any): any {
-    if(colMetadata.dataType == DataType.List){
+    if (colMetadata.dataType === DataType.List) {
       return value;
     }
-    if(colMetadata.filterPredefinedValuesName && colMetadata.filterPredefinedValuesName.length > 0){
+    if (colMetadata.filterPredefinedValuesName && colMetadata.filterPredefinedValuesName.length > 0) {
       const options = this.getPredefinedFilterValues(colMetadata.filterPredefinedValuesName);
-      return options.find(x => x.value == value)?.name
+      return options.find(x => x.value === value)?.name;
     }
     return null;
   }
 
-  /**
-   * Checks if the provided column metadata matches a specific style of the predefined filters 
-   * that need to be applied to an item on a row.
-   *
-   * @param {IprimengColumnsMetadata} colMetadata - The metadata of the column being checked.
-   * @param {any} value - The value to be matched against the predefined filter values.
-   * @returns {any} The matching predefined filter value if found, otherwise null.
-   */
   getPredfinedFilterMatch(colMetadata: IColumnMetadata, value: any): any {
-    if (colMetadata.filterPredefinedValuesName && colMetadata.filterPredefinedValuesName.length > 0) { // Check if the column uses predefined filter values
-        const options = this.getPredefinedFilterValues(colMetadata.filterPredefinedValuesName); // Get the predefined filter values based on the name
-        return options.find(option => option.value === value); // Return the matching option if found
+    if (colMetadata.filterPredefinedValuesName && colMetadata.filterPredefinedValuesName.length > 0) {
+      const options = this.getPredefinedFilterValues(colMetadata.filterPredefinedValuesName);
+      return options.find(option => option.value === value);
     }
-    return null; // Return null if the column does not use predefined filter values
+    return null;
   }
+
   getPredefinedFilterValues(columnKeyName: string): IPredefinedFilter[] {
-    return this.predefinedFiltersCollection?.[columnKeyName] || []; // Return the predefined filter values or an empty array if the option name does not exist
+    return this.predefinedFiltersCollection()?.[columnKeyName] || [];
   }
 
   highlightText(cellValue: any, colMetadata: IColumnMetadata, globalSearchText: string | null): SafeHtml {
-      return highlightText(cellValue, colMetadata, globalSearchText, this.sanitizer);
+    return highlightText(cellValue, colMetadata, globalSearchText, this.sanitizer);
   }
 }
