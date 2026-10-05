@@ -123,3 +123,17 @@ La sección opcional `primeng` traduce los controles de PrimeNG (operadores de f
 La demo incluye ejemplos completos en `src/assets/i18n/en.json`, `es.json`, `fr.json` e `it.json`, además de un selector de idioma. Copia o combina las entradas necesarias con los diccionarios de tu aplicación. Esta ampliación no añade dependencias npm.
 
 No se traducen los datos de las celdas, los valores de filtros predefinidos, los nombres de vistas guardadas, los textos introducidos por el usuario ni los identificadores de campos del backend. El nombre predeterminado del fichero Excel se traduce al abrir su ventana; después se respeta el nombre introducido por el usuario. Las cabeceras del Excel generado en el servidor siguen siendo responsabilidad del backend.
+
+
+### Tooltips por elemento en listas
+
+En columnas `DataType.List`, `dataTooltipCustomColumnSource` referencia una cadena separada por `;` en la misma fila. Cada tooltip corresponde al elemento situado en la misma posición. Por ejemplo:
+
+```text
+EmploymentStatusNameList = "Freelance;Military;Student"
+ESList_tooltip           = "Trabajo independiente;Servicio militar;En formación"
+```
+
+Configura `dataTooltipCustomColumnSource: "ESList_tooltip"` en el atributo de `EmploymentStatusNameList`. La propiedad auxiliar puede ser `string?`, con `dataType: DataType.Text` y `sendColumnAttributes: false`: no necesita una columna visible ni metadatos de lista. El backend incluye las propiedades con `sendColumnAttributes: false` en los datos enviados.
+
+Se aplica tanto a etiquetas de filtros predefinidos como a listas de texto. Se conserva el orden, incluidos elementos repetidos y posiciones vacías. Si falta la propiedad o una posición, se utiliza el propio elemento; una posición vacía suprime su tooltip. Los tooltips sobrantes se ignoran. `dataTooltipShow: false` sigue desactivándolos. Los textos se muestran como datos, sin traducirlos.

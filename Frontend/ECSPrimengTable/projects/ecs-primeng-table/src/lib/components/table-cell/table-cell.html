@@ -5,12 +5,10 @@
             'align-items': getDataAlignVerticalAsText(col.dataAlignVertical)
         }">
       @if (col.dataType === DataType.List){
-        @for (item of getListValues(col, rowData); track item) {
+        @for (item of getListValues(col, rowData); track $index) {
           @if (getPredfinedFilterMatch(col, item); as option) {
             <div style="display: inline-block; margin-right: 0.5rem;"
-                [pTooltip]="col.dataTooltipCustomColumnSource && col.dataTooltipCustomColumnSource.length > 0 
-                    ? rowData[col.dataTooltipCustomColumnSource] 
-                    : item"
+                [pTooltip]="getListTooltip(item, $index)"
                 [tooltipDisabled]="!col.dataTooltipShow"
                 [showDelay]="700"
                 tooltipPosition="top">
@@ -34,6 +32,15 @@
     </div>
   } @else {
     @switch (col.dataType) {
+      @case (DataType.List) {
+        @for (item of getListValues(col, rowData); track $index) {
+          <span [innerHtml]="highlightText(item, col, globalSearchText)"
+            [pTooltip]="getListTooltip(item, $index)"
+            [tooltipDisabled]="!col.dataTooltipShow"
+            [showDelay]="700"
+            tooltipPosition="top"></span>@if (!$last) {<span>;</span>}
+        }
+      }
       @case (DataType.Boolean) {
         <i class="pi"
           [pTooltip]="col.dataTooltipCustomColumnSource && col.dataTooltipCustomColumnSource.length > 0 

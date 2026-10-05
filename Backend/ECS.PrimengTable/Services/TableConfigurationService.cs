@@ -77,9 +77,9 @@ internal static class TableConfigurationService {
                 CanBeGlobalFiltered = colAtt.CanBeGlobalFiltered,
                 ColumnDescription = colAtt.ColumnDescription,
                 DataTooltipShow = colAtt.DataTooltipShow,
-                DataTooltipCustomColumnSource = string.IsNullOrEmpty(colAtt.DataTooltipCustomColumnSource)
+                DataTooltipCustomColumnSource = !convertFieldToLower || string.IsNullOrEmpty(colAtt.DataTooltipCustomColumnSource)
                     ? colAtt.DataTooltipCustomColumnSource
-                    : char.ToLower(colAtt.DataTooltipCustomColumnSource[0]) + colAtt.DataTooltipCustomColumnSource.Substring(1),
+                    : System.Text.Json.JsonNamingPolicy.CamelCase.ConvertName(colAtt.DataTooltipCustomColumnSource),
                 FrozenColumnAlign = colAtt.FrozenColumnAlign,
                 CellOverflowBehaviour = colAtt.CellOverflowBehaviour,
                 CellOverflowBehaviourAllowUserEdit = colAtt.CellOverflowBehaviourAllowUserEdit,

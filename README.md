@@ -5584,3 +5584,17 @@ The optional `primeng` section translates PrimeNG controls (filter operators, ca
 The demo provides complete examples in `src/assets/i18n/en.json`, `es.json`, `fr.json` and `it.json`, plus a language selector. Copy/merge the entries you need into your application's dictionaries. No additional npm dependencies are introduced by this extension.
 
 Cell data, predefined-filter values, saved view aliases, user-entered text and backend field identifiers are not translated. A default export filename is translated when opening the export dialog; the filename subsequently entered by the user is preserved. Excel headers generated on the server remain the backend's responsibility.
+
+
+### Per-item list tooltips
+
+For `DataType.List` columns, `dataTooltipCustomColumnSource` references a semicolon-separated string in the same row. Each tooltip matches the item at the same position. For example:
+
+```text
+EmploymentStatusNameList = "Freelance;Military;Student"
+ESList_tooltip           = "Independent work;Military service;In education"
+```
+
+Set `dataTooltipCustomColumnSource: "ESList_tooltip"` on the `EmploymentStatusNameList` attribute. The auxiliary property can be `string?`, with `dataType: DataType.Text` and `sendColumnAttributes: false`; it needs neither a visible column nor list metadata. The backend includes properties marked `sendColumnAttributes: false` in the returned row data.
+
+This applies to predefined-filter tags and plain text lists. Positions are preserved, including duplicate items and empty entries. Missing properties or positions fall back to the item itself; an empty position suppresses its tooltip. Extra tooltips are ignored. `dataTooltipShow: false` still disables tooltips. Tooltip text remains untranslated data.

@@ -63,9 +63,11 @@ namespace ECSPrimengTableExample.Services {
                     Age = u.Age,
                     EmploymentStatusName = u.EmploymentStatus != null ? u.EmploymentStatus.StatusName : null,
                     EmploymentStatusNameList = u.EmploymentStatusList,
+                    ESList_tooltip = u.EmploymentStatusList == null ? null
+                        : "Employment status: " + u.EmploymentStatusList.Replace(";", ";Employment status: "),
                     Birthdate = u.Birthdate,
                     PayedTaxes = u.PayedTaxes,
-                    ESL_tooltip = u.EmploymentStatus != null ? u.EmploymentStatus.ColorR.ToString() : null
+                    ESL_tooltip = u.EmploymentStatus != null ? u.EmploymentStatus.StatusName : null
                 });
         }
     }
