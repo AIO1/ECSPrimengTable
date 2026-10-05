@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { ECSPrimengTableI18nService } from '../../services/i18n.service';
+import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { HttpHeaders, HttpResponse } from '@angular/common/http';
 import { ECSPrimengTableHttpService, ECSPrimengTableNotificationService } from '../../services';
@@ -13,6 +14,7 @@ import { DomHandler } from 'primeng/dom';
   providedIn: 'root'
 })
 export class ECSPrimengTableService {
+  private readonly i18n = inject(ECSPrimengTableI18nService);
   constructor(
     private http: ECSPrimengTableHttpService,
     private notification: ECSPrimengTableNotificationService
@@ -49,7 +51,7 @@ export class ECSPrimengTableService {
     customTitle: string = 'Data Loading Error'
   ): void {
     const message = error.message || 'Unknown error occurred';
-    this.notification.showToast('error', customTitle, message);
+    this.notification.showToast('error', this.i18n.text(customTitle), this.i18n.text(message));
   }
 
   orderColumnsWithFrozens(colsToOrder: IColumnMetadata[]): IColumnMetadata[]{
@@ -165,7 +167,7 @@ export class ECSPrimengTableService {
                 };
                 return this.http.handleHttpPostRequest<ITableView[]>(recoverListEndpoint,postData);
             default:
-                this.notification.showToast("error","SAVE VIEW TYPE DOES NOT EXIST", "This type of save view does not exist.");
+                this.notification.showToast("error", this.i18n.text("SAVE VIEW TYPE DOES NOT EXIST"), this.i18n.text("This type of save view does not exist."));
         }
     }
     tableViewList = tableViewNotParsed ? JSON.parse(tableViewNotParsed) : [];

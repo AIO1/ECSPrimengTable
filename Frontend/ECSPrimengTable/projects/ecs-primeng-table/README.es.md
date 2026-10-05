@@ -13,7 +13,7 @@ Para consultar la documentación completa, las instrucciones de uso, los ejemplo
 
 Instala `@ngx-translate/core@^17` en la aplicación que utiliza el componente y configura `provideTranslateService` una sola vez entre los proveedores de la aplicación. Si ya utiliza ngx-translate, reutiliza su proveedor y sus diccionarios.
 
-La tabla y el selector de columnas muestran `header | translate`. El selector busca y ordena las etiquetas traducidas, y se actualiza al cambiar de idioma. Los metadatos no se sobrescriben: `field`, los valores de las celdas, los filtros, las vistas guardadas y las exportaciones a Excel del servidor mantienen su comportamiento. No se traducen las demás etiquetas de la interfaz.
+La tabla y el selector de columnas muestran `header | translate`. El selector busca y ordena las etiquetas traducidas, y se actualiza al cambiar de idioma. Los metadatos no se sobrescriben: `field`, los valores de las celdas, los filtros, las vistas guardadas y las exportaciones a Excel del servidor mantienen su comportamiento. Las demás etiquetas de la interfaz también admiten traducción.
 
 La aplicación carga sus diccionarios desde archivos JSON. La demo utiliza `src/assets/i18n/es.json`, `en.json`, `fr.json` e `it.json`, que se copian a `assets/i18n/` mediante la configuración de recursos de Angular. Las claves coinciden con los encabezados actuales del backend, por lo que no es necesario modificarlo.
 
@@ -87,3 +87,39 @@ La demo de `/home` incluye una casilla para activar o desactivar este comportami
 Los menús de cabecera y fila son opcionales y están desactivados por defecto. Actívalos con `responsive.headerMenu` y `responsive.rowMenu`. El atributo opcional `VisibleOnlyIn` del DTO define la visibilidad inicial por tamaño y mantiene las columnas disponibles en el selector.
 
 Consulta [configuración, prioridades y ejemplos](../../../../README.es.md#10-menús-adaptables-y-visibilidad-inicial-de-columnas).
+
+
+### Traducir todos los textos de la interfaz del grid
+
+Utiliza los mismos JSON de ngx-translate para cabeceras, botones, tooltips, descripciones, menús, ventanas, mensajes de validación y contadores. Los textos incorporados utilizan su cadena original en inglés como clave; las etiquetas y tooltips de botones configurables y las descripciones también admiten claves propias. Al llamar a `TranslateService.use('fr')` se actualiza la interfaz, incluidos los menús y ventanas abiertos.
+
+Ejemplo de entradas en `assets/i18n/es.json`:
+
+```json
+{
+  "Actions": "Acciones",
+  "Selected": "Seleccionado",
+  "CREATE": "CREAR",
+  "--- Select a view ---": "--- Selecciona una vista ---",
+  "MODIFY COLUMNS": "MODIFICAR COLUMNAS",
+  "Search keyword": "Buscar",
+  "Cancel changes": "Cancelar cambios",
+  "Save changes": "Guardar cambios",
+  "Showing {{count}} records of {{total}} available records": "Mostrando {{count}} registros de {{total}} disponibles",
+  "primeng": {
+    "startsWith": "Empieza por",
+    "contains": "Contiene",
+    "clear": "Limpiar",
+    "apply": "Aplicar",
+    "aria": { "nextPageLabel": "Página siguiente" }
+  }
+}
+```
+
+Conserva los nombres de interpolación como `{{count}}` y `{{total}}`. Si falta una traducción, se utiliza el idioma de respaldo y después el texto original. Las aplicaciones existentes no necesitan añadir todas las claves de golpe.
+
+La sección opcional `primeng` traduce los controles de PrimeNG (operadores de filtro, calendarios, paginación y etiquetas de accesibilidad). El grid sincroniza esta sección con la **configuración compartida de PrimeNG de la aplicación**, por lo que también afecta a otros componentes PrimeNG. Las entradas omitidas conservan la configuración capturada al inicializar el grid; si no incluyes esta sección, el grid respeta la configuración de idioma de la aplicación. Los formatos de fecha y la cultura de los datos de la tabla se configuran por separado.
+
+La demo incluye ejemplos completos en `src/assets/i18n/en.json`, `es.json`, `fr.json` e `it.json`, además de un selector de idioma. Copia o combina las entradas necesarias con los diccionarios de tu aplicación. Esta ampliación no añade dependencias npm.
+
+No se traducen los datos de las celdas, los valores de filtros predefinidos, los nombres de vistas guardadas, los textos introducidos por el usuario ni los identificadores de campos del backend. El nombre predeterminado del fichero Excel se traduce al abrir su ventana; después se respeta el nombre introducido por el usuario. Las cabeceras del Excel generado en el servidor siguen siendo responsabilidad del backend.

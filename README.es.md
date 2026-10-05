@@ -532,7 +532,7 @@ Para el backend .NET, esto se puede configurar con `[ColumnAttributes("columns.u
 
 Si falta una clave en el lenguaje activo, ngx-translate intenta `fallbackLang`. Con el controlador de traducción predeterminado, una clave que falta en ambos idiomas se muestra como-es. Todos los archivos de lenguaje configurados todavía deben existir y ser válidos JSON; fallback no es un reemplazo para fijar solicitudes HTTP fallidas.
 
-Sólo las etiquetas de la columna de backend `header` se traducen. Los valores de las celdas, descripciones, botones, los encabezados de acción/selección incorporados y otro texto de interfaz mantienen su comportamiento existente. El formato de la fecha sigue usando la configuración de la fecha de la tabla. Se conservan metadatos originales, identificadores de campo, solicitudes de filtrado y vistas guardadas. Los encabezados de Excel generados por el servidor no se traducen por esta función de frontend.
+Se pueden traducir los encabezados y los textos de la interfaz del grid. Consulta la sección de traducción de interfaz al final de este documento. Los datos, identificadores de campos, valores de filtros y nombres de vistas se conservan.
 
 Para comprobar la demo, carguela en español y verifique que `Username` aparece como `Usuario`. Abre **Modify columns** y busca `Usuario`. Luego cambia el idioma activo y verifica las etiquetas de nuevo.
 
@@ -5679,3 +5679,39 @@ dotnet run --project Backend/ECS.PrimengTable.ResponsiveTests -p:GeneratePackage
 ```
 
 La prueba opcional `tests/responsive.browser.mjs` usa Playwright y respuestas de prueba interceptadas, sin SQL. Compila la biblioteca y la demo (`ng build ECSPrimengTable --configuration development`) y ejecuta `node tests/responsive.browser.mjs` con Playwright disponible. Puedes indicar instalaciones existentes mediante `PLAYWRIGHT_MODULE` y `BROWSER_EXECUTABLE`.
+
+
+### Traducir todos los textos de la interfaz del grid
+
+Utiliza los mismos JSON de ngx-translate para cabeceras, botones, tooltips, descripciones, menús, ventanas, mensajes de validación y contadores. Los textos incorporados utilizan su cadena original en inglés como clave; las etiquetas y tooltips de botones configurables y las descripciones también admiten claves propias. Al llamar a `TranslateService.use('fr')` se actualiza la interfaz, incluidos los menús y ventanas abiertos.
+
+Ejemplo de entradas en `assets/i18n/es.json`:
+
+```json
+{
+  "Actions": "Acciones",
+  "Selected": "Seleccionado",
+  "CREATE": "CREAR",
+  "--- Select a view ---": "--- Selecciona una vista ---",
+  "MODIFY COLUMNS": "MODIFICAR COLUMNAS",
+  "Search keyword": "Buscar",
+  "Cancel changes": "Cancelar cambios",
+  "Save changes": "Guardar cambios",
+  "Showing {{count}} records of {{total}} available records": "Mostrando {{count}} registros de {{total}} disponibles",
+  "primeng": {
+    "startsWith": "Empieza por",
+    "contains": "Contiene",
+    "clear": "Limpiar",
+    "apply": "Aplicar",
+    "aria": { "nextPageLabel": "Página siguiente" }
+  }
+}
+```
+
+Conserva los nombres de interpolación como `{{count}}` y `{{total}}`. Si falta una traducción, se utiliza el idioma de respaldo y después el texto original. Las aplicaciones existentes no necesitan añadir todas las claves de golpe.
+
+La sección opcional `primeng` traduce los controles de PrimeNG (operadores de filtro, calendarios, paginación y etiquetas de accesibilidad). El grid sincroniza esta sección con la **configuración compartida de PrimeNG de la aplicación**, por lo que también afecta a otros componentes PrimeNG. Las entradas omitidas conservan la configuración capturada al inicializar el grid; si no incluyes esta sección, el grid respeta la configuración de idioma de la aplicación. Los formatos de fecha y la cultura de los datos de la tabla se configuran por separado.
+
+La demo incluye ejemplos completos en `src/assets/i18n/en.json`, `es.json`, `fr.json` e `it.json`, además de un selector de idioma. Copia o combina las entradas necesarias con los diccionarios de tu aplicación. Esta ampliación no añade dependencias npm.
+
+No se traducen los datos de las celdas, los valores de filtros predefinidos, los nombres de vistas guardadas, los textos introducidos por el usuario ni los identificadores de campos del backend. El nombre predeterminado del fichero Excel se traduce al abrir su ventana; después se respeta el nombre introducido por el usuario. Las cabeceras del Excel generado en el servidor siguen siendo responsabilidad del backend.

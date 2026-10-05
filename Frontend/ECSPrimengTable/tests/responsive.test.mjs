@@ -2,10 +2,10 @@ import '@angular/compiler';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { createEnvironmentInjector, runInInjectionContext } from '@angular/core';
-import { ECSPrimengTable, createTableOptions, DeviceType } from '../dist/ecs-primeng-table/fesm2022/eternalcodestudio-primeng-table.mjs';
+import { ECSPrimengTableI18nService, ECSPrimengTable, createTableOptions, DeviceType } from '../dist/ecs-primeng-table/fesm2022/eternalcodestudio-primeng-table.mjs';
 
 function setup(options = {}, width = 1400) {
-  const injector = createEnvironmentInjector([]);
+  const injector = createEnvironmentInjector([ECSPrimengTableI18nService]);
   const c = runInInjectionContext(injector, () => new ECSPrimengTable({
     orderColumnsWithFrozens: columns => columns,
     handleButtonsClick: (action, row) => action(row)

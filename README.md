@@ -508,7 +508,7 @@ For the .NET backend, this can be configured with `[ColumnAttributes("columns.us
 
 If a key is missing in the active language, ngx-translate tries `fallbackLang`. With the default missing-translation handler, a key missing in both languages is displayed as-is. All configured language files must still exist and be valid JSON; fallback is not a replacement for fixing failed HTTP requests.
 
-Only backend column `header` labels are translated. Cell values, descriptions, buttons, the built-in action/selection headers and other interface text keep their existing behavior. Date formatting still uses the table's date configuration. Original metadata, field identifiers, filtering requests and saved views are preserved. Server-generated Excel headers are not translated by this frontend feature.
+Column headers and grid interface texts can be translated. See the UI translation section below. Cell values, field identifiers, filter values and saved view aliases are preserved.
 
 To check the demo, load it in Spanish and verify that `Username` appears as `Usuario`. Open **Modify columns** and search for `Usuario`. Then change the active language and verify the labels again.
 
@@ -5548,3 +5548,39 @@ dotnet run --project Backend/ECS.PrimengTable.ResponsiveTests -p:GeneratePackage
 ```
 
 The optional `tests/responsive.browser.mjs` uses Playwright and intercepted test responses without SQL. Build the library and demo (`ng build ECSPrimengTable --configuration development`), then run `node tests/responsive.browser.mjs` with Playwright available. `PLAYWRIGHT_MODULE` and `BROWSER_EXECUTABLE` can point to existing installations.
+
+
+### Translating all grid interface text
+
+Use the same ngx-translate JSON dictionaries for headers, buttons, tooltips, descriptions, menus, dialogs, validation messages and counters. Built-in texts use their original English string as the key; configurable button labels/tooltips and descriptions may also use your own translation keys. Changing `TranslateService.use('fr')` updates the UI, including open menus and dialogs.
+
+Example entries in `assets/i18n/es.json`:
+
+```json
+{
+  "Actions": "Acciones",
+  "Selected": "Seleccionado",
+  "CREATE": "CREAR",
+  "--- Select a view ---": "--- Selecciona una vista ---",
+  "MODIFY COLUMNS": "MODIFICAR COLUMNAS",
+  "Search keyword": "Buscar",
+  "Cancel changes": "Cancelar cambios",
+  "Save changes": "Guardar cambios",
+  "Showing {{count}} records of {{total}} available records": "Mostrando {{count}} registros de {{total}} disponibles",
+  "primeng": {
+    "startsWith": "Empieza por",
+    "contains": "Contiene",
+    "clear": "Limpiar",
+    "apply": "Aplicar",
+    "aria": { "nextPageLabel": "Página siguiente" }
+  }
+}
+```
+
+Keep interpolation names such as `{{count}}` and `{{total}}` unchanged. Missing UI translations fall back to the configured fallback language, then to the original text. Existing applications do not need to add every key at once.
+
+The optional `primeng` section translates PrimeNG controls (filter operators, calendars, pagination and accessibility labels). The grid synchronizes this section with the **shared application PrimeNG configuration**, so it also affects other PrimeNG components. Unspecified entries retain the configuration captured at grid initialization; without this section the grid leaves the application's locale alone. Date formats and table data culture remain separately configured.
+
+The demo provides complete examples in `src/assets/i18n/en.json`, `es.json`, `fr.json` and `it.json`, plus a language selector. Copy/merge the entries you need into your application's dictionaries. No additional npm dependencies are introduced by this extension.
+
+Cell data, predefined-filter values, saved view aliases, user-entered text and backend field identifiers are not translated. A default export filename is translated when opening the export dialog; the filename subsequently entered by the user is preserved. Excel headers generated on the server remain the backend's responsibility.

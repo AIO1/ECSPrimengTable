@@ -39,45 +39,48 @@ try {
    ] };
    await route.fulfill({ json: data });
  });
+ await page.route('**/assets/i18n/*.json', async route => {
+   const lang = new URL(route.request().url()).pathname.split('/').pop();
+   const dictionary = JSON.parse(await readFile(resolve('src/assets/i18n', lang), 'utf8'));
+   await route.fulfill({ json: {...dictionary, Ana: 'DO NOT TRANSLATE ANA', Luis: 'DO NOT TRANSLATE LUIS'} });
+ });
  await page.goto('http://localhost:' + server.address().port + '/home');
  await page.locator('select').selectOption('en');
- const hamburger = page.getByRole('button', { name: 'Table actions', exact: true });
- await hamburger.waitFor();
- await page.getByRole('button', { name: 'Row actions', exact: true }).first().waitFor();
- assert.equal(await page.locator('th#age-header').count(), 0);
- assert.equal(await page.locator('th#email-header').count(), 0);
- assert.equal(await page.locator('ecs-table-button button').filter({ hasText: 'CREATE' }).count(), 0);
- await hamburger.click();
- await page.getByRole('menuitem', { name: 'Modify columns', exact: true }).waitFor();
- await page.screenshot({ path: resolve(process.env.TEMP || '.', 'ecs-responsive-mobile.png'), fullPage: true, animations: 'disabled' });
- const bounds = await page.locator('.ecs-responsive-menu:visible').boundingBox();
- assert.ok(bounds.x >= 0 && bounds.x + bounds.width <= 391, 'Header menu clips viewport');
- await page.keyboard.press('Escape');
- await page.getByRole('button', { name: 'Row actions', exact: true }).first().click();
- const disabledDelete = page.getByRole('menuitem', { name: 'Delete record', exact: true });
- assert.equal(await disabledDelete.getAttribute('aria-disabled'), 'true');
- await page.keyboard.press('Escape');
- await page.getByRole('button', { name: 'Row actions', exact: true }).nth(1).click();
- await page.getByRole('menuitem', { name: 'Edit record', exact: true }).click();
- await page.waitForURL('**/home/2/edit');
- await page.getByRole('link', { name: 'Back to people list' }).click();
- await hamburger.waitFor();
- await page.setViewportSize({ width: 900, height: 1000 });
- await page.locator('th#age-header').waitFor();
- assert.equal(await page.locator('th#email-header').count(), 0);
- await hamburger.waitFor();
+
+ const dictionaries = {};
+ for (const lang of ['es', 'en', 'fr', 'it']) dictionaries[lang] = JSON.parse(await readFile(resolve('src/assets/i18n', lang + '.json'), 'utf8'));
+ const language = page.locator('select');
+ for (const lang of ['es', 'fr', 'it', 'en']) {
+   await language.selectOption(lang);
+   const d = dictionaries[lang];
+   await page.getByRole('button', { name: d['Table actions'], exact: true }).waitFor();
+   assert.equal(await page.locator('th#username-header').innerText(), d.Username);
+   assert.equal(await page.getByText('Ana', { exact: true }).count(), 1);
+   assert.equal(await page.getByText('Luis', { exact: true }).count(), 1);
+   await page.getByRole('button', { name: d['Table actions'], exact: true }).click();
+   await page.getByRole('menuitem', { name: d['Modify columns'], exact: true }).waitFor();
+   await page.keyboard.press('Escape');
+ }
+ // Open menu updates without reopening it.
+ await page.getByRole('button', { name: 'Table actions', exact: true }).click();
+ await language.selectOption('fr');
+ await page.getByRole('menuitem', { name: dictionaries.fr['Modify columns'], exact: true }).click();
+ const dialog = page.getByRole('dialog');
+ await dialog.getByText(dictionaries.fr['MODIFY COLUMNS'], { exact: true }).waitFor();
+ // Programmatic language change simulates application settings while the modal remains open.
+ await language.selectOption('it', { force: true });
+ await dialog.getByText(dictionaries.it['MODIFY COLUMNS'], { exact: true }).waitFor();
+ await dialog.getByRole('button', { name: dictionaries.it['Cancel changes'], exact: true }).click();
  await page.setViewportSize({ width: 1400, height: 1000 });
- await page.locator('ecs-table-button button').filter({ hasText: 'CREATE' }).waitFor();
- await page.locator('th#email-header').waitFor();
- assert.equal(await hamburger.count(), 0);
- assert.equal(await page.getByRole('button', { name: 'Row actions', exact: true }).count(), 0);
- await page.setViewportSize({ width: 390, height: 844 });
- await hamburger.click();
- await page.getByRole('menuitem', { name: 'Modify columns', exact: true }).click();
- await page.getByRole('dialog').waitFor();
- assert.ok(await page.getByRole('dialog').getByText('Email', { exact: true }).count(), 'Hidden column missing from selector');
+ await language.selectOption('es');
+ await page.getByPlaceholder(dictionaries.es['Search keyword'], { exact: true }).waitFor();
+ await page.getByRole('button', { name: dictionaries.es.CREATE, exact: true }).waitFor();
+ assert.equal(await page.getByText('Ana', { exact: true }).count(), 1);
+ await page.locator('th#username-header .p-datatable-column-filter-button').click();
+ await page.getByRole('button', { name: dictionaries.es.primeng.apply, exact: true }).waitFor();
+ await page.keyboard.press('Escape');
  assert.deepEqual(errors, []);
- console.log('Browser checks passed: mobile/tablet/desktop, overlays, disabled actions, row navigation, column selector.');
+ console.log('UI i18n browser checks passed: four languages, live menu/dialog updates, custom buttons, unchanged row values.');
 } finally {
  await browser.close();
  await new Promise(resolve => server.close(resolve));

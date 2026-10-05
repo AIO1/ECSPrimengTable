@@ -1,4 +1,6 @@
-import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Input, OnInit, OnDestroy, DestroyRef, inject, Output, ViewChild, ViewEncapsulation } from '@angular/core';
+import { ECSPrimengTableI18nService } from '../../services/i18n.service';
+import { ECSTableTranslatePipe } from '../../pipes/ui-translate.pipe';
+import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Input, OnInit, OnDestroy, DestroyRef, ChangeDetectorRef, inject, Output, ViewChild, ViewEncapsulation } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslatePipe } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
@@ -36,6 +38,7 @@ import { ViewsManagement } from "../views-management/views-management";
 @Component({
   selector: 'ecs-primeng-table',
   imports: [
+    ECSTableTranslatePipe,
     TranslatePipe,
     CommonModule,
     FormsModule,
@@ -64,6 +67,8 @@ import { ViewsManagement } from "../views-management/views-management";
   encapsulation: ViewEncapsulation.None
 })
 export class ECSPrimengTable implements OnInit, AfterViewInit, OnDestroy {
+  private readonly i18n = inject(ECSPrimengTableI18nService);
+  private readonly changeDetector = inject(ChangeDetectorRef, { optional: true });
   private readonly stateScope = inject(ECSPrimengTableStateService, { optional: true });
   private readonly destroyRef = inject(DestroyRef);
   private initialStateApplied = false;
@@ -72,7 +77,13 @@ export class ECSPrimengTable implements OnInit, AfterViewInit, OnDestroy {
   constructor(
     private tableService: ECSPrimengTableService,
     private notification: ECSPrimengTableNotificationService
-  ) {}
+  ) {
+    this.i18n.changes.pipe(takeUntilDestroyed()).subscribe(() => {
+      this.headerMenuItems = this.translateMenuItems(this.headerMenuItems);
+      this.rowMenuItems = this.translateMenuItems(this.rowMenuItems);
+      this.changeDetector?.markForCheck();
+    });
+  }
   @Input() tableOptions: ITableOptions = DEFAULT_TABLE_OPTIONS;
   @Output() onRowCheckboxChange = new EventEmitter<{
     rowID: any,
@@ -132,6 +143,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit, OnDestroy {
   private initialConfigurationFetched: boolean = false;
   private maxViews = 0;
   ngOnInit(): void {
+    this.i18n.connectPrimeNG();
     this.validateStatePersistence();
     this.updateResponsiveViewport();
     this.fetchTableConfiguration();
@@ -208,7 +220,8 @@ export class ECSPrimengTable implements OnInit, AfterViewInit, OnDestroy {
 
   private buttonMenuItems(buttons: ITableButton[], row: any): MenuItem[] {
     return buttons.filter(button => this.buttonVisible(button, row)).map((button, index) => ({
-      label: button.label || button.tooltip || ('Action ' + (index + 1)),
+      label: button.label || button.tooltip || 'Action {{number}}',
+      _uiParams: { number: index + 1 },
       icon: button.icon,
       disabled: !(button.enabledCondition?.(row) ?? true),
       command: () => {
@@ -228,10 +241,18 @@ export class ECSPrimengTable implements OnInit, AfterViewInit, OnDestroy {
     }
     // Use one overlay for all rows. Replacing the model binds every action to this row.
     this.rowMenuRow = row;
-    this.rowMenuItems = this.buttonMenuItems(this.tableOptions.rows?.action?.buttons ?? [], row);
+    this.rowMenuItems = this.translateMenuItems(this.buttonMenuItems(this.tableOptions.rows?.action?.buttons ?? [], row));
     const wasOpen = this.responsiveRowMenu?.visible;
     this.responsiveRowMenu?.show(event);
     if (wasOpen) this.responsiveRowMenu?.alignOverlay();
+  }
+
+  private translateMenuItems(items: MenuItem[]): MenuItem[] {
+    return items.map(item => {
+      if (item['_literalLabel']) return item;
+      const key = item['_uiLabelKey'] ?? item.label;
+      return { ...item, _uiLabelKey: key, label: this.i18n.text(key, item['_uiParams']) };
+    });
   }
 
   openHeaderMenu(event: Event): void {
@@ -242,14 +263,14 @@ export class ECSPrimengTable implements OnInit, AfterViewInit, OnDestroy {
     if (options.header?.clearSortsEnabled) items.push({ label: 'Clear sorts', icon: options.header.clearSortsIcon, disabled: !this.hasToClearSorts(this.dt), command: () => this.clearSorts(this.dt) });
     if (options.header?.clearFiltersEnabled) items.push({ label: 'Clear filters', icon: options.header.clearFiltersIcon, disabled: !this.hasToClearFilters(this.dt, this.globalSearchText), command: () => this.clearFilters(this.dt) });
     if (this.tableViewsEnabled()) {
-      items.push({ label: this.tableViewCurrentSelectedAlias || options.views?.noViewSelectedText || 'Select a view', icon: 'pi pi-bookmark', command: () => { this.viewsModalShow = true; } });
+      items.push({ label: this.tableViewCurrentSelectedAlias || options.views?.noViewSelectedText || 'Select a view', _literalLabel: !!this.tableViewCurrentSelectedAlias, icon: 'pi pi-bookmark', command: () => { this.viewsModalShow = true; } });
       items.push({ label: 'Apply view again', icon: options.views?.reloadViewButtonIcon || 'pi pi-refresh', disabled: !this.tableViewCurrentSelectedAlias, command: () => this.viewLoad(this.tableViewCurrentSelectedAlias!) });
     }
     if (options.excelReport?.url?.trim()) items.push({ label: 'Export to Excel', icon: 'pi pi-file-excel', command: () => this.openExcelExport() });
     if (options.resetTableView?.enabled) items.push({ label: 'Reset table view', icon: options.resetTableView.icon, command: () => this.resetTableView() });
     items.push({ label: 'Refresh data', icon: 'pi pi-refresh', command: () => this.refreshData(event) });
     items.push(...this.buttonMenuItems(options.header?.buttons ?? [], null));
-    this.headerMenuItems = items;
+    this.headerMenuItems = this.translateMenuItems(items);
     this.responsiveHeaderMenu?.toggle(event);
   }
 
@@ -529,7 +550,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit, OnDestroy {
   viewLoad(tableViewAlias: string): void {
     const viewToLoad: ITableView | undefined = this.tableViewsList.find(v => v.viewAlias === tableViewAlias);
     if(!viewToLoad){
-      this.notification.showToast("error","VIEW TO LOAD DOESN'T EXIST","The view to load doesn't exist");
+      this.notification.showToast("error", this.i18n.text("VIEW TO LOAD DOESN'T EXIST"), this.i18n.text("The view to load doesn't exist"));
       return;
     }
     this.columnSelectionCustomized = true;
@@ -557,14 +578,14 @@ export class ECSPrimengTable implements OnInit, AfterViewInit, OnDestroy {
     this.dt.tableWidthState = viewData.tableWidth;
     this.dt.columnWidthsState = viewData.columnsWidth;
     this.tableViewCurrentSelectedAlias = tableViewAlias;
-    this.notification.showToast("info","TABLE VIEW RESTORED",`The table view '${this.tableViewCurrentSelectedAlias}' has been restored.`);
+    this.notification.showToast("info", this.i18n.text("TABLE VIEW RESTORED"), this.i18n.text("The table view '{{value0}}' has been restored.", { value0: this.tableViewCurrentSelectedAlias }));
     this.viewsModalShow = false;
     this.fetchTableData(this.tableLazyLoadEventInformation);
   }
 
   viewCreate(viewAlias: string){
     if(this.tableViewsList.length >= this.maxViews){
-      this.notification.showToast("error","NO MORE VIEWS ALLOWED","You have created the maximum number of allowed views for this table");
+      this.notification.showToast("error", this.i18n.text("NO MORE VIEWS ALLOWED"), this.i18n.text("You have created the maximum number of allowed views for this table"));
       return;
     }
     let viewData: ITableViewData = this.tableService.viewGenerateData(this.dt, this.globalSearchText, this.currentPage, this.currentRowsPerPage, this.modifyFiltersWithoutGlobalAndSelectedRows.bind(this))
@@ -583,7 +604,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit, OnDestroy {
   viewDelete(viewAlias: string){
     const index = this.tableViewsList.findIndex(v => v.viewAlias === viewAlias);
     if (index === -1) {
-      this.notification.showToast("error","Table view delete failed", `The table view could not be deleted since it was not found.`);
+      this.notification.showToast("error", this.i18n.text("Table view delete failed"), this.i18n.text("The table view could not be deleted since it was not found."));
       return;
     }
     this.tableViewsList.splice(index, 1);
@@ -597,7 +618,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit, OnDestroy {
   viewEditAlias(event: { viewAliasOld: string; viewAliasNew: string }){
     const index = this.tableViewsList.findIndex(v => v.viewAlias === event.viewAliasOld);
     if (index === -1) {
-      this.notification.showToast("error","Table view alias change failed", `The table view alias could not be changed since it was not found.`);
+      this.notification.showToast("error", this.i18n.text("Table view alias change failed"), this.i18n.text("The table view alias could not be changed since it was not found."));
       return;
     }
     this.tableViewsList[index].viewAlias = event.viewAliasNew;
@@ -612,7 +633,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit, OnDestroy {
   viewUpdateData(viewAlias: string){
     const index = this.tableViewsList.findIndex(v => v.viewAlias === viewAlias);
     if (index === -1) {
-      this.notification.showToast("error","Table view not found", `The table view to update data from was not found.`);
+      this.notification.showToast("error", this.i18n.text("Table view not found"), this.i18n.text("The table view to update data from was not found."));
       return;
     }
     let viewData: ITableViewData = this.tableService.viewGenerateData(this.dt, this.globalSearchText, this.currentPage, this.currentRowsPerPage, this.modifyFiltersWithoutGlobalAndSelectedRows.bind(this))
@@ -623,7 +644,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit, OnDestroy {
   viewUpdateActiveStartup(viewAlias: string){
     const index = this.tableViewsList.findIndex(v => v.viewAlias === viewAlias);
     if (index === -1) {
-      this.notification.showToast("error","Table view not found", `The table view to update data from was not found.`);
+      this.notification.showToast("error", this.i18n.text("Table view not found"), this.i18n.text("The table view to update data from was not found."));
       return;
     }
     let newStatus: boolean = !this.tableViewsList[index].lastActive;
@@ -652,7 +673,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit, OnDestroy {
         });
       return;
       default:
-        this.notification.showToast("error","NOT IMPLEMENTED", "This type os save view has not been implemented yet.");
+        this.notification.showToast("error", this.i18n.text("NOT IMPLEMENTED"), this.i18n.text("This type os save view has not been implemented yet."));
         return;
     }
     this.viewsSaveEnd(endMessage);
@@ -660,20 +681,20 @@ export class ECSPrimengTable implements OnInit, AfterViewInit, OnDestroy {
   viewsSaveEnd(endMessage: number){
     switch(endMessage){
       case 0: // NEW VIEW
-        this.notification.showToast("info","Table view created", `New table view has been created.`);
+        this.notification.showToast("info", this.i18n.text("Table view created"), this.i18n.text("New table view has been created."));
         this.viewsModalShow = false;
         break;
       case 1: // UPDATE VIEW
-        this.notification.showToast("info","Table view data updated", `The table view data was updated.`);
+        this.notification.showToast("info", this.i18n.text("Table view data updated"), this.i18n.text("The table view data was updated."));
         break;
       case 2: // UPDATE ALIAS
-        this.notification.showToast("info","Table view name updated", `The table view alias was updated.`);
+        this.notification.showToast("info", this.i18n.text("Table view name updated"), this.i18n.text("The table view alias was updated."));
         break;
       case 3: // DELETE VIEW
-        this.notification.showToast("info","Table view delete", `The table view was deleted.`);
+        this.notification.showToast("info", this.i18n.text("Table view delete"), this.i18n.text("The table view was deleted."));
         break;
       case 4: // DELETE VIEW
-        this.notification.showToast("info","Table view active on startup", `Changed the view that will be active on startup.`);
+        this.notification.showToast("info", this.i18n.text("Table view active on startup"), this.i18n.text("Changed the view that will be active on startup."));
         break;
     }
   }
@@ -944,10 +965,10 @@ export class ECSPrimengTable implements OnInit, AfterViewInit, OnDestroy {
       this.copyCellDataTimer = setTimeout(() => {
         navigator.clipboard.writeText(cellContent).then(() => {
           this.notification.clearToasts();
-          this.notification.showToast("info", "CELL CONTENT COPIED", "The cell content has been copied to your clipboard.");
+          this.notification.showToast("info", this.i18n.text("CELL CONTENT COPIED"), this.i18n.text("The cell content has been copied to your clipboard."));
         }).catch(err => {
           this.notification.clearToasts();
-          this.notification.showToast("error", "CELL CONTENT COPIED", `The cell content failed to copy to your clipboard with error: ${err}`);
+          this.notification.showToast("error", this.i18n.text("CELL CONTENT COPIED"), this.i18n.text("The cell content failed to copy to your clipboard with error: {{value0}}", { value0: err }));
         });
       }, (this.tableOptions.copyToClipboardTime ?? 0) * 1000 );
     }
@@ -1094,7 +1115,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit, OnDestroy {
   openExcelExport(){
     const defaultTitle = this.tableOptions.excelReport?.defaultTitle?.trim();
     const allowEdit = this.tableOptions.excelReport?.titleAllowUserEdit === true;
-    this.excelReportTitle = (!defaultTitle && !allowEdit) ? 'Report' : defaultTitle!;
+    this.excelReportTitle = this.i18n.text((!defaultTitle && !allowEdit) ? 'Report' : defaultTitle!);
     this.showExportModal=true;
   }
   generateExcelReport(event: any){

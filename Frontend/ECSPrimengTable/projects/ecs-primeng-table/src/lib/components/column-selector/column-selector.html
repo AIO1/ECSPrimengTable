@@ -1,7 +1,7 @@
 <!--COLUMN MODAL DIALOG-->
 <p-dialog [(visible)]="visible" [modal]="true" [draggable]="false" [resizable]="false" [closeOnEscape]="false" [closable]="false" [maximizable]="false" [style]="{'min-width': '65vw', 'max-width': '65vw'}">
     <ng-template pTemplate="header">
-        <span class="white-space-nowrap"><b>MODIFY COLUMNS</b></span>
+        <span class="white-space-nowrap"><b>{{ 'MODIFY COLUMNS' | ecsTranslate }}</b></span>
     </ng-template>
     <div style="padding: 10px;">
         <p-table #dt_columnDialog [value]="filteredColumnData" [scrollable]="true" size="small" showGridlines stripedRows
@@ -10,7 +10,7 @@
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div style="display: flex; align-items: center; gap: 10px">
                         <p-checkbox inputId="selectAll" [binary]="true" [ngModel]="allColumnsCheckboxActive()" (onChange)="allColumnsCheckboxClick($event)"></p-checkbox>
-                        <label for="selectAll">Select all columns</label>
+                        <label for="selectAll">{{ 'Select all columns' | ecsTranslate }}</label>
                     </div>
                     <div style="display: flex; align-items: center;">
                         <p-iconField iconPosition="left" [ngClass]="{'p-input-icon-right': globalSearchText}">
@@ -19,7 +19,7 @@
                             </p-inputIcon>
                             <input pInputText type="text" 
                                 (input)="filterColumnModal($event)" autocomplete="off" 
-                                [maxlength]="globalSearchMaxLength" placeholder="Search column name" [(ngModel)]="globalSearchText"
+                                [maxlength]="globalSearchMaxLength" [placeholder]="'Search column name' | ecsTranslate" [(ngModel)]="globalSearchText"
                                 style="width: 220px;"/>
                             <!-- Right icon (only if there is text) -->
                             @if (globalSearchText) {
@@ -33,11 +33,11 @@
             </ng-template>
             <ng-template #header>
                 <tr>
-                    <th pFrozenColumn style="max-width: 100px; min-width: 100px; width: 100px; text-align: center;">Show column</th>
-                    <th pFrozenColumn style="max-width: 250px; min-width: 250px; width: 250px; text-align: center;">Column name</th>
-                    <th style="max-width: 150px; min-width: 150px; width: 150px; text-align: center;">Cell overflow behaviour</th>
-                    <th style="max-width: 160px; min-width: 160px; width: 160px; text-align: center;">Horizontal aligment</th>
-                    <th style="max-width: 150px; min-width: 150px; width: 150px; text-align: center;">Vertical aligment</th>
+                    <th pFrozenColumn style="max-width: 100px; min-width: 100px; width: 100px; text-align: center;">{{ 'Show column' | ecsTranslate }}</th>
+                    <th pFrozenColumn style="max-width: 250px; min-width: 250px; width: 250px; text-align: center;">{{ 'Column name' | ecsTranslate }}</th>
+                    <th style="max-width: 150px; min-width: 150px; width: 150px; text-align: center;">{{ 'Cell overflow behaviour' | ecsTranslate }}</th>
+                    <th style="max-width: 160px; min-width: 160px; width: 160px; text-align: center;">{{ 'Horizontal alignment' | ecsTranslate }}</th>
+                    <th style="max-width: 150px; min-width: 150px; width: 150px; text-align: center;">{{ 'Vertical alignment' | ecsTranslate }}</th>
                 </tr>
             </ng-template>
             <ng-template #body let-rowData>
@@ -50,23 +50,23 @@
                     </td>
                     <td pFrozenColumn style="max-width: 250px; min-width: 250px; width: 250px;">{{rowData.header | translate}}</td>
                     <td style="max-width: 150px; min-width: 150px; width: 150px; text-align: center;">
-                        <p-selectButton [(ngModel)]="rowData.cellOverflowBehaviour" [options]="cellOverflowBehaviourOptions" optionValue="val" optionLabel="icon" [disabled]="rowData.cellOverflowBehaviourDisabled" allowEmpty="false">
+                        <p-selectButton [(ngModel)]="rowData.cellOverflowBehaviour" [options]="translatedOptions(cellOverflowBehaviourOptions)" optionValue="val" optionLabel="name" [disabled]="rowData.cellOverflowBehaviourDisabled" allowEmpty="false">
                             <ng-template #item let-item>
-                                <i [class]="item.icon" style="margin: -20px;" [pTooltip]="item.name" [showDelay]="400" tooltipPosition="top"></i>
+                                <i [class]="item.icon" style="margin: -20px;" [pTooltip]="(item.name) | ecsTranslate" [showDelay]="400" tooltipPosition="top"></i>
                             </ng-template>
                         </p-selectButton>
                     </td>
                     <td style="max-width: 160px; min-width: 160px; width: 160px; text-align: center;">
-                        <p-selectButton [(ngModel)]="rowData.dataAlignHorizontal" [options]="dataAlignHorizontalOptions" optionValue="val" optionLabel="icon" [disabled]="rowData.dataAlignHorizontalDisabled" allowEmpty="false">
+                        <p-selectButton [(ngModel)]="rowData.dataAlignHorizontal" [options]="translatedOptions(dataAlignHorizontalOptions)" optionValue="val" optionLabel="name" [disabled]="rowData.dataAlignHorizontalDisabled" allowEmpty="false">
                             <ng-template #item let-item>
-                                <i [class]="item.icon" style="margin: -20px;" [pTooltip]="item.name" [showDelay]="400" tooltipPosition="top"></i>
+                                <i [class]="item.icon" style="margin: -20px;" [pTooltip]="(item.name) | ecsTranslate" [showDelay]="400" tooltipPosition="top"></i>
                             </ng-template>
                         </p-selectButton>
                     </td>
                     <td style="max-width: 150px; min-width: 150px; width: 150px; text-align: center;">
-                        <p-selectButton [(ngModel)]="rowData.dataAlignVertical" [options]="dataAlignVerticalOptions" optionValue="val" optionLabel="icon" [disabled]="rowData.dataAlignVerticalDisabled" allowEmpty="false">
+                        <p-selectButton [(ngModel)]="rowData.dataAlignVertical" [options]="translatedOptions(dataAlignVerticalOptions)" optionValue="val" optionLabel="name" [disabled]="rowData.dataAlignVerticalDisabled" allowEmpty="false">
                             <ng-template #item let-item>
-                                <i [class]="item.icon" style="margin: -20px;" [pTooltip]="item.name" [showDelay]="400" tooltipPosition="top"></i>
+                                <i [class]="item.icon" style="margin: -20px;" [pTooltip]="(item.name) | ecsTranslate" [showDelay]="400" tooltipPosition="top"></i>
                             </ng-template>
                         </p-selectButton>
                     </td>
@@ -74,16 +74,16 @@
             </ng-template>
             <ng-template #emptymessage>
                 <tr>
-                    <td colspan="999">There are no columns</td>
+                    <td colspan="999">{{ 'There are no columns' | ecsTranslate }}</td>
                 </tr>
             </ng-template>
         </p-table>
         <div style="display: flex; flex-direction: row; justify-content: space-between; align-items: center; margin-top: 10px;">
-            Showing {{filteredColumnData ? filteredColumnData.length : 0}} columns of {{columnModalData ? columnModalData.length : 0}} available columns
+            {{ 'Showing {{count}} columns of {{total}} available columns' | ecsTranslate: { count: filteredColumnData ? filteredColumnData.length : 0, total: columnModalData ? columnModalData.length : 0 } }}
         </div>
     </div>
     <ng-template pTemplate="footer" style="display: flex; justify-content: space-between; align-items: center;">
-        <p-button (click)="closeModal()" label="Cancel changes" outlined="true" [style]="{'margin-top': '10px'}"></p-button>
-        <p-button (click)="applyColumnModalChanges()" label="Save changes" [style]="{'margin-top': '10px'}"></p-button>
+        <p-button (click)="closeModal()" [label]="'Cancel changes' | ecsTranslate" outlined="true" [style]="{'margin-top': '10px'}"></p-button>
+        <p-button (click)="applyColumnModalChanges()" [label]="'Save changes' | ecsTranslate" [style]="{'margin-top': '10px'}"></p-button>
     </ng-template>
 </p-dialog>

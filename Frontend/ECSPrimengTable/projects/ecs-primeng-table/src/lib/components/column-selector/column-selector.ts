@@ -1,3 +1,4 @@
+import { ECSTableTranslatePipe } from '../../pipes/ui-translate.pipe';
 import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, ViewChild } from '@angular/core';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -20,6 +21,7 @@ import { TooltipModule } from 'primeng/tooltip';
 @Component({
   selector: 'ecs-column-selector',
   imports: [
+    ECSTableTranslatePipe,
     TranslatePipe,
     DialogModule,
     TableModule,
@@ -88,6 +90,10 @@ export class ColumnSelector implements OnChanges {
     {icon: 'pi pi-align-justify', val: DataAlignVertical.Middle, name: "Middle"},
     {icon: 'pi pi-angle-down', val: DataAlignVertical.Bottom, name: "Bottom"}
   ];
+
+  translatedOptions(options: { name: string; icon: string; val: number }[]) {
+    return options.map(option => ({ ...option, name: this.translate.instant(option.name) }));
+  }
 
   globalSearchText: string | null = null; // The text used by the global search
   globalSearchMaxLength: number = 50;

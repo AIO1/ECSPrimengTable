@@ -1,3 +1,4 @@
+import { ECSTableTranslatePipe } from '../../pipes/ui-translate.pipe';
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
@@ -8,6 +9,7 @@ import { ITableButton } from '../../interfaces';
 @Component({
   selector: 'ecs-table-button',
   imports: [
+    ECSTableTranslatePipe,
     CommonModule,
     ButtonModule,
     TooltipModule

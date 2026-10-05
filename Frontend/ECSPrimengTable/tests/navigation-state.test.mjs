@@ -5,7 +5,7 @@ import { createEnvironmentInjector, runInInjectionContext } from '@angular/core'
 import { HttpResponse } from '@angular/common/http';
 import { of, Subject, throwError } from 'rxjs';
 import {
-  ECSPrimengTable, ECSPrimengTableStateService, createTableOptions, DataType,
+  ECSPrimengTableI18nService, ECSPrimengTable, ECSPrimengTableStateService, createTableOptions, DataType,
   TableViewSaveMode
 } from '../dist/ecs-primeng-table/fesm2022/eternalcodestudio-primeng-table.mjs';
 
@@ -14,7 +14,7 @@ function scope() {
 }
 
 function list(parent, { enabled = true, key = 'people', views = false, failedViews = false, dataUrl = '/data' } = {}) {
-  const injector = createEnvironmentInjector([], parent);
+  const injector = createEnvironmentInjector([ECSPrimengTableI18nService], parent);
   const configurations = new Subject();
   const savedViews = new Subject();
   const requests = [];
@@ -117,7 +117,7 @@ test('A -> detail -> B -> A gets a fresh scope with no old filters', () => {
 
 test('disabled persistence requires no provider and never restores saved state', () => {
   assert.equal(createTableOptions().statePersistence.enabled, false);
-  const noProvider = createEnvironmentInjector([]);
+  const noProvider = createEnvironmentInjector([ECSPrimengTableI18nService]);
   const standalone = list(noProvider, { enabled: false }); standalone.start(); standalone.destroy(); noProvider.destroy();
   const parent = scope();
   const a = list(parent); a.start(); filter(a.component); a.destroy();
@@ -183,7 +183,7 @@ test('reset discards remembered filters and requests default data', () => {
 });
 
 test('enabled persistence requires an explicit scope and a non-empty key', () => {
-  const parent = createEnvironmentInjector([]);
+  const parent = createEnvironmentInjector([ECSPrimengTableI18nService]);
   const missingScope = list(parent);
   assert.throws(() => missingScope.start(), /parent scope component/);
   missingScope.destroy(); parent.destroy();
