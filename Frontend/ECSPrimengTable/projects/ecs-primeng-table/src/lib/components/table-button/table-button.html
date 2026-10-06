@@ -1,23 +1,34 @@
-@if(button.visibleCondition?.(rowData) ?? true){ <!--If 'visibleCondition' is true or not defined-->
-  @if((button.enabledCondition?.(rowData) ?? true) || !button.conditionFailHide){ <!--Render button if 'enabledCondition' is true or undefined, OR if 'conditionFailHide' is false-->
-    <p-button
-      [disabled]="!(button.enabledCondition?.(rowData) ?? true)"
-      [rounded]="button.rounded || false"
-      [iconPos]="button.iconPos || 'left'"
-      [raised]="button.raised || false"
-      [variant]="button.variant || null"
-      [pTooltip]="button.tooltip || ''"
-      [tooltipDisabled]="!button.tooltip || button.tooltip.length === 0"
+@if(button().visibleCondition?.(rowData()) ?? true){ 
+  @if((button().enabledCondition?.(rowData()) ?? true) || !button().conditionFailHide){ 
+    <button
+      type="button"
+      [disabled]="!(button().enabledCondition?.(rowData()) ?? true)"
+      [pTooltip]="button().tooltip || ''"
+      [tooltipDisabled]="!button().tooltip || button().tooltip.length === 0"
       [showDelay]="700"
       tooltipPosition="top"
-      [styleClass]="
-        (isActionButton ? ' custom-small-btn' : '') +
-        (button.class ? ' ' + button.class : '')
+      [class]="
+        'p-button p-component' +
+        ((button().rounded || false) ? ' p-button-rounded' : '') +
+        ((button().raised || false) ? ' p-button-raised' : '') +
+        (button().variant ? ' p-button-' + button().variant : '') +
+        (isActionButton() ? ' p-button-sm' : '') +
+        (button().class ? ' ' + button().class : '')
       "
-      [icon]="button.icon || ''"
-      [label]="button.label || ''"
-      [size]="isActionButton ? 'small': undefined"
-      [ngStyle]="getButtonStyle(button, isActionButton, isLastActionButton)"
-      (onClick)="handleClick($event)"/>
+      [ngStyle]="getButtonStyle(button(), isActionButton(), isLastActionButton())"
+      (click)="handleClick($event)">
+      
+      @if (button().icon && (!button().iconPos || button().iconPos === 'left')) {
+        <span [class]="button().icon" [style.margin-right]="button().label ? '0.5rem' : '0'"></span>
+      }
+      
+      @if (button().label) {
+        <span>{{ button().label }}</span>
+      }
+
+      @if (button().icon && button().iconPos === 'right') {
+        <span [class]="button().icon" [style.margin-left]="button().label ? '0.5rem' : '0'"></span>
+      }
+    </button>
   }
 }

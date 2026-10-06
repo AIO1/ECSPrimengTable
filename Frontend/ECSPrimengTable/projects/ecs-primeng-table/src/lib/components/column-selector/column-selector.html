@@ -20,7 +20,7 @@
                         <p-checkbox inputId="selectAll" [binary]="true" [ngModel]="allColumnsCheckboxActive()" (onChange)="allColumnsCheckboxClick($event.checked)"></p-checkbox>
                         <label pLabel for="selectAll" style="cursor: pointer; user-select: none;">Select all columns</label>
                     </div>
-                    <div style="display: flex; align-items: center; flex-shrink: 0;">
+                    <div style="display: flex; justify-content: center;">
                         <p-iconfield>
                             <p-inputicon>
                                 <i class="pi pi-search"></i>
@@ -30,11 +30,9 @@
                                 placeholder="Search column name"
                                 [maxlength]="globalSearchMaxLength"
                                 (input)="filterColumnModal($event)"/>
-                            @if (globalSearchText) {
-                                <p-inputicon (click)="clearGlobalFilter(); $event.stopPropagation()" style="cursor: pointer">
-                                    <i class="pi pi-times"></i>
-                                </p-inputicon>
-                            }
+                            <p-inputicon (click)="clearGlobalFilter(); $event.stopPropagation()" style="cursor: pointer">
+                                <i class="pi pi-times"></i>
+                            </p-inputicon>
                         </p-iconfield>
                     </div>
                 </div>

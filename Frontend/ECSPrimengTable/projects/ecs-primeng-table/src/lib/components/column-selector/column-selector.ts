@@ -96,6 +96,9 @@ export class ColumnSelector {
   }
 
   clearGlobalFilter() {
+    if (!this.globalSearchText) {
+        return;
+    }
     this.globalSearchText = null;
     this.dtColumnDialog().filterGlobal('', 'contains');
   }
