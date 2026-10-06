@@ -1,4 +1,4 @@
-﻿using ECS.PrimengTable.Enums;
+using ECS.PrimengTable.Enums;
 
 namespace ECS.PrimengTable.Attributes {
     /// <summary>
@@ -48,6 +48,13 @@ namespace ECS.PrimengTable.Attributes {
         /// If true, the column starts hidden (only applies if CanBeHidden is true).
         /// </summary>
         public bool StartHidden { get; set; }
+
+        /// <summary>
+        /// Optional initial visibility by viewport. Null or empty preserves StartHidden.
+        /// CanBeHidden=false takes precedence. Users and saved views may override this default.
+        /// </summary>
+        public DeviceType[]? VisibleOnlyIn { get; set; }
+
 
         /// <summary>
         /// If true, the column can be resized by the user.

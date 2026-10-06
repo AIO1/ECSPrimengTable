@@ -47,6 +47,15 @@ export class TableCell {
     return value ? value.split(';').map((v: any) => v.trim()) : [];
   }
 
+  /** List tooltips use the same semicolon-separated positions as the displayed list. */
+  getListTooltip(item: string, index: number): string {
+    const source = this.col.dataTooltipCustomColumnSource;
+    const tooltips = source ? this.rowData[source] : null;
+    if (typeof tooltips !== 'string') return item;
+    // Preserve empty entries so subsequent tooltips never move to another item.
+    return tooltips.split(';')[index]?.trim() ?? item;
+  }
+
   getDataAlignHorizontalAsText(dataAlignHorizontal: DataAlignHorizontal){
       dataAlignHorizontalAsText(dataAlignHorizontal);
   }

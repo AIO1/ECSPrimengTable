@@ -3,6 +3,33 @@ import { IColumnMetadata, IPredefinedFilter, ITableButton } from "../interfaces"
 
 /** Configuration options for ECS Primeng table */
 export interface ITableOptions {
+    /** Optional responsive behavior. Existing applications keep their current buttons by default. */
+    responsive?: {
+        /** CSS viewport width where Tablet starts. Default: 768. */
+        tabletMinWidth?: number;
+        /** CSS viewport width where Desktop starts; must exceed tabletMinWidth. Default: 1200. */
+        desktopMinWidth?: number;
+        /** Collapse header actions on Mobile/Tablet. Default: false. */
+        headerMenu?: boolean;
+        /** Collapse row actions on Mobile/Tablet. Default: false. */
+        rowMenu?: boolean;
+        /** Accessible labels for the menu triggers. */
+        headerMenuLabel?: string;
+        rowMenuLabel?: string;
+    };
+
+    /**
+     * Optional in-memory query state, shared only within a parent component scope.
+     * Provide ECSPrimengTableStateService on the parent containing list/detail routes.
+     * Leaving that parent destroys the state. Disabled by default.
+     */
+    statePersistence?: {
+        /** Save on list destruction and restore before the first data request. @default false */
+        enabled?: boolean;
+        /** Unique table/context key within the scope. Required when enabled. */
+        key?: string;
+    };
+
 
     /**
      * Controls whether the table is active.
@@ -621,6 +648,15 @@ export interface ITableOptions {
 /** Default configuration options for ECS Primeng table */
 export const DEFAULT_TABLE_OPTIONS: ITableOptions = {
     isActive: true,
+    responsive: {
+        tabletMinWidth: 768,
+        desktopMinWidth: 1200,
+        headerMenu: false,
+        rowMenu: false,
+        headerMenuLabel: 'Table actions',
+        rowMenuLabel: 'Row actions'
+    },
+    statePersistence: { enabled: false },
     urlTableConfiguration: undefined,
     urlTableData: undefined,
     data: [],

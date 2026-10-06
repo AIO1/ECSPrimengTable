@@ -1,4 +1,6 @@
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import { ECSPrimengTableI18nService } from '../../services/i18n.service';
+import { ECSTableTranslatePipe } from '../../pipes/ui-translate.pipe';
+import { inject, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
@@ -12,6 +14,7 @@ import { CheckboxModule } from 'primeng/checkbox';
 @Component({
   selector: 'ecs-export-excel',
   imports: [
+    ECSTableTranslatePipe,
     DialogModule,
     FormsModule,
     ButtonModule,
@@ -24,6 +27,7 @@ import { CheckboxModule } from 'primeng/checkbox';
   templateUrl: './export-excel.html'
 })
 export class ExportExcel implements OnChanges {
+  private readonly i18n = inject(ECSPrimengTableI18nService);
   @Input() visible: boolean = false;
   @Input() rowCheckboxSelectorActive: boolean = false;
   @Input() excelReportTitle: string = "";
@@ -91,13 +95,13 @@ export class ExportExcel implements OnChanges {
     this.excelReportTitle=this.excelReportTitle?.trim();
     if (!this.excelReportTitle || this.excelReportTitle.length <= 0) {
       this.notificationSerivce.clearToasts();
-      this.notificationSerivce.showToast("error", "REPORT NAME NOT VALID", "The report name is not valid");
+      this.notificationSerivce.showToast("error", this.i18n.text("REPORT NAME NOT VALID"), this.i18n.text("The report name is not valid"));
       return; 
     }
     const allowedPattern = /^[A-Za-z0-9 _-]*$/;
     if (!allowedPattern.test(this.excelReportTitle)) {
       this.notificationSerivce.clearToasts();
-      this.notificationSerivce.showToast("error", "INVALID CHARACTERS IN REPORT NAME", "The report name contains invalid characters.");
+      this.notificationSerivce.showToast("error", this.i18n.text("INVALID CHARACTERS IN REPORT NAME"), this.i18n.text("The report name contains invalid characters."));
       return;
     }
     if(this.includeTimeInTitle){
@@ -113,6 +117,10 @@ export class ExportExcel implements OnChanges {
       filename: excelReportFinalTitle,
       useIconInBools: this.exportUseIconsInBools
     });
+  }
+
+  translatedOptions(options: { label: string; value: boolean | number }[]) {
+    return options.map(option => ({ ...option, label: this.i18n.text(option.label) }));
   }
 
   filterSelectorDisabled(): boolean{

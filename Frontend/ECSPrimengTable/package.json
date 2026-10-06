@@ -6,7 +6,9 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "test:state": "ng build ecs-primeng-table && node --test tests/navigation-state.test.mjs",
+    "test:responsive": "ng build ecs-primeng-table && node --test tests/responsive.test.mjs"
   },
   "prettier": {
     "overrides": [
@@ -27,6 +29,8 @@
     "@angular/forms": "19.2.21",
     "@angular/platform-browser": "19.2.21",
     "@angular/router": "19.2.21",
+    "@ngx-translate/core": "^17.0.0",
+    "@ngx-translate/http-loader": "^17.0.0",
     "@primeng/themes": "19.1.4",
     "primeicons": "7.0.0",
     "primeng": "19.1.4",

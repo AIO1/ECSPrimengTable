@@ -17,14 +17,14 @@
                 <th [ngStyle]="{
                         'text-align': 'center',
                         'vertical-align': 'middle',
-                        'max-width': (tableOptions.rows?.action?.width ?? 150) + 'px',
-                        'min-width': (tableOptions.rows?.action?.width ?? 150) + 'px',
-                        'width': (tableOptions.rows?.action?.width ?? 150) + 'px'
+                        'max-width': actionColumnWidth + 'px',
+                        'min-width': actionColumnWidth + 'px',
+                        'width': actionColumnWidth + 'px'
                     }"
                     pResizableColumn [pResizableColumnDisabled]="!tableOptions.rows?.action?.resizable" pFrozenColumn [frozen]="tableOptions.rows?.action?.frozen ?? false"
                     [alignFrozen]="getFrozenColumnAlignAsText(tableOptions.rows?.action?.positionRight ? FrozenColumnAlign.Right : FrozenColumnAlign.Left)" id="actions-header"
                     [attr.scope]="'col'">
-                    {{ tableOptions.rows?.action?.header ?? ''}}
+                    {{ (tableOptions.rows?.action?.header ?? '') | ecsTranslate }}
                 </th>
             }
         </ng-template>
@@ -36,14 +36,22 @@
                     [ngStyle]="{
                         'text-align': (getDataAlignHorizontalAsText(tableOptions.rows?.action?.horizontalAlignment ?? DataAlignHorizontal.Center)),
                         'vertical-align': (getDataAlignVerticalAsText(tableOptions.rows?.action?.verticalAlignment ?? DataAlignVertical.Middle)),
-                        'max-width': (tableOptions.rows?.action?.width ?? 150) + 'px',
-                        'min-width': (tableOptions.rows?.action?.width ?? 150) + 'px',
-                        'width': (tableOptions.rows?.action?.width ?? 150) + 'px'
+                        'max-width': actionColumnWidth + 'px',
+                        'min-width': actionColumnWidth + 'px',
+                        'width': actionColumnWidth + 'px'
                     }"
                     pFrozenColumn [frozen]="tableOptions.rows?.action?.frozen ?? false"
                     [alignFrozen]="getFrozenColumnAlignAsText(tableOptions.rows?.action?.positionRight ? FrozenColumnAlign.Right : FrozenColumnAlign.Left)">
+                    @if (compactRows) {
+                        @if (hasRowMenuActions(rowData)) {
+                            <button pButton type="button" icon="pi pi-ellipsis-v" [attr.aria-label]="(tableOptions.responsive?.rowMenuLabel || 'Row actions') | ecsTranslate"
+                                aria-haspopup="menu" [attr.aria-expanded]="responsiveRowMenu.visible && rowMenuRow === rowData"
+                                (click)="openRowMenu($event, rowData)" class="ecs-responsive-trigger"></button>
+                        }
+                    } @else {
                     @for (button of tableOptions.rows?.action?.buttons; track button; let last = $last) {
                         <ecs-table-button [button]="button" [rowData]="rowData" [isActionButton]="true" [isLastActionButton]="last"/>
+                    }
                     }
                 </td>
             }
@@ -62,7 +70,7 @@
                 id="rowSelector-header"  [attr.scope]="'col'" pResizableColumn [pResizableColumnDisabled]="!tableOptions.rows?.checkboxSelector?.resizable" pFrozenColumn 
                 [frozen]="tableOptions.rows?.checkboxSelector?.frozen ?? false" [alignFrozen]="getFrozenColumnAlignAsText(tableOptions.rows?.checkboxSelector?.positionRight ? FrozenColumnAlign.Right : FrozenColumnAlign.Left)">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                        {{ tableOptions.rows?.checkboxSelector?.header ?? '' }}
+                        {{ (tableOptions.rows?.checkboxSelector?.header ?? '') | ecsTranslate }}
                         <p-columnFilter type="boolean" field="selector" display="menu" [showButtons]="false"/>
                     </div>
             </th>
@@ -91,31 +99,51 @@
 
         <!-- LOGIC FOR DRAWING TABLE ACTIONS ABOVE THE HEADER -->
         <ng-template #caption>
-            <div #headerContainer style="display: flex; justify-content: space-between; align-items: center;">
+            <div #headerContainer [class.ecs-compact-header]="compactHeader" style="display: flex; justify-content: space-between; align-items: center;">
+                @if (compactHeader) {
+                    @if (tableOptions.globalFilter?.enabled) {
+                        <p-iconField iconPosition="left" class="ecs-responsive-search">
+                            <p-inputIcon><i class="pi pi-search"></i></p-inputIcon>
+                            <input pInputText type="text" [attr.aria-label]="'Search keyword' | ecsTranslate" [placeholder]="'Search keyword' | ecsTranslate" autocomplete="off"
+                                [maxlength]="tableOptions.globalFilter?.maxLength ?? null" [(ngModel)]="globalSearchText"
+                                (input)="dt.filterGlobal($any($event.target).value, 'contains')"/>
+                            @if (globalSearchText) {
+                                <p-inputIcon position="right"><button type="button" class="ecs-clear-search" [attr.aria-label]="'Clear search' | ecsTranslate" (click)="clearFilters(dt, true, true)"><i class="pi pi-times"></i></button></p-inputIcon>
+                            }
+                        </p-iconField>
+                    }
+                    @if (tableOptions.description?.text) {
+                        <i [class]="tableOptions.description!.icon" [pTooltip]="(tableOptions.description!.text) | ecsTranslate" [escape]="false"></i>
+                    }
+                    <button pButton type="button" icon="pi pi-bars" [attr.aria-label]="(tableOptions.responsive?.headerMenuLabel || 'Table actions') | ecsTranslate"
+                        aria-haspopup="menu" [attr.aria-expanded]="responsiveHeaderMenu.visible"
+                        (click)="openHeaderMenu($event)" class="ecs-responsive-trigger ecs-header-menu-trigger"></button>
+                } @else {
+
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <!--CHOOSE COLUMNS TO SHOW-->
                     @if (tableOptions.columns?.selectorEnabled) {
-                        <p-button [icon]="tableOptions.columns?.selectorIcon ?? 'pi pi-pen-to-square'" (onClick)="columnSelectorShow()" pTooltip="Modify columns"
+                        <p-button [icon]="tableOptions.columns?.selectorIcon ?? 'pi pi-pen-to-square'" (onClick)="columnSelectorShow()" [pTooltip]="'Modify columns' | ecsTranslate"
                             [showDelay]="700" tooltipPosition="top" styleClass="p-button-icon-only"/>
                     }
                     <!--CLEAR SORTS AND FILTERS-->
                     @if (tableOptions.header?.clearSortsEnabled) {
                         <p-button [icon]="tableOptions.header?.clearSortsIcon ?? 'pi pi-sort-alt-slash'" (onClick)="clearSorts(dt)" [disabled]="!hasToClearSorts(dt)"
-                            pTooltip="Clear sorts" [showDelay]="700" tooltipPosition="top" styleClass="p-button-icon-only"/>
+                            [pTooltip]="'Clear sorts' | ecsTranslate" [showDelay]="700" tooltipPosition="top" styleClass="p-button-icon-only"/>
                     }
                     @if (tableOptions.header?.clearFiltersEnabled) {
                         <p-button
                             [icon]="tableOptions.header?.clearFiltersIcon ?? 'pi pi-filter-slash'" (onClick)="clearFilters(dt)" [disabled]="!hasToClearFilters(dt, globalSearchText)"
-                            pTooltip="Clear filters" [showDelay]="700" tooltipPosition="top" styleClass="p-button-icon-only"/>
+                            [pTooltip]="'Clear filters' | ecsTranslate" [showDelay]="700" tooltipPosition="top" styleClass="p-button-icon-only"/>
                     }
 
                     <!--TABLE DESCRIPTION-->
                     @if(tableOptions.description?.text){ <!-- If a table description text is provided -->
                         @if(!tableOptions.description!.tooltip){ <!-- The table description must be shown as text next to the icon -->
                             <i [class]="tableOptions.description!.icon"></i>
-                            <span [innerHTML]="tableOptions.description!.text"></span>
+                            <span [innerHTML]="(tableOptions.description!.text) | ecsTranslate"></span>
                         } @else {
-                            <i [escape]="false" [pTooltip]="tableOptions.description!.text" tooltipPosition="right" [class]="tableOptions.description!.icon"></i>
+                            <i [escape]="false" [pTooltip]="(tableOptions.description!.text) | ecsTranslate" tooltipPosition="right" [class]="tableOptions.description!.icon"></i>
                         }
                     }
                 </div>
@@ -127,9 +155,9 @@
                             <p-button (click)="viewsModalShow=true;"
                                 [label]="tableViewCurrentSelectedAlias 
                                     ? tableViewCurrentSelectedAlias 
-                                    : (tableOptions.views?.noViewSelectedText || '--- Select a view ---')"
+                                    : ((tableOptions.views?.noViewSelectedText || '--- Select a view ---') | ecsTranslate)"
                                 [class]="'viewButton' + (tableOptions.views?.selectViewButtonClass ? ' ' + tableOptions.views!.selectViewButtonClass : '')"/>
-                            <p-button (click)="viewLoad(tableViewCurrentSelectedAlias!)"  [disabled]="!tableViewCurrentSelectedAlias" pTooltip="Apply view again" [showDelay]="700" tooltipPosition="top"
+                            <p-button (click)="viewLoad(tableViewCurrentSelectedAlias!)"  [disabled]="!tableViewCurrentSelectedAlias" [pTooltip]="'Apply view again' | ecsTranslate" [showDelay]="700" tooltipPosition="top"
                                 [icon]="tableOptions.views?.reloadViewButtonIcon || 'pi pi-refresh'"
                                 [class]="tableOptions.views?.reloadViewButtonClass || ''"/>
                         </p-buttongroup>
@@ -145,7 +173,7 @@
                             </p-inputIcon>
                             <input pInputText type="text" 
                                 (input)="dt.filterGlobal($any($event.target).value, 'contains')"  autocomplete="off" 
-                                [maxlength]="tableOptions.globalFilter?.maxLength ?? null" placeholder='Search keyword' [(ngModel)]="globalSearchText"
+                                [maxlength]="tableOptions.globalFilter?.maxLength ?? null" [placeholder]="'Search keyword' | ecsTranslate" [(ngModel)]="globalSearchText"
                                 style="width: 220px;"/>
                             <!-- Right icon (only if there is text) -->
                             @if (globalSearchText) {
@@ -159,17 +187,17 @@
                     <!--EXPORT DATA-->
                     @if (tableOptions.excelReport?.url?.trim()) {
                         <p-button icon="pi pi-file-excel" (onClick)="openExcelExport()"
-                            pTooltip="Export to Excel" [showDelay]="700" tooltipPosition="top" styleClass="p-button-icon-only"/>
+                            [pTooltip]="'Export to Excel' | ecsTranslate" [showDelay]="700" tooltipPosition="top" styleClass="p-button-icon-only"/>
                     }
 
                     <!--RESET TABLE VIEW-->
                     @if(tableOptions.resetTableView?.enabled){
-                        <p-button [icon]="tableOptions.resetTableView?.icon ?? 'pi pi-eraser'" (click)="resetTableView()" pTooltip="Reset table view" [showDelay]="700"
+                        <p-button [icon]="tableOptions.resetTableView?.icon ?? 'pi pi-eraser'" (click)="resetTableView()" [pTooltip]="'Reset table view' | ecsTranslate" [showDelay]="700"
                             tooltipPosition="top" styleClass="p-button-icon-only"/>
                     }
 
                     <!--REFRESH DATA-->
-                    <p-button icon="pi pi-refresh" (onClick)="refreshData($event)" pTooltip="Refresh data" [showDelay]="700"
+                    <p-button icon="pi pi-refresh" (onClick)="refreshData($event)" [pTooltip]="'Refresh data' | ecsTranslate" [showDelay]="700"
                         tooltipPosition="top" styleClass="p-button-icon-only"/>
                     
                     <!-- HEADER ACTION BUTTONS -->
@@ -181,6 +209,7 @@
                         </td>
                     }
                 </div>
+                }
             </div>
         </ng-template>
 
@@ -203,7 +232,7 @@
                         [id]="col.field + '-header'" [attr.scope]="'col'">
                         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                             <div style="margin-right: 15px;">
-                                <span>{{ col.header }}</span>
+                                <span>{{ col.header | translate }}</span>
                             </div>
                             <div style="display: flex; align-items: center; gap: 5px;">
                                 @if (col.canBeSorted) {
@@ -220,7 +249,7 @@
                                             <ng-template #filter>
                                                 <p-multiSelect
                                                     [style]="{ minWidth: '400px' }" [(ngModel)]="predefinedFiltersSelectedValuesCollection[col.filterPredefinedValuesName]"
-                                                    [options]="getPredefinedFilterValues(col.filterPredefinedValuesName)" placeholder="Any value"
+                                                    [options]="getPredefinedFilterValues(col.filterPredefinedValuesName)" [placeholder]="'Any value' | ecsTranslate"
                                                     (onChange)="onPredefinedFilterChange(col.field, $event.value)" optionLabel="name">
                                                     <ng-template #item let-option >
                                                         <div style="display: inline-block; vertical-align: middle;">
@@ -233,7 +262,7 @@
                                     }
                                 }
                                 @if (col.columnDescription && col.columnDescription.length > 0) {
-                                    <i [pTooltip]="col.columnDescription" tooltipPosition="top" [class]="tableOptions.columnDescriptionIcon || 'pi pi-info-circle'"></i>
+                                    <i [pTooltip]="(col.columnDescription) | ecsTranslate" tooltipPosition="top" [class]="tableOptions.columnDescriptionIcon || 'pi pi-info-circle'"></i>
                                 }
                             </div>
                         </div>
@@ -278,7 +307,7 @@
         <!-- LOGIC FOR DRAWING TABLE DATA WHEN THERE IS NO CONTENTS -->
         <ng-template #emptymessage>
             <tr>
-                <td colspan="999">No data found for the current filter criteria.</td>
+                <td colspan="999">{{ 'No data found for the current filter criteria.' | ecsTranslate }}</td>
             </tr>
         </ng-template>
 
@@ -289,17 +318,20 @@
                     @if(tableOptions.legend?.content){
                         <ecs-table-button [button]="tableOptions.legend?.button" [rowData]="null" [overrideAction]="op.toggle.bind(op)"/>
                         <p-popover #op>
-                            <div [innerHTML]="tableOptions.legend?.content"></div>
+                            <div [innerHTML]="(tableOptions.legend?.content) | ecsTranslate"></div>
                         </p-popover>
                     }
-                    <span>Showing {{totalRecords}} records of {{totalRecordsNotFiltered}} available records</span>
+                    <span>{{ 'Showing {{count}} records of {{total}} available records' | ecsTranslate: { count: totalRecords, total: totalRecordsNotFiltered } }}</span>
                 </div>
             </div>
         </ng-template>
     </p-table>
 </div>
-<ecs-column-selector [visible]="showColumnSelector" [columnModalData]="columnModalData" [filteredColumnData]="filteredColumnData" (visibleChange)="showColumnSelector=false" (applyChanges)="applyColumnModalChanges($event)"/>
+<ecs-column-selector [visible]="showColumnSelector" [columnModalData]="columnModalData" [filteredColumnData]="filteredColumnData" [orderByHeader]="tableOptions.columns?.selectorOrderByColumnName === true" (visibleChange)="showColumnSelector=false" (applyChanges)="applyColumnModalChanges($event)"/>
 <ecs-export-excel [visible]="showExportModal" [rowCheckboxSelectorActive]="tableOptions.rows?.checkboxSelector?.enabled ?? false" [excelReportTitle]="excelReportTitle" [allowTitleUserEdit]="tableOptions.excelReport?.titleAllowUserEdit ?? false" (visibleChange)="showExportModal=false" (exportToExcel)="generateExcelReport($event)"/>
 <ecs-views-management [visible]="viewsModalShow" [tableViews_menuItems]="tableViews_menuItems" 
     (onViewSelect)="viewLoad($event)" (onViewCreate)="viewCreate($event)" (onViewDelete)="viewDelete($event)" (onViewEditAlias)="viewEditAlias($event)" (onViewUpdateData)="viewUpdateData($event)" (onViewUpdateActiveStartup)="viewUpdateActiveStartup($event)"
     (visibleChange)="viewsModalShow=false"/>
+<!-- Body-level overlays avoid clipping inside scrollable and frozen table cells. -->
+<p-menu #responsiveHeaderMenu [model]="headerMenuItems" [popup]="true" appendTo="body" styleClass="ecs-responsive-menu"/>
+<p-menu #responsiveRowMenu [model]="rowMenuItems" [popup]="true" appendTo="body" styleClass="ecs-responsive-menu"/>

@@ -1,4 +1,8 @@
-import { Component, EventEmitter, Input, Output, ViewChild } from '@angular/core';
+import { ECSTableTranslatePipe } from '../../pipes/ui-translate.pipe';
+import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, ViewChild } from '@angular/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { merge } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
@@ -17,6 +21,8 @@ import { TooltipModule } from 'primeng/tooltip';
 @Component({
   selector: 'ecs-column-selector',
   imports: [
+    ECSTableTranslatePipe,
+    TranslatePipe,
     DialogModule,
     TableModule,
     CheckboxModule,
@@ -32,7 +38,34 @@ import { TooltipModule } from 'primeng/tooltip';
   standalone: true,
   templateUrl: './column-selector.html'
 })
-export class ColumnSelector {
+export class ColumnSelector implements OnChanges {
+  @Input() orderByHeader = false;
+
+  constructor(private translate: TranslateService, changeDetector: ChangeDetectorRef) {
+    merge(translate.onLangChange, translate.onTranslationChange, translate.onFallbackLangChange)
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => {
+        this.updateVisibleColumns();
+        changeDetector.markForCheck();
+      });
+  }
+
+  ngOnChanges(): void {
+    if (!this.visible) this.globalSearchText = null;
+    this.updateVisibleColumns();
+  }
+
+  private updateVisibleColumns(): void {
+    const search = (this.globalSearchText ?? '').toLocaleLowerCase();
+    const label = (column: any): string => column.header ? this.translate.instant(column.header) : '';
+    this.filteredColumnData = this.columnModalData.filter(column =>
+      label(column).toLocaleLowerCase().includes(search)
+    );
+    if (this.orderByHeader) {
+      this.filteredColumnData.sort((a, b) => label(a).localeCompare(label(b)));
+    }
+  }
+
   @ViewChild('dt_columnDialog') dt_columnDialog!: Table;
   
   @Input() visible: boolean = false;
@@ -58,17 +91,12 @@ export class ColumnSelector {
     {icon: 'pi pi-angle-down', val: DataAlignVertical.Bottom, name: "Bottom"}
   ];
 
-  globalSearchText: string | null = null; // The text used by the global search
-  globalSearchMaxLength: number = 50;
-  onColumnModalFilter(event: any) {
-    const filterValue = event.filters && event.filters.global 
-        ? event.filters.global.value.toLowerCase() 
-        : ''; 
-    this.filteredColumnData = this.columnModalData.filter(column => 
-        column.header.toLowerCase().includes(filterValue)
-    );
+  translatedOptions(options: { name: string; icon: string; val: number }[]) {
+    return options.map(option => ({ ...option, name: this.translate.instant(option.name) }));
   }
 
+  globalSearchText: string | null = null; // The text used by the global search
+  globalSearchMaxLength: number = 50;
   allColumnsCheckboxActive(): boolean{
     return this.columnModalData.every(column => column.selected);
   }
@@ -86,8 +114,8 @@ export class ColumnSelector {
   }
 
   filterColumnModal(event: any) {
-    let filterValue = event.target.value;
-    this.dt_columnDialog.filterGlobal(filterValue, 'contains');
+    this.globalSearchText = event.target.value;
+    this.updateVisibleColumns();
   }
 
   applyColumnModalChanges(){
@@ -97,7 +125,7 @@ export class ColumnSelector {
   }
   clearGlobalFilter(dt: Table){
     this.globalSearchText=null;
-    dt.filterGlobal('','');
+    this.updateVisibleColumns();
   }
   closeModal(){
     this.globalSearchText=null;

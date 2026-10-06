@@ -45,3 +45,11 @@
   white-space: nowrap;
   text-align: center;
 }
+.ecs-compact-header { gap: 0.5rem; min-width: 0; }
+.ecs-header-menu-trigger { margin-left: auto; flex: 0 0 auto; }
+.ecs-responsive-trigger { min-width: 44px; min-height: 44px; }
+.ecs-responsive-search { flex: 1 1 220px; min-width: 0; max-width: 320px; }
+.ecs-responsive-search input { width: 100%; padding-right: 2.5rem; }
+.ecs-clear-search { border: 0; background: transparent; color: inherit; cursor: pointer; }
+.ecs-responsive-menu { max-width: calc(100vw - 16px); max-height: calc(100dvh - 32px); overflow-y: auto; }
+.ecs-responsive-menu .p-menu-item-link { min-height: 44px; white-space: normal; }

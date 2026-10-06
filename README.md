@@ -397,7 +397,125 @@ This tells the **ECS PrimeNG table** package to use your custom services for han
 
 
 
+#### 3.2.4 Multilanguage column headers (Angular 19)
+
+This fork supports column header translations with **ngx-translate**. The consuming application owns the language configuration and JSON dictionaries. The component renders each backend column's `header` using `header | translate`.
+
+Translation applies to column names in the grid and in the column selector. The selector searches translated names and, when `columns.selectorOrderByColumnName` is enabled, sorts by those names. Changing language updates the labels without fetching the table configuration again.
+
+**Install the dependencies**
+
+For this Angular 19 branch, install ngx-translate v17 in the consuming application:
+
+```sh
+npm install @ngx-translate/core@^17 @ngx-translate/http-loader@^17
+```
+
+The library requires `@ngx-translate/core`. The application uses `@ngx-translate/http-loader` to load JSON files. If your application already configures ngx-translate, reuse its existing providers and dictionaries.
+
+**Create the language files**
+
+The demo includes these dictionaries:
+
+| Language | File |
+|---|---|
+| English | [en.json](Frontend/ECSPrimengTable/src/assets/i18n/en.json) |
+| Spanish | [es.json](Frontend/ECSPrimengTable/src/assets/i18n/es.json) |
+| French | [fr.json](Frontend/ECSPrimengTable/src/assets/i18n/fr.json) |
+| Italian | [it.json](Frontend/ECSPrimengTable/src/assets/i18n/it.json) |
+
+Use the exact `header` returned by the backend as the JSON key. For example, the existing backend sends `header: "Username"`.
+
+`src/assets/i18n/es.json`:
+
+```json
+{
+  "Username": "Usuario",
+  "Age": "Edad",
+  "Employment status": "Situación laboral",
+  "Employment status list": "Lista de situaciones laborales",
+  "Birthdate": "Fecha de nacimiento",
+  "Payed taxes?": "¿Impuestos pagados?"
+}
+```
+
+In `en.json`, the same keys map to their English labels, such as `"Username": "Username"`. Keep the keys identical in all language files; only translate the values. No backend changes are needed with this approach.
+
+Ensure Angular copies the dictionaries into the application build. This demo already includes `"src/assets"` in its `angular.json` build `assets` array. In another application, configure an equivalent asset mapping so the files are served at `assets/i18n/<language>.json`.
+
+**Configure the consuming application**
+
+Add the translation provider to your existing `app.config.ts` providers, preserving your router, PrimeNG and other application providers:
+
+```ts
+import { ApplicationConfig } from '@angular/core';
+import { provideHttpClient } from '@angular/common/http';
+import { provideTranslateService } from '@ngx-translate/core';
+import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideHttpClient(),
+    provideTranslateService({
+      lang: 'es',
+      fallbackLang: 'en',
+      loader: provideTranslateHttpLoader({
+        prefix: './assets/i18n/',
+        suffix: '.json'
+      })
+    })
+  ]
+};
+```
+
+If `provideHttpClient()` is already configured with interceptors or other options, keep that existing configuration instead of adding it again. The table component uses the application's translation service; it does not configure a separate loader.
+
+See the demo's [app.config.ts](Frontend/ECSPrimengTable/src/app/app.config.ts) for the complete setup.
+
+**Change the language**
+
+Set `lang` to `'en'`, `'es'`, `'fr'` or `'it'` to choose the startup language. To switch while the application is running, inject `TranslateService` into your component and call `use()`:
+
+```ts
+import { inject } from '@angular/core';
+import { TranslateService } from '@ngx-translate/core';
+
+// Inside your application component class:
+private readonly translate = inject(TranslateService);
+
+changeLanguage(language: 'en' | 'es' | 'fr' | 'it'): void {
+  this.translate.use(language);
+}
+```
+
+For example, connect your language selector to `changeLanguage('fr')`. The loader requests the French dictionary and the table updates its column names.
+
+**Using semantic translation keys**
+
+For new APIs, you can also return a key such as `header: "columns.username"` while keeping `field: "username"` unchanged. Define the corresponding dictionary entry:
+
+```json
+{
+  "columns": {
+    "username": "Usuario"
+  }
+}
+```
+
+For the .NET backend, this can be configured with `[ColumnAttributes("columns.username")]`. Choose either literal header keys or semantic keys and use matching keys in the dictionaries.
+
+**Fallback and scope**
+
+If a key is missing in the active language, ngx-translate tries `fallbackLang`. With the default missing-translation handler, a key missing in both languages is displayed as-is. All configured language files must still exist and be valid JSON; fallback is not a replacement for fixing failed HTTP requests.
+
+Column headers and grid interface texts can be translated. See the UI translation section below. Cell values, field identifiers, filter values and saved view aliases are preserved.
+
+To check the demo, load it in Spanish and verify that `Username` appears as `Usuario`. Open **Modify columns** and search for `Usuario`. Then change the active language and verify the labels again.
+
+<br><br><br>
+
 ---
+
 ## 4 Functional overview
 The goal of this section is to provide a **user-level overview** of all the features included in the **ECS PrimeNG table**. It allows you to quickly understand what the table can offer and how these functionalities can be utilized in your projects. This section provides a clear, at a glance view of everything available without diving into code.
 
@@ -1305,6 +1423,178 @@ In practice, this feature enables you to dynamically customize almost every attr
 
 
 ---
+### 4.19 Optional state when returning from a detail page
+
+Enable `statePersistence` to remember a table's column filters, global search,
+sorting, current page and page size while the user stays inside a list/detail
+scope. It is **disabled by default**:
+
+```ts
+tableOptions = createTableOptions({
+  statePersistence: {
+    enabled: true, // false disables automatic save/restore
+    key: 'people-list'
+  },
+  urlTableConfiguration: 'People/GetTableConfiguration',
+  urlTableData: 'People/GetTableData'
+});
+```
+
+**Disable persistence**
+
+Omit `statePersistence` or set `enabled: false`:
+
+```ts
+statePersistence: {
+  enabled: false,
+  key: 'people-list'
+}
+```
+
+When enabled, both a non-empty key and a parent scope provider are required;
+otherwise the component reports a configuration error. Disabled tables do not
+require a state service provider.
+
+Changing `enabled` to false does not clear filters already on screen. It prevents
+saving them on departure and clears the remembered entry for that key when the
+table is destroyed. On the next initialization, a disabled table does not restore
+that entry. Re-enabling applies to subsequent navigation; it does not immediately
+load old filters into the visible table.
+
+Each table needs a unique key within its scope. Include any context identifier
+(e.g. customer ID) in the key when the same table displays different datasets.
+
+**Define the scope in the consuming application**
+
+Provide `ECSPrimengTableStateService` on a parent **component** that remains
+mounted while switching between the list and its detail pages:
+
+```ts
+import { Component } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
+import { ECSPrimengTableStateService } from '@eternalcodestudio/primeng-table';
+
+@Component({
+  selector: 'app-people-scope',
+  standalone: true,
+  imports: [RouterOutlet],
+  providers: [ECSPrimengTableStateService],
+  template: '<router-outlet />'
+})
+export class PeopleScope {}
+```
+
+Group the related routes under that component (using your own list/detail
+components):
+
+```ts
+import { Routes } from '@angular/router';
+
+const routes: Routes = [
+  {
+    path: 'people',
+    component: PeopleScope,
+    children: [
+      { path: '', pathMatch: 'full', component: PeopleList },
+      { path: ':id/edit', component: PersonDetail }
+    ]
+  },
+  { path: 'invoices', component: InvoiceList }
+];
+```
+
+Use Angular Router to move between the list and its detail without reloading the
+application. For example, inside the list component:
+
+```ts
+import { inject } from '@angular/core';
+import { Router } from '@angular/router';
+
+private readonly router = inject(Router);
+
+editPerson(row: { rowID: string }): void {
+  void this.router.navigate(['/people', row.rowID, 'edit']);
+}
+```
+
+Connect a row button's `action` to `this.editPerson(row)`. Return from the detail
+with `routerLink="/people"` (import `RouterLink`) or `router.navigate(['/people'])`.
+A full page reload, including navigation through `window.location`, discards the
+in-memory scope.
+
+| Navigation | Result |
+|---|---|
+| People list → person detail → people list | Restore the last query and fetch fresh data |
+| People list → invoices → people list | Start with no previous transient query |
+| Person detail → invoices → people list | Start with no previous transient query |
+| Persistence disabled | Use the normal table startup behavior |
+
+The table saves when the list component is destroyed. The parent's service stays
+alive during navigation to a detail. Leaving that parent destroys the service and
+discards its states. Browser reloads and new tabs start fresh: this feature uses
+memory only, not sessionStorage, localStorage or the database.
+
+Do not provide the service at the application root, in `app.config.ts`, or on
+the list component itself. A root provider would retain state across unrelated
+screens; a list provider would be destroyed on the way to its detail. Use the
+parent component's `providers`, not the route configuration's `providers`, so
+the lifetime follows the component. This assumes normal Angular route
+destruction; a custom RouteReuseStrategy that detaches the parent must explicitly
+manage its state lifetime.
+
+**Restoration and existing views**
+
+Restoration happens after the backend configuration and startup views have loaded,
+before the first data query. Current column metadata is retained; filters/sorts
+for removed fields are ignored. Dates stay Date objects and predefined filter
+selections are restored.
+
+Transient state takes precedence over a saved view marked for startup. Without
+transient state (including when disabled), existing saved-view behavior is
+unchanged. Leaving a scope clears only transient state; explicitly saved views
+remain available and can still be applied at startup.
+
+Row data, row selections and the selected-row filter are not cached. Column
+layout is still managed through the existing views feature. Resetting the table
+also clears its remembered query. To clear stored entries explicitly, inject
+`ECSPrimengTableStateService` in the scope and call `clear('people-list')` or
+`clear()` for all entries; this does not reset an already visible table. Use
+`resetTableView()` on that table to reset its current query.
+
+**Try the included demo**
+
+The [demo routes](Frontend/ECSPrimengTable/src/app/app.routes.ts) use `/home` as
+the people scope, `/home/:id/edit` for its detail and `/other` outside that scope.
+The [scope components](Frontend/ECSPrimengTable/src/app/pages/home/navigation-demo.ts)
+provide the state service and a shared checkbox setting. The
+[list component](Frontend/ECSPrimengTable/src/app/pages/home/home.ts) assigns that
+setting to `tableOptions.statePersistence`.
+
+1. Start the API and frontend following [Setup the environment](#2-setup-the-environment-to-try-the-demo).
+2. Open `/home`. **Conservar filtros al volver del detalle** is checked in the demo; the library still defaults to disabled.
+3. Apply a column filter or global search, then click a row's edit/pencil button.
+4. Click **Volver al listado de personas**. Filters, sorting and pagination are restored and fresh data is fetched.
+5. Click **Ir a otra sección (salir del ámbito)** and return to the list. The transient query has been discarded.
+6. Uncheck **Conservar filtros al volver del detalle**, filter again and repeat the detail/return navigation. The query is not restored.
+
+The detail page only demonstrates navigation; it does not edit records. A manually
+saved view marked for startup can still supply filters independently of this
+feature. Unmark that view when testing a completely unfiltered startup.
+
+The demo's checkbox setting survives list/detail navigation because it belongs
+to the scope. Leaving the scope creates new settings when you return.
+
+From `Frontend/ECSPrimengTable`, run the automated tests with:
+
+```sh
+npm run test:state
+```
+
+This builds the library and runs tests covering restoration, scope disposal,
+disabled persistence, startup views, reset and deferred initialization.
+
+---
+
 ## 5 Feature-to-Code mapping
 The purpose of this section is to provide a table that maps the features described earlier to their corresponding technical implementation. Use the table below as a reference to perform this mapping.
 
@@ -5100,6 +5390,9 @@ Configuration options for **ECS PrimeNG table**. Includes settings for table act
 
 | Property | Parent | Type | Default | Description |
 |-|-|-|-|-|
+| `statePersistence` | | `object` | `{ enabled: false }` | Optional in-memory query state within a list/detail scope. See [4.19](#419-optional-state-when-returning-from-a-detail-page). |
+| `enabled` | `statePersistence` | `boolean` | `false` | Save on table destruction and restore on initialization in the same scope. |
+| `key` | `statePersistence` | `string` | `undefined` | Unique table/context key within the scope. Required when enabled, together with a parent component provider for `ECSPrimengTableStateService`. |
 | `copyToClipboardTime` |  | `number` | `0.5` | Defines the number of seconds the user must hold the mouse button on a cell before its content is copied to the clipboard. Set to a value <= 0 to turn off this feature entirely. |
 | `columns` |  | `object` | N/A | Configurations related to the columns of the table. |
 | `selectorEnabled` | `columns` | `boolean` | `true` | Enables or disables the column selector feature. When `true`, a button appears in the top-left corner, opening a modal that lets users show/hide columns, adjust cell overflow behavior, and change horizontal/vertical alignment per column. When `false`, the selector button is not available. |
@@ -5181,3 +5474,127 @@ Configuration options for **ECS PrimeNG table**. Includes settings for table act
 ---
 ## 9 Editing ECS PrimeNG table and integrating locally
 WIP
+
+
+## 10 Responsive menus and initial column visibility
+
+All new behavior is optional. Without the new settings, existing applications keep their header buttons, row buttons and column visibility. The categories refer to **browser viewport width in CSS pixels**, not hardware or user-agent detection.
+
+### Frontend options
+
+```ts
+tableOptions = createTableOptions({
+  responsive: {
+    headerMenu: true,
+    rowMenu: true,
+    tabletMinWidth: 768,
+    desktopMinWidth: 1200,
+    headerMenuLabel: 'Table actions',
+    rowMenuLabel: 'Row actions'
+  }
+  // Keep your existing endpoints and other options.
+});
+```
+
+| Option | Default | Meaning |
+|---|---|---|
+| `headerMenu` | `false` | On Mobile/Tablet, put header actions in a hamburger menu on the right. Global search stays visible. |
+| `rowMenu` | `false` | On Mobile/Tablet, put each row's actions in a vertical kebab menu. The action column uses 56 px, returning to its configured width on Desktop. |
+| `tabletMinWidth` | `768` | Inclusive lower bound for Tablet. |
+| `desktopMinWidth` | `1200` | Inclusive lower bound for Desktop. |
+| `headerMenuLabel` | `'Table actions'` | Accessible name of the header trigger. |
+| `rowMenuLabel` | `'Row actions'` | Accessible name of each row trigger. |
+
+Mobile is below 768 px, Tablet is 768–1199 px, and Desktop starts at 1200 px with the defaults. Custom widths must be finite and satisfy `0 < tabletMinWidth < desktopMinWidth`; otherwise initialization throws a configuration error. Use the same breakpoint configuration across grids to classify the viewport consistently.
+
+Header and row menus can be enabled independently. Built-in and custom actions preserve their visible/enabled conditions and callbacks. Custom entries use `label`, then `tooltip`, then `Action N`: provide a meaningful label or tooltip for icon-only buttons. Row callbacks receive the corresponding row; header callbacks receive `null`. Menus attach to `body` to avoid clipping and support keyboard navigation and Escape.
+
+### Backend DTO
+
+```csharp
+using ECS.PrimengTable.Attributes;
+using ECS.PrimengTable.Enums;
+
+[ColumnAttributes("Email",
+    VisibleOnlyIn = new[] { DeviceType.Desktop, DeviceType.Tablet })]
+public string Email { get; set; } = string.Empty;
+
+[ColumnAttributes("Internal notes",
+    VisibleOnlyIn = new[] { DeviceType.Desktop })]
+public string Notes { get; set; } = string.Empty;
+```
+
+`VisibleOnlyIn` is an optional named property; existing constructor signatures are unchanged. It accepts one, two or all three values. Both frontend and backend expose `DeviceType` with `Mobile = 0`, `Tablet = 1`, `Desktop = 2`. The wire property is `visibleOnlyIn`; default System.Text.Json serialization omits it when null. Updated frontends also accept old APIs without this field. Column defaults work independently of the menu flags.
+
+Precedence:
+
+1. `CanBeHidden = false` keeps mandatory columns visible on every viewport.
+2. `StartHidden = true` keeps selectable columns initially hidden, preserving existing behavior.
+3. Missing, null or empty `VisibleOnlyIn` adds no restriction.
+4. Otherwise, the column starts visible only in the listed categories.
+
+Hidden columns remain available in the selector. This is a display default, not an authorization rule. A saved view or explicit column-selector choice overrides responsive defaults. Without customization, crossing a breakpoint recalculates defaults and requests visible fields while retaining query filters, sorting and pagination. After customization, resizing changes only the menus. Resetting the table restores defaults for the current viewport.
+
+Column layout remains managed through saved views; navigation-state persistence still stores query state only. Dynamic overrides support `ColumnMetadataOverrideModel.VisibleOnlyIn`; use an empty array to clear a restriction. No database migration is needed.
+
+### Demo and validation
+
+The `home` demo explicitly enables both menus; library defaults remain disabled. Use the DTO example above to configure individual columns.
+
+From `Frontend/ECSPrimengTable`, run `npm run test:responsive` and `npm run test:state`. From the repository root, backend checks run without SQL:
+
+```sh
+dotnet run --project Backend/ECS.PrimengTable.ResponsiveTests -p:GeneratePackageOnBuild=false
+```
+
+The optional `tests/responsive.browser.mjs` uses Playwright and intercepted test responses without SQL. Build the library and demo (`ng build ECSPrimengTable --configuration development`), then run `node tests/responsive.browser.mjs` with Playwright available. `PLAYWRIGHT_MODULE` and `BROWSER_EXECUTABLE` can point to existing installations.
+
+
+### Translating all grid interface text
+
+Use the same ngx-translate JSON dictionaries for headers, buttons, tooltips, descriptions, menus, dialogs, validation messages and counters. Built-in texts use their original English string as the key; configurable button labels/tooltips and descriptions may also use your own translation keys. Changing `TranslateService.use('fr')` updates the UI, including open menus and dialogs.
+
+Example entries in `assets/i18n/es.json`:
+
+```json
+{
+  "Actions": "Acciones",
+  "Selected": "Seleccionado",
+  "CREATE": "CREAR",
+  "--- Select a view ---": "--- Selecciona una vista ---",
+  "MODIFY COLUMNS": "MODIFICAR COLUMNAS",
+  "Search keyword": "Buscar",
+  "Cancel changes": "Cancelar cambios",
+  "Save changes": "Guardar cambios",
+  "Showing {{count}} records of {{total}} available records": "Mostrando {{count}} registros de {{total}} disponibles",
+  "primeng": {
+    "startsWith": "Empieza por",
+    "contains": "Contiene",
+    "clear": "Limpiar",
+    "apply": "Aplicar",
+    "aria": { "nextPageLabel": "Página siguiente" }
+  }
+}
+```
+
+Keep interpolation names such as `{{count}}` and `{{total}}` unchanged. Missing UI translations fall back to the configured fallback language, then to the original text. Existing applications do not need to add every key at once.
+
+The optional `primeng` section translates PrimeNG controls (filter operators, calendars, pagination and accessibility labels). The grid synchronizes this section with the **shared application PrimeNG configuration**, so it also affects other PrimeNG components. Unspecified entries retain the configuration captured at grid initialization; without this section the grid leaves the application's locale alone. Date formats and table data culture remain separately configured.
+
+The demo provides complete examples in `src/assets/i18n/en.json`, `es.json`, `fr.json` and `it.json`, plus a language selector. Copy/merge the entries you need into your application's dictionaries. No additional npm dependencies are introduced by this extension.
+
+Cell data, predefined-filter values, saved view aliases, user-entered text and backend field identifiers are not translated. A default export filename is translated when opening the export dialog; the filename subsequently entered by the user is preserved. Excel headers generated on the server remain the backend's responsibility.
+
+
+### Per-item list tooltips
+
+For `DataType.List` columns, `dataTooltipCustomColumnSource` references a semicolon-separated string in the same row. Each tooltip matches the item at the same position. For example:
+
+```text
+EmploymentStatusNameList = "Freelance;Military;Student"
+ESList_tooltip           = "Independent work;Military service;In education"
+```
+
+Set `dataTooltipCustomColumnSource: "ESList_tooltip"` on the `EmploymentStatusNameList` attribute. The auxiliary property can be `string?`, with `dataType: DataType.Text` and `sendColumnAttributes: false`; it needs neither a visible column nor list metadata. The backend includes properties marked `sendColumnAttributes: false` in the returned row data.
+
+This applies to predefined-filter tags and plain text lists. Positions are preserved, including duplicate items and empty entries. Missing properties or positions fall back to the item itself; an empty position suppresses its tooltip. Extra tooltips are ignored. `dataTooltipShow: false` still disables tooltips. Tooltip text remains untranslated data.
