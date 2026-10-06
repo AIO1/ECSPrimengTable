@@ -26,8 +26,10 @@ import { ECSPrimengTableNotificationService } from '../../services';
 })
 export class ViewsManagement {
   private notification = inject(ECSPrimengTableNotificationService);
+  
   visible = input.required<boolean>();
   tableViews_menuItems = input<any[]>([]);
+  
   visibleChange = output<boolean>();
   onViewSelect = output<string>();
   onViewDelete = output<string>();
@@ -35,6 +37,7 @@ export class ViewsManagement {
   onViewUpdateActiveStartup = output<string>();
   onViewEditAlias = output<{ viewAliasOld: string; viewAliasNew: string }>();
   onViewCreate = output<string>();
+
   viewEditorShow = signal(false);
   editingViewAlias = signal('');
   newViewAlias = signal('');
@@ -49,6 +52,7 @@ export class ViewsManagement {
     const alias = this.newViewAlias().trim();
     if (!alias) return;
     this.viewEditorShow.set(false);
+    
     if (this.editingViewAlias() !== '') {
       this.onViewEditAlias.emit({ 
         viewAliasOld: this.editingViewAlias(), 
@@ -62,6 +66,7 @@ export class ViewsManagement {
       this.onViewCreate.emit(alias);
     }
   }
+
   closeModal() {
     this.visibleChange.emit(false);
   }
