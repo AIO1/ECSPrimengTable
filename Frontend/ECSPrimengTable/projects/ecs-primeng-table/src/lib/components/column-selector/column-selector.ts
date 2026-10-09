@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, ViewChild } from '@angular/core';
+import { Component, input, model, output, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
@@ -12,7 +12,6 @@ import { IconFieldModule } from 'primeng/iconfield';
 import { InputTextModule } from 'primeng/inputtext';
 import { IColumnMetadata } from '../../interfaces';
 import { TooltipModule } from 'primeng/tooltip';
-
 
 @Component({
   selector: 'ecs-column-selector',
@@ -33,51 +32,51 @@ import { TooltipModule } from 'primeng/tooltip';
   templateUrl: './column-selector.html'
 })
 export class ColumnSelector {
-  @ViewChild('dt_columnDialog') dt_columnDialog!: Table;
-  
-  @Input() visible: boolean = false;
-  @Input() columnModalData: any[] = [];
-  @Input() filteredColumnData: any[] = [];
-
-  @Output() visibleChange = new EventEmitter<boolean>();
-  @Output() applyChanges = new EventEmitter<IColumnMetadata[]>(); 
-
-  cellOverflowBehaviourOptions = [
-    {icon: 'pi pi-minus', val: CellOverflowBehaviour.Hidden, name: "Hidden"},
-    {icon: 'pi pi-equals', val: CellOverflowBehaviour.Wrap, name: "Wrap"}/*,
-    {icon: 'pi pi-ellipsis-h', val: CellOverflowBehaviour.Ellipsis, name: "Ellipsis"}*/
-  ];
-  dataAlignHorizontalOptions = [
-    {icon: 'pi pi-align-left', val: DataAlignHorizontal.Left, name: "Left"},
-    {icon: 'pi pi-align-center', val: DataAlignHorizontal.Center, name: "Center"},
-    {icon: 'pi pi-align-right', val: DataAlignHorizontal.Right, name: "Right"}
-  ];
-  dataAlignVerticalOptions = [
-    {icon: 'pi pi-angle-up', val: DataAlignVertical.Top, name: "Top"},
-    {icon: 'pi pi-align-justify', val: DataAlignVertical.Middle, name: "Middle"},
-    {icon: 'pi pi-angle-down', val: DataAlignVertical.Bottom, name: "Bottom"}
+  readonly dtColumnDialog = viewChild.required<Table>('dt_columnDialog');
+  readonly visible = model<boolean>(false);
+  readonly columnModalData = input.required<any[]>();
+  readonly filteredColumnData = model<any[]>();
+  readonly applyChanges = output<IColumnMetadata[]>();
+  readonly cellOverflowBehaviourOptions = [
+    { icon: 'pi pi-minus', val: CellOverflowBehaviour.Hidden, name: 'Hidden' },
+    { icon: 'pi pi-equals', val: CellOverflowBehaviour.Wrap, name: 'Wrap' }
   ];
 
-  globalSearchText: string | null = null; // The text used by the global search
-  globalSearchMaxLength: number = 50;
+  readonly dataAlignHorizontalOptions = [
+    { icon: 'pi pi-align-left', val: DataAlignHorizontal.Left, name: 'Left' },
+    { icon: 'pi pi-align-center', val: DataAlignHorizontal.Center, name: 'Center' },
+    { icon: 'pi pi-align-right', val: DataAlignHorizontal.Right, name: 'Right' }
+  ];
+
+  readonly dataAlignVerticalOptions = [
+    { icon: 'pi pi-angle-up', val: DataAlignVertical.Top, name: 'Top' },
+    { icon: 'pi pi-align-justify', val: DataAlignVertical.Middle, name: 'Middle' },
+    { icon: 'pi pi-angle-down', val: DataAlignVertical.Bottom, name: 'Bottom' }
+  ];
+
+  globalSearchText: string | null = null;
+  readonly globalSearchMaxLength = 50;
+
   onColumnModalFilter(event: any) {
-    const filterValue = event.filters && event.filters.global 
-        ? event.filters.global.value.toLowerCase() 
-        : ''; 
-    this.filteredColumnData = this.columnModalData.filter(column => 
-        column.header.toLowerCase().includes(filterValue)
+    const filterValue = event.filters?.global?.value?.toLowerCase() ?? '';
+    const currentData = this.columnModalData();
+    
+    const filtered = currentData.filter(column => 
+      column.header.toLowerCase().includes(filterValue)
     );
+    this.filteredColumnData.set(filtered);
   }
 
-  allColumnsCheckboxActive(): boolean{
-    return this.columnModalData.every(column => column.selected);
+  allColumnsCheckboxActive(): boolean {
+    return this.columnModalData().every(column => column.selected);
   }
 
-  allColumnsCheckboxClick(event: any): void{
-    if(event.checked){
-      this.columnModalData.forEach(column => {column.selected = true;});
+  allColumnsCheckboxClick(isChecked: boolean): void {
+    const data = this.columnModalData();
+    if (isChecked) {
+      data.forEach(column => column.selected = true);
     } else {
-      this.columnModalData.forEach(column => {
+      data.forEach(column => {
         if (!column.selectDisabled) {
           column.selected = false;
         }
@@ -85,22 +84,27 @@ export class ColumnSelector {
     }
   }
 
-  filterColumnModal(event: any) {
-    let filterValue = event.target.value;
-    this.dt_columnDialog.filterGlobal(filterValue, 'contains');
+  filterColumnModal(event: Event) {
+    const filterValue = (event.target as HTMLInputElement).value;
+    this.dtColumnDialog().filterGlobal(filterValue, 'contains');
   }
 
-  applyColumnModalChanges(){
-    const selected = this.columnModalData.filter(c => c.selected && !c.selectDisabled);
+  applyColumnModalChanges() {
+    const selected = this.columnModalData().filter(c => c.selected && !c.selectDisabled);
     this.applyChanges.emit(selected);
     this.closeModal();
   }
-  clearGlobalFilter(dt: Table){
-    this.globalSearchText=null;
-    dt.filterGlobal('','');
+
+  clearGlobalFilter() {
+    if (!this.globalSearchText) {
+        return;
+    }
+    this.globalSearchText = null;
+    this.dtColumnDialog().filterGlobal('', 'contains');
   }
-  closeModal(){
-    this.globalSearchText=null;
-    this.visibleChange.emit(false);
+
+  closeModal() {
+    this.clearGlobalFilter();
+    this.visible.set(false);
   }
 }

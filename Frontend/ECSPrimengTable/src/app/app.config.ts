@@ -1,4 +1,4 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZoneChangeDetection } from '@angular/core';
+import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { routes } from './app.routes';
 
@@ -9,8 +9,8 @@ import { SharedService } from './core/services/shared.service';
 import { ECSPrimengTableHttpService, ECSPrimengTableNotificationService } from 'ecs-primeng-table';
 import { NotificationService } from './core/services/notification.service';
 import { HttpService } from './core/services/http.service';
-import { HTTP_INTERCEPTORS, provideHttpClient, withFetch, withInterceptorsFromDi } from '@angular/common/http';
-import { SpinnerInterceptor } from './core/interceptors/spinner.interceptor';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { spinnerInterceptor } from './core/interceptors/spinner.interceptor'; // Importa la versión funcional
 
 import { DatePipe, registerLocaleData } from '@angular/common';
 import en from '@angular/common/locales/en';
@@ -19,6 +19,7 @@ registerLocaleData(en);
 export const appConfig: ApplicationConfig = {
   providers: [
     providePrimeNG({
+        license: 'PRIMEUI-LICENSE-KEY',
         theme: {
           preset: Preset,
           options: {
@@ -28,17 +29,11 @@ export const appConfig: ApplicationConfig = {
         ripple: true
       }),
     provideBrowserGlobalErrorListeners(),
-    provideZoneChangeDetection({ eventCoalescing: true }),
+    provideZonelessChangeDetection(),
     provideRouter(routes, withComponentInputBinding()),
     provideHttpClient(
-      withInterceptorsFromDi(),
-      withFetch()
+      withInterceptors([spinnerInterceptor])
     ),
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: SpinnerInterceptor,
-      multi: true,
-    },
     MessageService,
     SharedService,
     DatePipe,

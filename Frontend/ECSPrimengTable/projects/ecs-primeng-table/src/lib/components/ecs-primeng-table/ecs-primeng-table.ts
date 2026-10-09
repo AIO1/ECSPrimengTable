@@ -1,20 +1,17 @@
-import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Output, ViewChild, ViewEncapsulation } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Output, ViewChild, ViewEncapsulation, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpResponse } from '@angular/common/http';
 
-// PrimeNG imports
 import { Table, TableLazyLoadEvent, TableModule, TablePageEvent, TableRowSelectEvent, TableRowUnSelectEvent } from 'primeng/table';
-import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
 import { InputTextModule } from 'primeng/inputtext';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
-import { MultiSelectModule } from 'primeng/multiselect';
+import { SelectModule } from 'primeng/select';
 import { CheckboxModule } from 'primeng/checkbox';
 import { PaginatorModule } from 'primeng/paginator';
 import { FilterMetadata } from 'primeng/api';
-import { ButtonGroupModule } from 'primeng/buttongroup';
 import { PopoverModule } from 'primeng/popover';
 
 import { ECSPrimengTableService } from './ecs-primeng-table.service';
@@ -25,6 +22,7 @@ import { ECSPrimengTableNotificationService } from '../../services';
 import { TableCell } from '../table-cell/table-cell';
 import { TablePredefinedFilters } from '../table-predefined-filters/table-predefined-filters';
 import { TableButton } from '../table-button/table-button';
+import { ButtonGroupModule } from 'primeng/buttongroup';
 import { ColumnSelector } from "../column-selector/column-selector";
 import { ExportExcel } from '../export-excel/export-excel';
 import { finalize, Observable } from 'rxjs';
@@ -36,12 +34,11 @@ import { ViewsManagement } from "../views-management/views-management";
     CommonModule,
     FormsModule,
     TableModule,
-    ButtonModule,
     TooltipModule,
     InputTextModule,
     IconFieldModule,
     InputIconModule,
-    MultiSelectModule,
+    SelectModule,
     CheckboxModule,
     PaginatorModule,
     TableCell,
@@ -49,9 +46,9 @@ import { ViewsManagement } from "../views-management/views-management";
     TableButton,
     ColumnSelector,
     ExportExcel,
-    ButtonGroupModule,
     ViewsManagement,
-    PopoverModule
+    PopoverModule,
+    ButtonGroupModule
   ],
   standalone: true,
   templateUrl: './ecs-primeng-table.html',
@@ -61,34 +58,38 @@ import { ViewsManagement } from "../views-management/views-management";
 export class ECSPrimengTable implements OnInit, AfterViewInit {
   constructor(
     private tableService: ECSPrimengTableService,
-    private notification: ECSPrimengTableNotificationService
+    private notification: ECSPrimengTableNotificationService,
+    private cdr: ChangeDetectorRef
   ) {}
+
   @Input() tableOptions: ITableOptions = DEFAULT_TABLE_OPTIONS;
   @Output() onRowCheckboxChange = new EventEmitter<{
     rowID: any,
     selected: boolean
-  }>(); // Emitter that returns the column selected and if it was selected or unselected
+  }>();
   @Output() onRowSelect = new EventEmitter<{
     rowID: any,
     rowData: any
-  }>
+  }>();
   @Output() onRowUnselect = new EventEmitter<{
     rowID: any,
     rowData: any
-  }>
+  }>();
   @Output() onDataEndUpdate = new EventEmitter<void>();
-  viewsModalShow:boolean = false;
-  tableViewCurrentSelectedAlias: string | null = null;
-  tableViewsFirstFetchDone: boolean = false;
-  excelReportTitle: string = "";
-  showExportModal: boolean = false;
-  showColumnSelector: boolean = false;
-  selectedRowsCheckbox: any[] = []; // An array to keep all the selected rows
-  @ViewChild('dt') dt!: Table; // Get the reference to the object table
+
+  viewsModalShow = signal<boolean>(false);
+  tableViewCurrentSelectedAlias = signal<string | null>(null);
+  tableViewsFirstFetchDone = signal<boolean>(false);
+  excelReportTitle = signal<string>("");
+  showExportModal = signal<boolean>(false);
+  showColumnSelector = signal<boolean>(false);
+  selectedRowsCheckbox = signal<any[]>([]);
   
-  globalSearchText: string | null = null; // The text used by the global search
-  tableViewsList: ITableView[] = [];
-  tableViews_menuItems: any[] = [];
+  @ViewChild('dt') dt!: Table;
+  
+  globalSearchText = signal<string | null>(null);
+  tableViewsList = signal<ITableView[]>([]);
+  tableViews_menuItems = signal<any[]>([]);
 
   DataType = DataType;
   CellOverflowBehaviour = CellOverflowBehaviour;
@@ -98,35 +99,39 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
   TableViewSaveMode = TableViewSaveMode;
 
   rowSelection: any;
-  currentPage: number = 0; // The current page we are at
-  currentRowsPerPage: number = 0; // The current rows per page selected
-  allowedRowsPerPage: number[] = []; // The different values of rows per page allowed
-  totalRecords: number = 0; // The number of total records that are available (taking into account the filters)
-  totalRecordsNotFiltered: number = 0; // The total number of records available if no filters were applied
+  currentPage = signal<number>(0);
+  currentRowsPerPage = signal<number>(0);
+  allowedRowsPerPage = signal<number[]>([]);
+  totalRecords = signal<number>(0);
+  totalRecordsNotFiltered = signal<number>(0);
 
-  dateFormat: string = "dd-MMM-yyyy HH:mm:ss zzzz";
-  dateTimezone: string = "+00:00";
-  dateCulture: string = "en-US";
-  exportDateFormat: string = "dd-MMM-yyyy HH:mm:ss"
+  dateFormat = signal<string>("dd-MMM-yyyy HH:mm:ss zzzz");
+  dateTimezone = signal<string>("+00:00");
+  dateCulture = signal<string>("en-US");
+  exportDateFormat = signal<string>("dd-MMM-yyyy HH:mm:ss");
 
-  columns: IColumnMetadata[] = [];
-  columnsCantBeHidden: IColumnMetadata[] = [];
-  columnsSelected: IColumnMetadata[] = [];
-  columnModalData: any[] = []; 
-  filteredColumnData: any[] = []; 
+  columns = signal<IColumnMetadata[]>([]);
+  columnsCantBeHidden = signal<IColumnMetadata[]>([]);
+  columnsSelected = signal<IColumnMetadata[]>([]);
+  columnModalData = signal<any[]>([]);
+  filteredColumnData = signal<any[]>([]);
+
   private initialColumnWidths: any;
   private initialTableWidth: any;
-  predefinedFiltersSelectedValuesCollection: { [key: string]: any[] } = {}; // Contains a collection of the predefined column filters selection (possible values come from 'predefinedFiltersCollection')
-  private copyCellDataTimer: any; // A timer that handles the amount of time left to copy the cell data to the clipboard
-  tableLazyLoadEventInformation: TableLazyLoadEvent = {}; // Data of the last lazy load event of the table
+  predefinedFiltersSelectedValuesCollection = signal<{ [key: string]: any[] }>({});
+  private copyCellDataTimer: any;
+  tableLazyLoadEventInformation: TableLazyLoadEvent = {};
   private initialConfigurationFetched: boolean = false;
   private maxViews = 0;
+
   ngOnInit(): void {
     this.fetchTableConfiguration();
   }
+
   @ViewChild('tableContainer', { static: false }) tableContainer!: ElementRef;
   @ViewChild('headerContainer', { static: false }) headerContainer!: ElementRef;
   @ViewChild('paginatorContainer', { static: false }) paginatorContainer!: ElementRef;
+
   ngAfterViewInit() {
     this.calculateScrollHeight();
   }
@@ -147,8 +152,10 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
       const viewportHeight = window.innerHeight;
       const topOffset = containerRect.top + window.scrollY;
       this.tableOptions.verticalScroll.height = (viewportHeight - topOffset - paginatorHeight - headerHeight)-60;
+      this.cdr.markForCheck();
     }
   }
+
   get scrollHeightValue(): string {
     if (this.tableOptions.verticalScroll?.cssFormula) {
       return this.tableOptions.verticalScroll.cssFormula;
@@ -157,31 +164,16 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
     return height && height > 0 ? `${height}px` : '';
   }
 
-  /**
-   * Updates the table data and, if needed, retrieves the initial table configuration from an external source.
-   * 
-   * Also allows resetting the table to its original state before any user manipulations.
-   *
-   * @param {boolean} [resetTableView=false] Optional.
-   * - `true`: resets the table state before loading data.
-   * - `false`: refreshes data using the current configuration (and retrieves initial configuration if necessary).
-   *
-   * **_Behavior_**
-   * - The table is automatically set to `isActive = true`.
-   * - If the initial configuration has not been fetched, it will fetch it and then update the data.
-   * - If the initial configuration is already fetched, it will just update the data.
-   * - If `resetTableView` is true and the configuration is already initialized, the table will be reset to its original state before updating the data.
-   */
   updateData(resetTableView: boolean = false): void {
-    this.tableOptions.isActive = true; // Enable table actions: the table is now active and can perform updates
-    if (!this.initialConfigurationFetched || resetTableView) { // If initial configuration hasn't been fetched yet or a reset is explicitly requested
-      if(this.initialConfigurationFetched && resetTableView) { // Reset the table only if it was already initialized and a reset is explicitly requested
-        this.resetTableView(); // Reset table state (filters, pagination, sorting, etc.) and then refresh data
-      } else { // We only need to get the table configuration without reseting the view
-        this.fetchTableConfiguration(); // Fetch the initial table configuration before updating data
+    this.tableOptions.isActive = true;
+    if (!this.initialConfigurationFetched || resetTableView) {
+      if(this.initialConfigurationFetched && resetTableView) {
+        this.resetTableView();
+      } else {
+        this.fetchTableConfiguration();
       }
-    } else { // Table is already initialized and no reset requested, just refresh the data
-      this.fetchTableData(this.tableLazyLoadEventInformation); // Update table rows using the last lazy load event
+    } else {
+      this.fetchTableData(this.tableLazyLoadEventInformation);
     }
   }
 
@@ -204,27 +196,28 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
   }
 
   private handleTableConfigurationResponse(body: ITableConfiguration, resetTableView: boolean = false): void {
-    this.allowedRowsPerPage = body.allowedItemsPerPage; // Update the number of rows allowed per page
-    this.currentRowsPerPage = Math.min(...this.allowedRowsPerPage); // Update the current rows per page to use the minimum value of allowed rows per page by default
-    this.columns = body.columnsInfo; // Update columns with fetched data
-    this.columnsCantBeHidden = this.columns.filter((col: any) => !col.canBeHidden); // Filter columns that cannot be hidden
-    this.columnsSelected = this.columns.filter((col: any) => !col.startHidden && col.canBeHidden); // Selected columns that are not hidden by default
-    this.tableOptions.columns!.shown = this.tableService.orderColumnsWithFrozens(this.columnsCantBeHidden.concat(this.columnsSelected));
-    this.dateFormat = body.dateFormat;
-    this.dateTimezone = body.dateTimezone;
-    this.dateCulture = body.dateCulture;
-    this.exportDateFormat = body.exportDateFormat;
-    this.currentPage = 0;
+    this.allowedRowsPerPage.set(body.allowedItemsPerPage);
+    this.currentRowsPerPage.set(Math.min(...this.allowedRowsPerPage()));
+    this.columns.set(body.columnsInfo);
+    this.columnsCantBeHidden.set(this.columns().filter((col: any) => !col.canBeHidden));
+    this.columnsSelected.set(this.columns().filter((col: any) => !col.startHidden && col.canBeHidden));
+    this.tableOptions.columns!.shown = this.tableService.orderColumnsWithFrozens(this.columnsCantBeHidden().concat(this.columnsSelected()));
+    this.dateFormat.set(body.dateFormat);
+    this.dateTimezone.set(body.dateTimezone);
+    this.dateCulture.set(body.dateCulture);
+    this.exportDateFormat.set(body.exportDateFormat);
+    this.currentPage.set(0);
     this.initialConfigurationFetched = true;
     this.maxViews = body.maxViews;
+
     if(resetTableView){
-      this.tableOptions.isActive = false
+      this.tableOptions.isActive = false;
       this.clearFilters(this.dt, true);
       this.clearSorts(this.dt, true);
       this.dt.tableWidthState = this.initialTableWidth;
       this.dt.columnWidthsState = this.initialColumnWidths;
-      this.dt.restoreColumnWidths()
-      this.tableLazyLoadEventInformation.multiSortMeta=[];
+      this.dt.restoreColumnWidths();
+      this.tableLazyLoadEventInformation.multiSortMeta = [];
       this.tableOptions.isActive = true;
     } else {
       setTimeout(() => {
@@ -233,6 +226,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
       }, 0);
       this.fetchTableViews();
     }
+    this.cdr.markForCheck();
   }
 
   refreshData(event: any){
@@ -241,21 +235,21 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
 
   tableViewsEnabled(): boolean {
     const views = this.tableOptions.views;
-    if (views?.saveMode === TableViewSaveMode.None) { // saveMode must be different from noone
+    if (views?.saveMode === TableViewSaveMode.None) {
       return false;
     }
-    if (!views?.saveKey?.trim()) { // saveKey must exist and must not be empty after trim
+    if (!views?.saveKey?.trim()) {
       return false;
     }
-    if (this.maxViews <= 0) { // maxViews must be greater than 0
+    if (this.maxViews <= 0) {
       return false;
     }
-    if (views?.saveMode === TableViewSaveMode.DatabaseStorage) { // If saveMode is database, urlGet and urlSave must exist and must not be empty after trim
+    if (views?.saveMode === TableViewSaveMode.DatabaseStorage) {
       if (!views?.urlGet?.trim() || !views?.urlSave?.trim()) {
         return false;
       }
     }
-    return true; // All checks passed, views are enabled
+    return true;
   }
 
   private fetchTableViews(): void {
@@ -282,13 +276,13 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
   }
 
   private tableViewListProcess(tableViews: ITableView[]){
-    this.tableViewsList = [...tableViews];
-    if(this.tableViewsList.length > 0){
-      this.tableService.sortViews(this.tableViewsList);
+    this.tableViewsList.set([...tableViews]);
+    if(this.tableViewsList().length > 0){
+      this.tableService.sortViews(this.tableViewsList());
     }
-    this.tableViews_menuItems=[...this.tableService.updateViewsMenuItems(this.tableViewsList)];
-    const viewToStartup: ITableView | undefined = this.tableViewsList.find(v => v.lastActive);
-    if (viewToStartup) { // If there is a view that needs to be loaded on startup
+    this.tableViews_menuItems.set([...this.tableService.updateViewsMenuItems(this.tableViewsList())]);
+    const viewToStartup: ITableView | undefined = this.tableViewsList().find(v => v.lastActive);
+    if (viewToStartup) {
       this.viewLoad(viewToStartup.viewAlias);
     } else {
       this.fetchTableData(this.tableLazyLoadEventInformation);
@@ -296,20 +290,20 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
   }
 
   viewLoad(tableViewAlias: string): void {
-    const viewToLoad: ITableView | undefined = this.tableViewsList.find(v => v.viewAlias === tableViewAlias);
+    const viewToLoad: ITableView | undefined = this.tableViewsList().find(v => v.viewAlias === tableViewAlias);
     if(!viewToLoad){
       this.notification.showToast("error","VIEW TO LOAD DOESN'T EXIST","The view to load doesn't exist");
       return;
     }
     let viewData: ITableViewData = viewToLoad.viewData;
-    this.columnsSelected = viewData.columnsShown
-        .map(data => this.columns.find((col: any) => col.field === data.field))
+    this.columnsSelected.set(viewData.columnsShown
+        .map(data => this.columns().find((col: any) => col.field === data.field))
         .filter((col): col is IColumnMetadata => col !== undefined)
-        .filter(col => !this.columnsCantBeHidden.includes(col));
-    this.tableOptions.columns!.shown = this.tableService.orderColumnsWithFrozens(this.columnsCantBeHidden.concat(this.columnsSelected));
-    this.currentPage = viewData.currentPage;
-    this.currentRowsPerPage = viewData.currentRowsPerPage;
-    this.globalSearchText = viewData.globalSearchText;
+        .filter(col => !this.columnsCantBeHidden().includes(col)));
+    this.tableOptions.columns!.shown = this.tableService.orderColumnsWithFrozens(this.columnsCantBeHidden().concat(this.columnsSelected()));
+    this.currentPage.set(viewData.currentPage);
+    this.currentRowsPerPage.set(viewData.currentRowsPerPage);
+    this.globalSearchText.set(viewData.globalSearchText);
     this.tableLazyLoadEventInformation.multiSortMeta = [...(viewData.multiSortMeta ?? [])];
     this.dt.multiSortMeta = [...(viewData.multiSortMeta ?? [])];
     this.tableOptions.isActive = false;
@@ -317,107 +311,120 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
     this.tableOptions.isActive = true;
     this.tableLazyLoadEventInformation.filters = structuredClone(viewData.filters);
     this.dt.filters = structuredClone(viewData.filters);
-    this.predefinedFiltersSelectedValuesCollection = {}; // Empty predefined filters checkbox selection
-    for (const [filterKey, filterDataArrayRaw] of Object.entries(viewData.filters)) { // Iterate over each saved filter
-      const filterDataArray = filterDataArrayRaw as Array<{ value: any; matchMode?: string; operator?: string }>; // Cast expected structure
+    
+    const newPredefinedColMap: { [key: string]: any[] } = {};
+    for (const [filterKey, filterDataArrayRaw] of Object.entries(viewData.filters)) {
+      const filterDataArray = filterDataArrayRaw as Array<{ value: any; matchMode?: string; operator?: string }>;
       const filterData = filterDataArray?.[0];
       if (!filterData || !filterData.value) { 
         continue;
       }
-      const column = this.columns?.find((c: any) => c.field === filterKey); // Find the column that owns this filterKey
+      const column = this.columns()?.find((c: any) => c.field === filterKey);
       if (!column || !column.filterPredefinedValuesName){
         continue;
       }
       const predefinedKey = column.filterPredefinedValuesName;
-      const predefinedOptions = this.tableOptions.predefinedFilters?.[predefinedKey] ?? []; // Get predefined options for this column
+      const predefinedOptions = this.tableOptions.predefinedFilters?.[predefinedKey] ?? [];
       const selectedItems = predefinedOptions.filter(opt =>
         Array.isArray(filterData.value)
           ? filterData.value.includes(opt.value)
           : filterData.value === opt.value
-      ); // Match selected values with their full predefined definitions
-      this.predefinedFiltersSelectedValuesCollection[predefinedKey] = selectedItems; // Store the result
+      );
+      newPredefinedColMap[predefinedKey] = selectedItems;
     }
+    this.predefinedFiltersSelectedValuesCollection.set(newPredefinedColMap);
+
     this.dt.tableWidthState = viewData.tableWidth;
     this.dt.columnWidthsState = viewData.columnsWidth;
-    this.tableViewCurrentSelectedAlias = tableViewAlias;
-    this.notification.showToast("info","TABLE VIEW RESTORED",`The table view '${this.tableViewCurrentSelectedAlias}' has been restored.`);
-    this.viewsModalShow = false;
+    this.tableViewCurrentSelectedAlias.set(tableViewAlias);
+    this.notification.showToast("info","TABLE VIEW RESTORED",`The table view '${this.tableViewCurrentSelectedAlias()}' has been restored.`);
+    this.viewsModalShow.set(false);
+    this.cdr.markForCheck();
     this.fetchTableData(this.tableLazyLoadEventInformation);
   }
 
   viewCreate(viewAlias: string){
-    if(this.tableViewsList.length >= this.maxViews){
+    if(this.tableViewsList().length >= this.maxViews){
       this.notification.showToast("error","NO MORE VIEWS ALLOWED","You have created the maximum number of allowed views for this table");
       return;
     }
-    let viewData: ITableViewData = this.tableService.viewGenerateData(this.dt, this.globalSearchText, this.currentPage, this.currentRowsPerPage, this.modifyFiltersWithoutGlobalAndSelectedRows.bind(this))
+    let viewData: ITableViewData = this.tableService.viewGenerateData(this.dt, this.globalSearchText(), this.currentPage(), this.currentRowsPerPage(), this.modifyFiltersWithoutGlobalAndSelectedRows.bind(this));
     let newView: ITableView = {
       lastActive: false,
       viewAlias: viewAlias,
       viewData: viewData
-    }
-    this.tableViewsList.push(newView);
-    this.tableService.sortViews(this.tableViewsList);
-    this.tableViews_menuItems=[...this.tableService.updateViewsMenuItems(this.tableViewsList)];
-    this.tableViewCurrentSelectedAlias = viewAlias;
+    };
+    this.tableViewsList.update(list => [...list, newView]);
+    this.tableService.sortViews(this.tableViewsList());
+    this.tableViews_menuItems.set([...this.tableService.updateViewsMenuItems(this.tableViewsList())]);
+    this.tableViewCurrentSelectedAlias.set(viewAlias);
     this.viewsSave(0);
   }
 
   viewDelete(viewAlias: string){
-    const index = this.tableViewsList.findIndex(v => v.viewAlias === viewAlias);
+    const index = this.tableViewsList().findIndex(v => v.viewAlias === viewAlias);
     if (index === -1) {
       this.notification.showToast("error","Table view delete failed", `The table view could not be deleted since it was not found.`);
       return;
     }
-    this.tableViewsList.splice(index, 1);
-    this.tableViews_menuItems=[...this.tableService.updateViewsMenuItems(this.tableViewsList)];
-    if(this.tableViewCurrentSelectedAlias === viewAlias){
-      this.tableViewCurrentSelectedAlias = null;
+    this.tableViewsList.update(list => list.filter((_, i) => i !== index));
+    this.tableViews_menuItems.set([...this.tableService.updateViewsMenuItems(this.tableViewsList())]);
+    if(this.tableViewCurrentSelectedAlias() === viewAlias){
+      this.tableViewCurrentSelectedAlias.set(null);
     }
     this.viewsSave(3);
   }
 
   viewEditAlias(event: { viewAliasOld: string; viewAliasNew: string }){
-    const index = this.tableViewsList.findIndex(v => v.viewAlias === event.viewAliasOld);
+    const index = this.tableViewsList().findIndex(v => v.viewAlias === event.viewAliasOld);
     if (index === -1) {
       this.notification.showToast("error","Table view alias change failed", `The table view alias could not be changed since it was not found.`);
       return;
     }
-    this.tableViewsList[index].viewAlias = event.viewAliasNew;
-    this.tableService.sortViews(this.tableViewsList);
-    this.tableViews_menuItems=[...this.tableService.updateViewsMenuItems(this.tableViewsList)];
-    if(this.tableViewCurrentSelectedAlias === event.viewAliasOld){
-      this.tableViewCurrentSelectedAlias = event.viewAliasNew;
+    this.tableViewsList.update(list => {
+      list[index].viewAlias = event.viewAliasNew;
+      return [...list];
+    });
+    this.tableService.sortViews(this.tableViewsList());
+    this.tableViews_menuItems.set([...this.tableService.updateViewsMenuItems(this.tableViewsList())]);
+    if(this.tableViewCurrentSelectedAlias() === event.viewAliasOld){
+      this.tableViewCurrentSelectedAlias.set(event.viewAliasNew);
     }
     this.viewsSave(2);
   }
 
   viewUpdateData(viewAlias: string){
-    const index = this.tableViewsList.findIndex(v => v.viewAlias === viewAlias);
+    const index = this.tableViewsList().findIndex(v => v.viewAlias === viewAlias);
     if (index === -1) {
       this.notification.showToast("error","Table view not found", `The table view to update data from was not found.`);
       return;
     }
-    let viewData: ITableViewData = this.tableService.viewGenerateData(this.dt, this.globalSearchText, this.currentPage, this.currentRowsPerPage, this.modifyFiltersWithoutGlobalAndSelectedRows.bind(this))
-    this.tableViewsList[index].viewData = viewData;
+    let viewData: ITableViewData = this.tableService.viewGenerateData(this.dt, this.globalSearchText(), this.currentPage(), this.currentRowsPerPage(), this.modifyFiltersWithoutGlobalAndSelectedRows.bind(this));
+    this.tableViewsList.update(list => {
+      list[index].viewData = viewData;
+      return [...list];
+    });
     this.viewsSave(1);
   }
 
   viewUpdateActiveStartup(viewAlias: string){
-    const index = this.tableViewsList.findIndex(v => v.viewAlias === viewAlias);
+    const index = this.tableViewsList().findIndex(v => v.viewAlias === viewAlias);
     if (index === -1) {
       this.notification.showToast("error","Table view not found", `The table view to update data from was not found.`);
       return;
     }
-    let newStatus: boolean = !this.tableViewsList[index].lastActive;
-    this.tableViewsList.forEach(v => v.lastActive = false);
-    this.tableViewsList[index].lastActive = newStatus;
-    this.tableViews_menuItems=[...this.tableService.updateViewsMenuItems(this.tableViewsList)];
+    let newStatus: boolean = !this.tableViewsList()[index].lastActive;
+    this.tableViewsList.update(list => {
+      list.forEach(v => v.lastActive = false);
+      list[index].lastActive = newStatus;
+      return [...list];
+    });
+    this.tableViews_menuItems.set([...this.tableService.updateViewsMenuItems(this.tableViewsList())]);
     this.viewsSave(4);
   }
 
   viewsSave(endMessage: number): void{
-    let tableView: string = JSON.stringify(this.tableViewsList);
+    let tableView: string = JSON.stringify(this.tableViewsList());
     switch(this.tableOptions.views!.saveMode){
       case TableViewSaveMode.SessionStorage:
         sessionStorage.setItem(this.tableOptions.views!.saveKey!, tableView);
@@ -426,9 +433,9 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
         localStorage.setItem(this.tableOptions.views!.saveKey!, tableView);
       break;
       case TableViewSaveMode.DatabaseStorage:
-        const saveObsv = this.tableService.viewsSaveToDatabase(this.tableViewsList, this.tableOptions.views!.urlSave!, this.tableOptions.views!.saveKey!);
+        const saveObsv = this.tableService.viewsSaveToDatabase(this.tableViewsList(), this.tableOptions.views!.urlSave!, this.tableOptions.views!.saveKey!);
         saveObsv.subscribe({
-          next: (response: HttpResponse<any>) => {
+          next: () => {
             this.viewsSaveEnd(endMessage);
           },
           error: (err) => this.tableService.handleTableError(err, 'Views save error')
@@ -440,22 +447,23 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
     }
     this.viewsSaveEnd(endMessage);
   }
+
   viewsSaveEnd(endMessage: number){
     switch(endMessage){
-      case 0: // NEW VIEW
+      case 0:
         this.notification.showToast("info","Table view created", `New table view has been created.`);
-        this.viewsModalShow = false;
+        this.viewsModalShow.set(false);
         break;
-      case 1: // UPDATE VIEW
+      case 1:
         this.notification.showToast("info","Table view data updated", `The table view data was updated.`);
         break;
-      case 2: // UPDATE ALIAS
+      case 2:
         this.notification.showToast("info","Table view name updated", `The table view alias was updated.`);
         break;
-      case 3: // DELETE VIEW
+      case 3:
         this.notification.showToast("info","Table view delete", `The table view was deleted.`);
         break;
-      case 4: // DELETE VIEW
+      case 4:
         this.notification.showToast("info","Table view active on startup", `Changed the view that will be active on startup.`);
         break;
     }
@@ -468,31 +476,31 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
     if (!this.initialConfigurationFetched) {
       return;
     }
-    this.tableLazyLoadEventInformation = event; // Store the event information for later use
+    this.tableLazyLoadEventInformation = event;
     if (event.rows != null && event.rows !== undefined) {
-      this.currentRowsPerPage = event.rows;
+      this.currentRowsPerPage.set(event.rows);
     }
     if (event.first != null && event.first !== undefined && event.rows != null && event.rows !== undefined) {
-      this.currentPage = event.first / event.rows;
+      this.currentPage.set(event.first / event.rows);
     }
-    let filtersWithoutGlobalAndSelectedRows = this.modifyFiltersWithoutGlobalAndSelectedRows(this.tableLazyLoadEventInformation.filters); // Create filters excluding the global filter
-    filtersWithoutGlobalAndSelectedRows=this.revertDateTimeZoneFilters(filtersWithoutGlobalAndSelectedRows);
+    let filtersWithoutGlobalAndSelectedRows = this.modifyFiltersWithoutGlobalAndSelectedRows(this.tableLazyLoadEventInformation.filters);
+    filtersWithoutGlobalAndSelectedRows = this.revertDateTimeZoneFilters(filtersWithoutGlobalAndSelectedRows);
     const requestData: ITableQueryRequest = {
-      page: this.currentPage, // Set the current page number
-      pageSize: this.currentRowsPerPage, // Set the number of rows per page
-      sort: this.tableLazyLoadEventInformation.multiSortMeta, // Set the sorting information
-      filter: filtersWithoutGlobalAndSelectedRows, // Set the filters excluding the global filter
-      globalFilter: this.globalSearchText, // Set the global filter text
-      columns: this.tableOptions.columns!.shown!.map(col => col.field), // Set the columns to show
-      dateFormat: this.dateFormat,
-      dateTimezone: this.dateTimezone,
-      dateCulture: this.dateCulture,
-      exportDateFormat: this.exportDateFormat
+      page: this.currentPage(),
+      pageSize: this.currentRowsPerPage(),
+      sort: this.tableLazyLoadEventInformation.multiSortMeta,
+      filter: filtersWithoutGlobalAndSelectedRows,
+      globalFilter: this.globalSearchText(),
+      columns: this.tableOptions.columns!.shown!.map(col => col.field),
+      dateFormat: this.dateFormat(),
+      dateTimezone: this.dateTimezone(),
+      dateCulture: this.dateCulture(),
+      exportDateFormat: this.exportDateFormat()
     };
     this.tableService.fetchTableData(this.tableOptions.urlTableData!, requestData)
       .pipe(
         finalize(() => {
-          this.onDataEndUpdate.emit(); // This is always executed after data update.
+          this.onDataEndUpdate.emit();
         })
       )
       .subscribe({
@@ -502,19 +510,19 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
   }
 
   modifyFiltersWithoutGlobalAndSelectedRows(filters: any, overrideOption: number = -1): any {
-    if (this.globalSearchText === "") { // If the global search text is an empty string
-      this.globalSearchText = null; // Set it to null
+    if (this.globalSearchText() === "") {
+      this.globalSearchText.set(null);
     }
-    let filtersWithoutGlobalAndSelectedRows = { ...filters }; // Create a copy of filters to delete the global.
-    if (filtersWithoutGlobalAndSelectedRows.hasOwnProperty('global')) { // If there is an entry with the global filter
-      delete filtersWithoutGlobalAndSelectedRows['global']; // Remove the global filter
+    let filtersWithoutGlobalAndSelectedRows = { ...filters };
+    if (filtersWithoutGlobalAndSelectedRows.hasOwnProperty('global')) {
+      delete filtersWithoutGlobalAndSelectedRows['global'];
     }
     this.selectorRowFilterBuilder(filtersWithoutGlobalAndSelectedRows, overrideOption);
-    return filtersWithoutGlobalAndSelectedRows; // Return the filters without global array
+    return filtersWithoutGlobalAndSelectedRows;
   }
 
   resetTableView(): void {
-    this.tableViewCurrentSelectedAlias = '';
+    this.tableViewCurrentSelectedAlias.set('');
     this.fetchTableConfiguration(true);
   }
 
@@ -522,38 +530,32 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
     if (filtersWithoutGlobalAndSelectedRows.hasOwnProperty('selector')) {
       const selectorFilter = filtersWithoutGlobalAndSelectedRows['selector'][0];
       let filterType: boolean | null = null;
-      if(overrideOption<0 || overrideOption>2){
+      if(overrideOption < 0 || overrideOption > 2){
         filterType = selectorFilter.value;
       } else {
         switch (overrideOption){
-          case 0: // All
+          case 0:
             filterType = null;
             break;
-          case 1: // Only selected rows
+          case 1:
             filterType = true;
             break;
-          case 2: // Only NOT selected
+          case 2:
             filterType = false;
             break;
         }
       }
       if (!filtersWithoutGlobalAndSelectedRows.hasOwnProperty('rowID')) {
-          filtersWithoutGlobalAndSelectedRows['rowID'] = [
-              {
-                  "value": null,
-                  "matchMode": "in",
-                  "operator": "or"
-              }
-          ];
+          filtersWithoutGlobalAndSelectedRows['rowID'] = [              {                  "value": null,                  "matchMode": "in",                  "operator": "or"              }          ];
       }
       const idFilter = filtersWithoutGlobalAndSelectedRows['rowID'][0];
       if (filterType === true) {
           idFilter.matchMode = "in";
-          idFilter.value = this.selectedRowsCheckbox;
+          idFilter.value = this.selectedRowsCheckbox();
       } else if (filterType === false) {
-          idFilter.operator = "and"
+          idFilter.operator = "and";
           idFilter.matchMode = "notIn";
-          idFilter.value = this.selectedRowsCheckbox;
+          idFilter.value = this.selectedRowsCheckbox();
       } else if (filterType === null) {
           idFilter.value = null;
           idFilter.matchMode = "in";
@@ -563,12 +565,12 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
 
   revertDateTimeZoneFilters(inputFilter: any){
     this.tableOptions.columns!.shown!.forEach((column) => {
-      if (column.dataType === DataType.Date) { // If its date type
+      if (column.dataType === DataType.Date) {
         if (inputFilter.hasOwnProperty(column.field)) {
           const originalDate = inputFilter[column.field][0].value;
           if(originalDate !== null && originalDate instanceof Date){
-            const utcDate = new Date(Date.UTC(originalDate.getFullYear(), originalDate.getMonth(), originalDate.getDate()))
-            inputFilter[column.field][0].value=utcDate;
+            const utcDate = new Date(Date.UTC(originalDate.getFullYear(), originalDate.getMonth(), originalDate.getDate()));
+            inputFilter[column.field][0].value = utcDate;
           }
         }
       }
@@ -577,38 +579,42 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
   }
 
   handleTableDataResponse(body: ITablePagedResponse): void{
-    this.tableOptions.data = body.data; // Update the table data
-    this.totalRecords = body.totalRecords; // Update the total number of records
-    this.totalRecordsNotFiltered = body.totalRecordsNotFiltered; // Update the total records not filtered
-    this.currentPage = body.page; // Update the current page
+    this.tableOptions.data = body.data;
+    this.totalRecords.set(body.totalRecords);
+    this.totalRecordsNotFiltered.set(body.totalRecordsNotFiltered);
+    this.currentPage.set(body.page);
+    this.cdr.markForCheck();
   }
 
   clearFilters(dt: Table, force: boolean = false, onlyGlobalFilter: boolean = false): void{
-    let hasToClear = this.hasToClearFilters(dt, this.globalSearchText, force);
+    if (onlyGlobalFilter && (!this.globalSearchText() || this.globalSearchText()!.trim() === '')) {
+      return;
+    }
+    let hasToClear = this.hasToClearFilters(dt, this.globalSearchText(), force);
     if(hasToClear){
       if(!onlyGlobalFilter){
-        this.predefinedFiltersSelectedValuesCollection = {};
+        this.predefinedFiltersSelectedValuesCollection.set({});
         for (const key in dt.filters) {
           if (dt.filters.hasOwnProperty(key)) {
             const filters = dt.filters[key];
             if (Array.isArray(filters)) {
               filters.forEach(filter => {
-                filter.value = null;  // Set value to null
+                filter.value = null;
               });
             } else {
-              filters.value = null; // Set value to null
+              filters.value = null;
             }
           }
         }
         let filters = {...this.dt.filters};
         dt.columns?.forEach(
           element => {
-            dt.filter(null, element.field, element.matchMode)
+            dt.filter(null, element.field, element.matchMode);
           }
         );
         this.dt.filters = filters;
       }
-      this.globalSearchText = null;
+      this.globalSearchText.set(null);
       dt.filterGlobal('','');
     }
   }
@@ -620,6 +626,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
       dt.sortMultiple();
     }
   }
+
   hasToClearSorts(dt: Table, force: boolean = false): boolean{
     let hasToClear: boolean = false;
     const hasSorts = (dt.multiSortMeta && dt.multiSortMeta.length > 0);
@@ -628,9 +635,10 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
     }
     return hasToClear;
   }
-  hasToClearFilters(dt: Table, globalSearchText: string|null, force:boolean = false): boolean{
+
+  hasToClearFilters(dt: Table, globalSearchText: string|null, force: boolean = false): boolean{
     let hasToClear: boolean = false;
-    const filtersWithoutGlobalAndSelectedRows = this.modifyFiltersWithoutGlobalAndSelectedRows(dt.filters)
+    const filtersWithoutGlobalAndSelectedRows = this.modifyFiltersWithoutGlobalAndSelectedRows(dt.filters);
     const hasFilters = this.hasFilters(filtersWithoutGlobalAndSelectedRows);
     const hasGlobalFilter = (globalSearchText && globalSearchText.trim() !== "");
     if(force || hasFilters || hasGlobalFilter){
@@ -639,27 +647,16 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
     return hasToClear;
   }
 
-  /**
-   * Determines whether there are active filters based on the provided filter rules.
-   *
-   * @param {any} filterRules An object representing filter rules for each column.
-   *   The keys are column names, and the values are arrays of filter rules.
-   *   Each filter rule has the following properties:
-   *     - `field`: The field or property name of the column.
-   *     - `value`: The filter value entered by the user.
-   *     - Other properties depending on the type of filter (e.g., `matchMode` for string filters).
-   * @returns {boolean} `true` if at least one active filter is found, otherwise `false`.
-   */
   private hasFilters(filterRules: any): boolean {
-    for (const columnName of Object.keys(filterRules)) { // Iterate over each column name in the filter rules
-        const columnFilters = filterRules[columnName]; // Get the filter rules for the current column
-        for (const filterRule of columnFilters) { // Iterate over each filter rule for the current column
-            if (filterRule.value !== null && filterRule.value !== "") { // Check if the filter value is not null or an empty string
-                return true; // At least one active filter found
+    for (const columnName of Object.keys(filterRules)) {
+        const columnFilters = filterRules[columnName];
+        for (const filterRule of columnFilters) {
+            if (filterRule.value !== null && filterRule.value !== "") {
+                return true;
             }
         }
     }
-    return false; // No active filters found
+    return false;
   }
 
   getColumnStyle(col: any, headerCols: boolean = false): Record<string, string> {
@@ -667,7 +664,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
   }
 
   getPredefinedFilterValues(columnKeyName: string): IPredefinedFilter[] {
-    return this.tableOptions.predefinedFilters?.[columnKeyName] || []; // Return the predefined filter values or an empty array if the option name does not exist
+    return this.tableOptions.predefinedFilters?.[columnKeyName] || [];
   }
 
   getFrozenColumnAlignAsText(frozenColumnAlign: FrozenColumnAlign): string {
@@ -678,41 +675,28 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
     return dataTypeAsText(dataType);
   }
 
-  /**
-   * Updates the filters of a PrimeNG data table based on predefined filter changes.
-   *
-   * @param {string} filterName - The name of the filter to be updated.
-   * @param {IPrimengPredefinedFilter[]} selectedValues - An array of selected predefined filter values.
-   */
   onPredefinedFilterChange(filterName: string, selectedValues: IPredefinedFilter[]): void {
-    const filters = { ...this.dt.filters }; // Create a shallow copy of the current filters to avoid mutating the original filters directly
-    const newValue = selectedValues && selectedValues.length ? selectedValues.map(value => value.value) : null; // Convert empty selection to null so PrimeNG removes the filter instead of applying an empty array
-    if (Array.isArray(filters[filterName])) { // Check if the filter for the given filterName is an array
-      (filters[filterName] as FilterMetadata[]).forEach(criteria => { // If it is an array, iterate over each filter criteria
-          criteria.value = newValue; // Update the value of each criteria with the values from selectedValues
+    const filters = { ...this.dt.filters };
+    const newValue = selectedValues && selectedValues.length ? selectedValues.map(value => value.value) : null;
+    if (Array.isArray(filters[filterName])) {
+      (filters[filterName] as FilterMetadata[]).forEach(criteria => {
+          criteria.value = newValue;
       });
-    } else if (filters[filterName]) { // Check if the filter for the given filterName exists and is not an array
-      const criteria = filters[filterName] as FilterMetadata; // Cast the filter criteria to FilterMetadata
-      criteria.value = newValue; // Update the value of the criteria with the values from selectedValues
+    } else if (filters[filterName]) {
+      const criteria = filters[filterName] as FilterMetadata;
+      criteria.value = newValue;
     }
-    this.dt.filters = filters; // Update the data table's filters with the modified filters object
-    this.dt._filter(); // Trigger the filtering operation on the data table to apply the new filters
+    this.dt.filters = filters;
+    this.dt._filter();
+    this.cdr.markForCheck();
   }
 
-  /**
-   * Checks if the provided column metadata matches a specific style of the predefined filters 
-   * that need to be applied to an item on a row.
-   *
-   * @param {IprimengColumnsMetadata} colMetadata - The metadata of the column being checked.
-   * @param {any} value - The value to be matched against the predefined filter values.
-   * @returns {any} The matching predefined filter value if found, otherwise null.
-   */
   getPredfinedFilterMatch(colMetadata: IColumnMetadata, value: any): any {
-    if (colMetadata.filterPredefinedValuesName && colMetadata.filterPredefinedValuesName.length > 0) { // Check if the column uses predefined filter values
-        const options = this.getPredefinedFilterValues(colMetadata.filterPredefinedValuesName); // Get the predefined filter values based on the name
-        return options.find(option => option.value === value); // Return the matching option if found
+    if (colMetadata.filterPredefinedValuesName && colMetadata.filterPredefinedValuesName.length > 0) {
+        const options = this.getPredefinedFilterValues(colMetadata.filterPredefinedValuesName);
+        return options.find(option => option.value === value);
     }
-    return null; // Return null if the column does not use predefined filter values
+    return null;
   }
 
   copyToClipboardStart(event: MouseEvent) {
@@ -739,47 +723,51 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
   getDataAlignHorizontalAsText(dataAlignHorizontal: DataAlignHorizontal){
     return dataAlignHorizontalAsText(dataAlignHorizontal);
   }
+
   getDataAlignVerticalAsText(dataAlignVertical: DataAlignVertical){
     return dataAlignVerticalAsText(dataAlignVertical);
   }
 
   isRowCheckboxSelected(rowID: any): boolean {
-    return this.selectedRowsCheckbox.includes(rowID);
+    return this.selectedRowsCheckbox().includes(rowID);
   }
 
   onRowChekboxChange(event: any, rowID: any): void {
-    if (event.checked) { // Add the selected item
-        this.selectedRowsCheckbox.push(rowID);
-    } else { // Remove the selected item
-        this.selectedRowsCheckbox = this.selectedRowsCheckbox.filter(selectedId => selectedId !== rowID);
+    if (event.checked) {
+        this.selectedRowsCheckbox.update(list => [...list, rowID]);
+    } else {
+        this.selectedRowsCheckbox.update(list => list.filter(selectedId => selectedId !== rowID));
     }
     this.onRowCheckboxChange.emit({
       rowID: rowID,
       selected: event.checked
     });
   }
+
   rowSelect(event: TableRowSelectEvent<any>): void{
     this.onRowSelect.emit({
       rowID: event.data.rowID,
       rowData: event.data
     });
   }
+
   rowUnselect(event: TableRowUnSelectEvent<any>): void{
     this.onRowUnselect.emit({
       rowID: event.data.rowID,
       rowData: event.data
     });
   }
+
   pageChange(event: TablePageEvent): void {
-    this.currentPage = event.rows ? event.first / event.rows : 0;
-    this.currentRowsPerPage = event.rows ? event.rows : 0;
+    this.currentPage.set(event.rows ? event.first / event.rows : 0);
+    this.currentRowsPerPage.set(event.rows ? event.rows : 0);
   }
 
   columnSelectorShow(){
-    this.tableOptions.columns?.selectorOrderByColumnName
-    let tempData = this.columns.map(column => {
-      const isSelected = this.columnsSelected.some(selectedColumn => selectedColumn.field === column.field) || this.columnsCantBeHidden.some(selectedColumn => selectedColumn.field === column.field);
-      const isSelectDisabled =  this.columnsCantBeHidden.some(selectedColumn => selectedColumn.field === column.field);
+    this.tableOptions.columns?.selectorOrderByColumnName;
+    let tempData = this.columns().map(column => {
+      const isSelected = this.columnsSelected().some(selectedColumn => selectedColumn.field === column.field) || this.columnsCantBeHidden().some(selectedColumn => selectedColumn.field === column.field);
+      const isSelectDisabled =  this.columnsCantBeHidden().some(selectedColumn => selectedColumn.field === column.field);
       return {
         field: column.field,
         header: column.header,
@@ -793,21 +781,21 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
         dataAlignVerticalDisabled: !column.dataAlignVerticalAllowUserEdit
       };
     });
-    if (this.tableOptions.columns?.selectorOrderByColumnName === true) { // Sort columns by header only if order by column name is true
+    if (this.tableOptions.columns?.selectorOrderByColumnName === true) {
       tempData = tempData.slice().sort((a, b) => {
-        return a.header.toUpperCase().localeCompare(b.header.toUpperCase()); // Sort by header text (A-Z)
+        return a.header.toUpperCase().localeCompare(b.header.toUpperCase());
       });
     }
-    this.columnModalData = [...tempData];
-    this.filteredColumnData = this.columnModalData;
-    this.showColumnSelector=true;
+    this.columnModalData.set([...tempData]);
+    this.filteredColumnData.set(this.columnModalData());
+    this.showColumnSelector.set(true);
   }
 
   applyColumnModalChanges(selectedColumns: IColumnMetadata[]) {
     const existingColumns = this.dt.columns!;
     const columnsToKeep = new Set<string>();
 
-    this.columnsCantBeHidden.forEach(col => columnsToKeep.add(col.field));
+    this.columnsCantBeHidden().forEach(col => columnsToKeep.add(col.field));
     selectedColumns.forEach(col => columnsToKeep.add(col.field));
 
     const finalColumns: IColumnMetadata[] = [];
@@ -818,7 +806,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
     });
 
     selectedColumns.forEach(col => {
-      const matchingColumn = this.columns.find(c => c.field === col.field);
+      const matchingColumn = this.columns().find(c => c.field === col.field);
       if (matchingColumn && !finalColumns.find(c => c.field === matchingColumn.field)) {
         finalColumns.push(matchingColumn);
       }
@@ -831,12 +819,12 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
       prevColsToShow!.length === this.tableOptions.columns!.shown.length &&
       prevColsToShow!.every((prevCol, index) => prevCol.field === this.tableOptions.columns!.shown![index].field);
 
-    this.columnsSelected = this.tableOptions.columns!.shown.filter(
-      column => !this.columnsCantBeHidden.some(nonSelectable => nonSelectable.field === column.field)
-    );
+    this.columnsSelected.set(this.tableOptions.columns!.shown.filter(
+      column => !this.columnsCantBeHidden().some(nonSelectable => nonSelectable.field === column.field)
+    ));
 
-    this.updateColumnsSpecialProperties(this.columnModalData);
-
+    this.updateColumnsSpecialProperties(this.columnModalData());
+    this.cdr.markForCheck();
     if (!sameColumnsAsBefore) {
       this.tableOptions.isActive = false;
       this.clearSorts(this.dt, true);
@@ -848,14 +836,9 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
   }
 
   private updateColumnsSpecialProperties(columnsSource: any[]){
-    const allColumns = [this.columns, this.tableOptions.columns!.shown!, this.columnsSelected, this.columnsCantBeHidden];
-    const columnModalDataMap = new Map(columnsSource.map((item: any) => [item.field, { 
-        cellOverflowBehaviour: item.cellOverflowBehaviour, 
-        dataAlignHorizontal: item.dataAlignHorizontal,
-        dataAlignVertical: item.dataAlignVertical,
-        width: item.width
-    }]));
-    const updatedFields = new Set(); // To track updated fields
+    const allColumns = [this.columns(), this.tableOptions.columns!.shown!, this.columnsSelected(), this.columnsCantBeHidden()];
+    const columnModalDataMap = new Map(columnsSource.map((item: any) => [item.field, {         cellOverflowBehaviour: item.cellOverflowBehaviour,         dataAlignHorizontal: item.dataAlignHorizontal,        dataAlignVertical: item.dataAlignVertical,        width: item.width    }]));
+    const updatedFields = new Set();
     allColumns.forEach((columnList) => {
         columnList.forEach((col: any) => {
             if (columnModalDataMap.has(col.field) && !updatedFields.has(col.field)) {
@@ -875,29 +858,30 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
   openExcelExport(){
     const defaultTitle = this.tableOptions.excelReport?.defaultTitle?.trim();
     const allowEdit = this.tableOptions.excelReport?.titleAllowUserEdit === true;
-    this.excelReportTitle = (!defaultTitle && !allowEdit) ? 'Report' : defaultTitle!;
-    this.showExportModal=true;
+    this.excelReportTitle.set((!defaultTitle && !allowEdit) ? 'Report' : defaultTitle!);
+    this.showExportModal.set(true);
   }
+
   generateExcelReport(event: any){
     if(!this.tableOptions.excelReport?.url?.trim()){
       return;
     }
-    let filtersWithoutGlobalAndSelectedRows = this.modifyFiltersWithoutGlobalAndSelectedRows(this.tableLazyLoadEventInformation.filters, event.selectedRows); // Create filters excluding the global filter
-    filtersWithoutGlobalAndSelectedRows=this.revertDateTimeZoneFilters(filtersWithoutGlobalAndSelectedRows);
+    let filtersWithoutGlobalAndSelectedRows = this.modifyFiltersWithoutGlobalAndSelectedRows(this.tableLazyLoadEventInformation.filters, event.selectedRows);
+    filtersWithoutGlobalAndSelectedRows = this.revertDateTimeZoneFilters(filtersWithoutGlobalAndSelectedRows);
     const filtersMustBeApplied: boolean = (event.selectedRows === 1 || event.selectedRows === 2) 
     ? true 
     : event.applyFilters;
     const requestData: IExcelExportRequest = {
-      page: this.currentPage, // Set the current page number
-      pageSize: this.currentRowsPerPage, // Set the number of rows per page
-      sort: this.tableLazyLoadEventInformation.multiSortMeta, // Set the sorting information
-      filter: filtersWithoutGlobalAndSelectedRows, // Set the filters excluding the global filter
-      globalFilter: this.globalSearchText, // Set the global filter text
-      columns: this.tableOptions.columns!.shown!.map(col => col.field), // Set the columns to show
-      dateFormat: this.dateFormat,
-      dateTimezone: this.dateTimezone,
-      dateCulture: this.dateCulture,
-      exportDateFormat: this.exportDateFormat,
+      page: this.currentPage(),
+      pageSize: this.currentRowsPerPage(),
+      sort: this.tableLazyLoadEventInformation.multiSortMeta,
+      filter: filtersWithoutGlobalAndSelectedRows,
+      globalFilter: this.globalSearchText(),
+      columns: this.tableOptions.columns!.shown!.map(col => col.field),
+      dateFormat: this.dateFormat(),
+      dateTimezone: this.dateTimezone(),
+      dateCulture: this.dateCulture(),
+      exportDateFormat: this.exportDateFormat(),
       allColumns: event.allColumns,
       applyFilters: filtersMustBeApplied,
       applySorts: event.applySorts,
@@ -907,7 +891,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
     this.tableService.fetchExcelReport(this.tableOptions.excelReport.url, requestData).subscribe({
       next: (response: HttpResponse<Blob>) => {
         this.tableService.downloadFile(response.body!, event.filename, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        this.showExportModal=false;
+        this.showExportModal.set(false);
       },
       error: (err) => this.tableService.handleTableError(err, 'Excel export error')
     });
@@ -924,9 +908,9 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
             this.tableService.getIconBlob(filter.imageBlobSourceEndpoint).subscribe({
               next: (response: HttpResponse<Blob>) => {
                 filter.imageBlob = response.body!;
-                this.showExportModal=false;
+                this.showExportModal.set(false);
               },
-              error: () => { // Handle error response
+              error: () => {
                 filter.imageBlobFetchError = true;
               }
             });

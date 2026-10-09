@@ -1,16 +1,15 @@
 <p-dialog [(visible)]="visible" [modal]="true" [draggable]="false" [resizable]="false"
     [closable]="false" [closeOnEscape]="false" [maximizable]="false" [style]="{'min-width': '70vw', 'max-width': '70vw'}">
-    <ng-template pTemplate="header">
-        <div>
-            <span class="p-dialog-title">Export data to Excel</span>
-        </div>
+    <ng-template #header>
+        <span style="white-space: nowrap;"><b>EXPORT DATA TO EXCEL</b></span>
     </ng-template>
+    
     <div style="display: grid; grid-template-columns: 4fr 8fr; gap: 1rem; align-items: center; margin-top: 10px;">
         <div style="justify-self: end;">
             Report filename
         </div>
         <div style="justify-self: stretch; width: 100%;">
-            <input pInputText id="reportTitle" [(ngModel)]="excelReportTitle" autocomplete="off" style="width: 100%;" [disabled]="!allowTitleUserEdit" maxlength="100"/>
+            <input pInputText id="reportTitle" [ngModel]="excelReportTitle()" (ngModelChange)="excelReportTitle.set($event)" autocomplete="off" style="width: 100%;" [disabled]="!allowTitleUserEdit()" maxlength="100"/>
         </div>
 
         <div style="justify-self: end;">
@@ -22,11 +21,11 @@
             Include time in report filename?
         </div>
         <div style="justify-self: stretch; width: 100%;">
-            <p-checkbox [binary]="true" [(ngModel)]="includeTimeInTitle"/>
+            <p-checkbox [binary]="true" [ngModel]="includeTimeInTitle()" (ngModelChange)="includeTimeInTitle.set($event)"/>
         </div>
 
         <div style="justify-self: end;">
-            <i pTooltip="Activating this option will make boolean values be shown as icons in the Excel report:<br>True → <span class='bool-icon bool-true'>✔</span><br>False → <span class='bool-icon bool-false'>✘</span>"   
+            <i pTooltip="Activating this option will make boolean values be shown as icons in the Excel report:<br>True → <span class='bool-icon bool-true'>✔</span><br>False → <span class='bool-icon bool-false'>✘</span>"  
                 tooltipPosition="top" 
                 tooltipStyleClass="excel-export-tooltip"
                 [escape]="false"
@@ -35,14 +34,14 @@
             Use icons in boolean fields?
         </div>
         <div style="justify-self: stretch; width: 100%;">
-            <p-checkbox [binary]="true" [(ngModel)]="exportUseIconsInBools"/>
+            <p-checkbox [binary]="true" [ngModel]="exportUseIconsInBools()" (ngModelChange)="exportUseIconsInBools.set($event)"/>
         </div>
         
         <div style="justify-self: end;">
             Export columns
         </div>
         <div style="justify-self: start;">
-            <p-selectButton [(ngModel)]="option_exportColumns_selected" [options]="option_exportColumns" optionLabel="label" optionValue="value" allowEmpty="false"/>
+            <p-selectbutton [ngModel]="option_exportColumns_selected()" (ngModelChange)="option_exportColumns_selected.set($event)" [options]="option_exportColumns" optionLabel="label" optionValue="value" [allowEmpty]="false"/>
         </div>
 
         <div style="justify-self: end;">
@@ -52,27 +51,28 @@
             Filters to apply
         </div>
         <div style="justify-self: start;">
-            <p-selectButton [(ngModel)]="option_applyCurrentFilters_selected" [options]="option_applyCurrentFilters" optionLabel="label" optionValue="value" allowEmpty="false" [disabled]="filterSelectorDisabled()"/>
+            <p-selectbutton [ngModel]="option_applyCurrentFilters_selected()" (ngModelChange)="option_applyCurrentFilters_selected.set($event)" [options]="option_applyCurrentFilters" optionLabel="label" optionValue="value" [allowEmpty]="false" [disabled]="filterSelectorDisabled()"/>
         </div>
 
         <div style="justify-self: end;">
             Sorts to apply
         </div>
         <div style="justify-self: start;">
-            <p-selectButton [(ngModel)]="option_applyCurrentSorts_selected" [options]="option_applyCurrentSorts" optionLabel="label" optionValue="value" allowEmpty="false"/>
+            <p-selectbutton [ngModel]="option_applyCurrentSorts_selected()" (ngModelChange)="option_applyCurrentSorts_selected.set($event)" [options]="option_applyCurrentSorts" optionLabel="label" optionValue="value" [allowEmpty]="false"/>
         </div>
 
-        @if(rowCheckboxSelectorActive){
+        @if(rowCheckboxSelectorActive()){
             <div style="justify-self: end;">
                 Selected rows
             </div>
             <div style="justify-self: start;">
-                <p-selectButton [(ngModel)]="option_selectedRowsExport_selected" [options]="option_selectedRowsExport" optionLabel="label" optionValue="value" allowEmpty="false" (onChange)="onChangeExportRows($event)"/>
+                <p-selectbutton [ngModel]="option_selectedRowsExport_selected()" (ngModelChange)="option_selectedRowsExport_selected.set($event)" [options]="option_selectedRowsExport" optionLabel="label" optionValue="value" [allowEmpty]="false" (onChange)="onChangeExportRows($event)"/>
             </div>
         }
     </div>
-    <ng-template pTemplate="footer" style="display: flex; justify-content: space-between; align-items: center;">
-        <p-button (click)="closeModal()" label="Cancel export" outlined="true" [style]="{'margin-top': '20px'}"/>
-        <p-button (click)="getExcelReport()" label="Export" [style]="{'margin-top': '20px'}"/>
+
+    <ng-template #footer>
+        <button type="button" pButton (click)="closeModal()" outlined="true">Cancel export</button>
+        <button type="button" pButton (click)="getExcelReport()">Export</button>
     </ng-template>
 </p-dialog>

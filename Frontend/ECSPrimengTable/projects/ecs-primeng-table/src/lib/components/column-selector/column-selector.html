@@ -1,89 +1,105 @@
-<!--COLUMN MODAL DIALOG-->
 <p-dialog [(visible)]="visible" [modal]="true" [draggable]="false" [resizable]="false" [closeOnEscape]="false" [closable]="false" [maximizable]="false" [style]="{'min-width': '65vw', 'max-width': '65vw'}">
-    <ng-template pTemplate="header">
-        <span class="white-space-nowrap"><b>MODIFY COLUMNS</b></span>
+    <ng-template #header>
+        <span style="white-space: nowrap;"><b>MODIFY COLUMNS</b></span>
     </ng-template>
-    <div style="padding: 10px;">
-        <p-table #dt_columnDialog [value]="columnModalData" [scrollable]="true" size="small" showGridlines stripedRows 
-            [globalFilterFields]="['header']" scrollHeight="calc(80vh - 220px)" (onFilter)="onColumnModalFilter($event)">
+
+    <div style="padding: 0.5rem;">
+        <p-table #dt_columnDialog 
+            [value]="columnModalData()" 
+            [scrollable]="true" 
+            size="small" 
+            showGridlines 
+            stripedRows 
+            [globalFilterFields]="['header']" 
+            scrollHeight="calc(80vh - 220px)" 
+            (onFilter)="onColumnModalFilter($event)">
+            
             <ng-template #caption>
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div style="display: flex; align-items: center; gap: 10px">
-                        <p-checkbox inputId="selectAll" [binary]="true" [ngModel]="allColumnsCheckboxActive()" (onChange)="allColumnsCheckboxClick($event)"></p-checkbox>
-                        <label for="selectAll">Select all columns</label>
+                <div style="display: flex; flex-direction: row; align-items: center; justify-content: space-between; width: 100%; gap: 1rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0;">
+                        <p-checkbox inputId="selectAll" [binary]="true" [ngModel]="allColumnsCheckboxActive()" (onChange)="allColumnsCheckboxClick($event.checked)"></p-checkbox>
+                        <label pLabel for="selectAll" style="cursor: pointer; user-select: none;">Select all columns</label>
                     </div>
-                    <div style="display: flex; align-items: center;">
-                        <p-iconField iconPosition="left" [ngClass]="{'p-input-icon-right': globalSearchText}">
-                            <p-inputIcon>
+                    <div style="display: flex; justify-content: center;">
+                        <p-iconfield>
+                            <p-inputicon>
                                 <i class="pi pi-search"></i>
-                            </p-inputIcon>
-                            <input pInputText type="text" 
-                                (input)="filterColumnModal($event)" autocomplete="off" 
-                                [maxlength]="globalSearchMaxLength" placeholder="Search column name" [(ngModel)]="globalSearchText"
-                                style="width: 220px;"/>
-                            <!-- Right icon (only if there is text) -->
-                            @if (globalSearchText) {
-                                <p-inputIcon position="right">
-                                    <i class="pi pi-times" style="cursor: pointer;" (click)="clearGlobalFilter(dt_columnDialog); $event.stopPropagation()"></i>
-                                </p-inputIcon>
-                            }
-                        </p-iconField>
+                            </p-inputicon>
+                            <input pInputText type="text"
+                                [(ngModel)]="globalSearchText"
+                                placeholder="Search column name"
+                                [maxlength]="globalSearchMaxLength"
+                                (input)="filterColumnModal($event)"/>
+                            <p-inputicon (click)="clearGlobalFilter(); $event.stopPropagation()" style="cursor: pointer">
+                                <i class="pi pi-times"></i>
+                            </p-inputicon>
+                        </p-iconfield>
                     </div>
                 </div>
             </ng-template>
+
             <ng-template #header>
                 <tr>
-                    <th pFrozenColumn style="max-width: 100px; min-width: 100px; width: 100px; text-align: center;">Show column</th>
-                    <th pFrozenColumn style="max-width: 250px; min-width: 250px; width: 250px; text-align: center;">Column name</th>
-                    <th style="max-width: 150px; min-width: 150px; width: 150px; text-align: center;">Cell overflow behaviour</th>
-                    <th style="max-width: 160px; min-width: 160px; width: 160px; text-align: center;">Horizontal aligment</th>
-                    <th style="max-width: 150px; min-width: 150px; width: 150px; text-align: center;">Vertical aligment</th>
+                    <th style="max-width: 100px; min-width: 100px; width: 100px; text-align: center; vertical-align: middle;">Show column</th>
+                    <th style="max-width: 250px; min-width: 250px; width: 250px; text-align: center; vertical-align: middle;">Column name</th>
+                    <th style="max-width: 150px; min-width: 150px; width: 150px; text-align: center; vertical-align: middle;">Cell overflow behaviour</th>
+                    <th style="max-width: 160px; min-width: 160px; width: 160px; text-align: center; vertical-align: middle;">Horizontal alignment</th>
+                    <th style="max-width: 150px; min-width: 150px; width: 150px; text-align: center; vertical-align: middle;">Vertical alignment</th>
                 </tr>
             </ng-template>
+
             <ng-template #body let-rowData>
                 <tr>
-                    <td pFrozenColumn style="max-width: 100px; min-width: 100px; width: 100px; text-align: center;">
-                        <p-checkbox 
-                            [(ngModel)]="rowData.selected" 
-                            [binary]="true"
-                            [disabled]="rowData.selectDisabled"/>
+                    <td pFrozenColumn style="max-width: 100px; min-width: 100px; width: 100px; text-align: center; vertical-align: middle;">
+                        <div style="display: flex; justify-content: center; align-items: center; width: 100%; height: 100%;">
+                            <p-checkbox 
+                                [(ngModel)]="rowData.selected" 
+                                [binary]="true"
+                                [disabled]="rowData.selectDisabled"/>
+                        </div>
                     </td>
-                    <td pFrozenColumn style="max-width: 250px; min-width: 250px; width: 250px;">{{rowData.header}}</td>
-                    <td style="max-width: 150px; min-width: 150px; width: 150px; text-align: center;">
-                        <p-selectButton [(ngModel)]="rowData.cellOverflowBehaviour" [options]="cellOverflowBehaviourOptions" optionValue="val" optionLabel="icon" [disabled]="rowData.cellOverflowBehaviourDisabled" allowEmpty="false">
+                    <td pFrozenColumn style="max-width: 250px; min-width: 250px; width: 250px; vertical-align: middle;">{{rowData.header}}</td>
+                    
+                    <td style="max-width: 150px; min-width: 150px; width: 150px; text-align: center; vertical-align: middle;">
+                        <p-selectbutton [(ngModel)]="rowData.cellOverflowBehaviour" [options]="cellOverflowBehaviourOptions" optionValue="val" optionLabel="icon" [disabled]="rowData.cellOverflowBehaviourDisabled" [allowEmpty]="false">
                             <ng-template #item let-item>
-                                <i [class]="item.icon" style="margin: -20px;" [pTooltip]="item.name" [showDelay]="400" tooltipPosition="top"></i>
+                                <i [class]="item.icon" class="m-neg-20" [pTooltip]="item.name" [showDelay]="100" tooltipPosition="top"></i>
                             </ng-template>
-                        </p-selectButton>
+                        </p-selectbutton>
                     </td>
-                    <td style="max-width: 160px; min-width: 160px; width: 160px; text-align: center;">
-                        <p-selectButton [(ngModel)]="rowData.dataAlignHorizontal" [options]="dataAlignHorizontalOptions" optionValue="val" optionLabel="icon" [disabled]="rowData.dataAlignHorizontalDisabled" allowEmpty="false">
+
+                    <td style="max-width: 160px; min-width: 160px; width: 160px; text-align: center; vertical-align: middle;">
+                        <p-selectbutton [(ngModel)]="rowData.dataAlignHorizontal" [options]="dataAlignHorizontalOptions" optionValue="val" optionLabel="icon" [disabled]="rowData.dataAlignHorizontalDisabled" [allowEmpty]="false">
                             <ng-template #item let-item>
-                                <i [class]="item.icon" style="margin: -20px;" [pTooltip]="item.name" [showDelay]="400" tooltipPosition="top"></i>
+                                <i [class]="item.icon" class="m-neg-20" [pTooltip]="item.name" [showDelay]="100" tooltipPosition="top"></i>
                             </ng-template>
-                        </p-selectButton>
+                        </p-selectbutton>
                     </td>
-                    <td style="max-width: 150px; min-width: 150px; width: 150px; text-align: center;">
-                        <p-selectButton [(ngModel)]="rowData.dataAlignVertical" [options]="dataAlignVerticalOptions" optionValue="val" optionLabel="icon" [disabled]="rowData.dataAlignVerticalDisabled" allowEmpty="false">
+
+                    <td style="max-width: 150px; min-width: 150px; width: 150px; text-align: center; vertical-align: middle;">
+                        <p-selectbutton [(ngModel)]="rowData.dataAlignVertical" [options]="dataAlignVerticalOptions" optionValue="val" optionLabel="icon" [disabled]="rowData.dataAlignVerticalDisabled" [allowEmpty]="false">
                             <ng-template #item let-item>
-                                <i [class]="item.icon" style="margin: -20px;" [pTooltip]="item.name" [showDelay]="400" tooltipPosition="top"></i>
+                                <i [class]="item.icon" class="m-neg-20" [pTooltip]="item.name" [showDelay]="100" tooltipPosition="top"></i>
                             </ng-template>
-                        </p-selectButton>
+                        </p-selectbutton>
                     </td>
                 </tr>
             </ng-template>
+
             <ng-template #emptymessage>
                 <tr>
-                    <td colspan="999">There are no columns</td>
+                    <td colspan="999" style="text-align: center; vertical-align: middle;">There are no columns</td>
                 </tr>
             </ng-template>
         </p-table>
-        <div style="display: flex; flex-direction: row; justify-content: space-between; align-items: center; margin-top: 10px;">
-            Showing {{filteredColumnData ? filteredColumnData.length : 0}} columns of {{columnModalData ? columnModalData.length : 0}} available columns
+
+        <div style="display: flex; flex-direction: row; justify-content: space-between; align-items: center; margin-top: 0.5rem; font-size: 0.875rem; color: var(--text-color-secondary, #6c757d);">
+            Showing {{ filteredColumnData()?.length ?? 0 }} columns of {{ columnModalData().length}} available columns
         </div>
     </div>
-    <ng-template pTemplate="footer" style="display: flex; justify-content: space-between; align-items: center;">
-        <p-button (click)="closeModal()" label="Cancel changes" outlined="true" [style]="{'margin-top': '10px'}"></p-button>
-        <p-button (click)="applyColumnModalChanges()" label="Save changes" [style]="{'margin-top': '10px'}"></p-button>
+
+    <ng-template #footer>
+        <button type="button" pButton (click)="closeModal()" [outlined]="true">Cancel changes</button>
+        <button type="button" pButton (click)="applyColumnModalChanges()">Save changes</button>
     </ng-template>
 </p-dialog>

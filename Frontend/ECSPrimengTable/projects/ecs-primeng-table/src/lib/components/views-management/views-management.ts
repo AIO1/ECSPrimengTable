@@ -1,15 +1,17 @@
+import { Component, input, output, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { TableModule } from 'primeng/table';
 import { TooltipModule } from 'primeng/tooltip';
-import { ECSPrimengTableNotificationService } from '../../services';
 import { CheckboxModule } from 'primeng/checkbox';
+import { ECSPrimengTableNotificationService } from '../../services';
+
 @Component({
   selector: 'ecs-views-management',
+  standalone: true,
   imports: [
     DialogModule,
     TableModule,
@@ -20,68 +22,52 @@ import { CheckboxModule } from 'primeng/checkbox';
     InputTextModule,
     CheckboxModule
   ],
-  standalone: true,
   templateUrl: './views-management.html'
 })
 export class ViewsManagement {
-  constructor(
-    private notification: ECSPrimengTableNotificationService
-  ) {}
-  @Input() visible: boolean = false;
-  @Input() tableViews_menuItems: any[] = [];
-  @Output() onViewSelect = new EventEmitter<string>();
-  @Output() onViewDelete = new EventEmitter<string>();
-  @Output() onViewUpdateData = new EventEmitter<string>();
-  @Output() onViewUpdateActiveStartup = new EventEmitter<string>();
-  @Output() onViewEditAlias = new EventEmitter<{ viewAliasOld: string; viewAliasNew: string }>();
-  @Output() onViewCreate = new EventEmitter<string>();
-  @Output() visibleChange = new EventEmitter<boolean>();
-  viewEditorShow: boolean = false;
-  editingViewAlias: string = '';
-  newViewAlias: string = '';
-  loadView(viewAlias: string) {
-    this.onViewSelect.emit(viewAlias);
-  }
-  deleteView(viewAlias: string){
-    this.onViewDelete.emit(viewAlias);
-  }
-  updateView(viewAlias: string){
-    this.onViewUpdateData.emit(viewAlias);
-  }
-  updateViewActiveStartup(viewAlias: string){
-    this.onViewUpdateActiveStartup.emit(viewAlias);
-  }
-  createView(viewAlias: string){
-    const exists = this.tableViews_menuItems.some(item => item.label === viewAlias);
-    if (exists) {
-      this.notification.showToast("error","DUPLICATE VIEW NAME",`A view with alias "${viewAlias}" already exists`);
-      return;
-    }
-    this.onViewCreate.emit(viewAlias);
-  }
-  editViewAlias(viewAliasOld: string, viewAliasNew: string) {
-  this.onViewEditAlias.emit({
-      viewAliasOld: viewAliasOld,
-      viewAliasNew: viewAliasNew
-    });
-  }
+  private notification = inject(ECSPrimengTableNotificationService);
   
-  showViewEditor(editingViewAlias: string = ''){
-    this.editingViewAlias = editingViewAlias;
-    this.newViewAlias = this.editingViewAlias;
-    this.viewEditorShow=true;
+  visible = input.required<boolean>();
+  tableViews_menuItems = input<any[]>([]);
+  
+  visibleChange = output<boolean>();
+  onViewSelect = output<string>();
+  onViewDelete = output<string>();
+  onViewUpdateData = output<string>();
+  onViewUpdateActiveStartup = output<string>();
+  onViewEditAlias = output<{ viewAliasOld: string; viewAliasNew: string }>();
+  onViewCreate = output<string>();
+
+  viewEditorShow = signal(false);
+  editingViewAlias = signal('');
+  newViewAlias = signal('');
+
+  showViewEditor(alias: string = '') {
+    this.editingViewAlias.set(alias);
+    this.newViewAlias.set(alias);
+    this.viewEditorShow.set(true);
   }
 
-  closeModal(){
-    this.visibleChange.emit(false);
-  }
-
-  createOrUpdateTableView(){
-    this.viewEditorShow=false;
-    if(this.editingViewAlias !== ''){
-      this.editViewAlias(this.editingViewAlias, this.newViewAlias);
+  createOrUpdateTableView() {
+    const alias = this.newViewAlias().trim();
+    if (!alias) return;
+    this.viewEditorShow.set(false);
+    
+    if (this.editingViewAlias() !== '') {
+      this.onViewEditAlias.emit({ 
+        viewAliasOld: this.editingViewAlias(), 
+        viewAliasNew: alias 
+      });
     } else {
-      this.createView(this.newViewAlias);
+      if (this.tableViews_menuItems().some(item => item.label === alias)) {
+        this.notification.showToast("error", "DUPLICATE VIEW NAME", `A view with alias "${alias}" already exists`);
+        return;
+      }
+      this.onViewCreate.emit(alias);
     }
+  }
+
+  closeModal() {
+    this.visibleChange.emit(false);
   }
 }
