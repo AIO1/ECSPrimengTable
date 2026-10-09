@@ -1,6 +1,7 @@
 @if (value() !== null && value() !== undefined) {
   @if (col().filterPredefinedValuesName && col().filterPredefinedValuesName.length > 0) {
     <div [ngStyle]="{
+            'display': 'flex',
             'justify-content': getDataAlignHorizontalAsText(col().dataAlignHorizontal),
             'align-items': getDataAlignVerticalAsText(col().dataAlignVertical)
         }">

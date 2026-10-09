@@ -21,23 +21,24 @@ import { TablePredefinedFilters } from "../table-predefined-filters/table-predef
 export class TableCell {
   private datePipe = inject(DatePipe);
   private sanitizer = inject(DomSanitizer);
-  col = input.required<any>();
-  rowData = input.required<any>();
-  globalSearchText = input<string | null>(null);
-  predefinedFiltersCollection = input<{ [key: string]: IPredefinedFilter[] }>({});
-  dateFormat = input<string>("dd-MMM-yyyy HH:mm:ss zzzz");
-  dateTimezone = input<string>("+00:00");
-  dateCulture = input<string>("en-US");
 
-  DataType = DataType;
+  readonly col = input.required<any>();
+  readonly rowData = input.required<any>();
+  readonly globalSearchText = input<string | null>(null);
+  readonly predefinedFiltersCollection = input<{ [key: string]: IPredefinedFilter[] }>({});
+  readonly dateFormat = input<string>("dd-MMM-yyyy HH:mm:ss zzzz");
+  readonly dateTimezone = input<string>("+00:00");
+  readonly dateCulture = input<string>("en-US");
 
-  value = computed(() => {
+  readonly DataType = DataType;
+
+  readonly value = computed(() => {
     const row = this.rowData();
     const column = this.col();
     return row && column ? row[column.field] : null;
   });
 
-  tooltipText = computed(() => {
+  readonly tooltipText = computed(() => {
     const column = this.col();
     const row = this.rowData();
     const val = this.value();
@@ -48,12 +49,12 @@ export class TableCell {
     return val;
   });
 
-  listValues = computed<string[]>(() => {
+  readonly listValues = computed<string[]>(() => {
     const val = this.value();
     return val ? String(val).split(';').map((v: string) => v.trim()) : [];
   });
 
-  formattedDateValue = computed<string>(() => {
+  readonly formattedDateValue = computed<string>(() => {
     const val = this.value();
     const column = this.col();
     return this.formatDate(
