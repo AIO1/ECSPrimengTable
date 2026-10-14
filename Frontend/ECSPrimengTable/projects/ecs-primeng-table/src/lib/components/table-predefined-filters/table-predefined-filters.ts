@@ -58,6 +58,9 @@ export class TablePredefinedFilters {
     return this.getImageSkeletonStyle(opt?.imageWidth, opt?.imageHeight, true);
   });
   handleClick() {
+    if (!this.isSelectableWithAction()){
+      return;
+    }
     const opt = this.option();
     if (opt?.action) {
       this.tableService.handlePredefinedFilterClick(opt.action, this.rowData(), opt);

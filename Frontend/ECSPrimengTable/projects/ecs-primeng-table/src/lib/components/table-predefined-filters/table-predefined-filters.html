@@ -1,4 +1,5 @@
 <div style="display: flex; align-items: center; gap: 0.5rem;"
+      [style.pointer-events]="isSelectableWithAction() ? 'auto' : 'none'"
      [style.cursor]="isSelectableWithAction() ? 'pointer' : 'default'"
      [attr.role]="isSelectableWithAction() ? 'button' : null"
      (click)="handleClick(); $event.stopPropagation();">

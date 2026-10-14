@@ -102,14 +102,12 @@ export class ExportExcel {
     const currentTitle = this.excelReportTitle()?.trim();
 
     if (!currentTitle || currentTitle.length <= 0) {
-      this.notificationService.clearToasts();
       this.notificationService.showToast("error", "REPORT NAME NOT VALID", "The report name is not valid");
       return; 
     }
     
     const allowedPattern = /^[A-Za-z0-9 _-]*$/;
     if (!allowedPattern.test(currentTitle)) {
-      this.notificationService.clearToasts();
       this.notificationService.showToast("error", "INVALID CHARACTERS IN REPORT NAME", "The report name contains invalid characters.");
       return;
     }

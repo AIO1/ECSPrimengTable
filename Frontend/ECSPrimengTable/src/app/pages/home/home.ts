@@ -23,10 +23,22 @@ export class Home implements OnInit {
         this.sharedService.clearToasts();
         this.sharedService.showToast("info","Clicked on create a new record","Here you will for example show a modal to create a new record. Upon creating the record, you can do 'this.dt.updateDataExternal()' to refresh the table data and show the newly created record.");
       },
-      label: "CREATE",
       tooltip: "Create new record"
     }
   ];
+  /*
+  headerActionButtons: ITableButton[] = [
+    {
+      icon: 'pi pi-plus',
+      class: 'p-button-success',
+      action: () => {
+        this.sharedService.clearToasts();
+        this.sharedService.showToast("info","Clicked on create a new record","Here you will for example show a modal to create a new record. Upon creating the record, you can do 'this.dt.updateDataExternal()' to refresh the table data and show the newly created record.");
+      },
+      label: "CREATE",
+      tooltip: "Create new record"
+    }
+  ];*/
   rowActionButtons: ITableButton[] = [
     {
       icon: 'pi pi-trash',

@@ -1,11 +1,11 @@
 @if(button().visibleCondition?.(rowData()) ?? true){ 
   @if((button().enabledCondition?.(rowData()) ?? true) || !button().conditionFailHide){ 
-    <button
+    <button 
       type="button"
       [disabled]="!(button().enabledCondition?.(rowData()) ?? true)"
       [pTooltip]="button().tooltip || ''"
       [tooltipDisabled]="!button().tooltip || button().tooltip.length === 0"
-      [showDelay]="700"
+      [showDelay]="150"
       tooltipPosition="top"
       [class]="
         'p-button p-component' +

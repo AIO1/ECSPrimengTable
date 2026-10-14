@@ -21,9 +21,4 @@ export abstract class ECSPrimengTableNotificationService {
     title: string,
     message: string
   ): void;
-  
-  /**
-   * Clears all currently displayed toast notifications.
-   */
-  abstract clearToasts(): void;
 }
