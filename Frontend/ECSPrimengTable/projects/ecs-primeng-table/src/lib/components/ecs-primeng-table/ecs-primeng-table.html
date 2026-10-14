@@ -286,7 +286,7 @@
             <div #paginatorContainer>
                 <div style="display: flex; align-items: center; gap: 10px;">
                     @if(tableOptions().legend?.content){
-                        <ecs-table-button [button]="tableOptions().legend!.button" [rowData]="null" [overrideAction]="op.toggle.bind(op)"/>
+                        <ecs-table-button [button]="tableOptions().legend!.button!" [rowData]="null" [overrideAction]="op.toggle.bind(op)"/>
                         <p-popover #op>
                             <div [innerHTML]="tableOptions().legend!.content"></div>
                         </p-popover>
