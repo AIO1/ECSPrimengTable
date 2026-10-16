@@ -1,4 +1,4 @@
-import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { Component, Injectable, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink, RouterOutlet } from '@angular/router';
@@ -12,25 +12,17 @@ export class NavigationDemoSettings {
 @Component({
   selector: 'ecs-navigation-scope',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, FormsModule, TranslatePipe],
+  imports: [RouterOutlet, FormsModule, TranslatePipe],
   providers: [ECSPrimengTableStateService, NavigationDemoSettings],
   template: `
     <section style="padding: 12px; display: flex; gap: 24px; align-items: center; flex-wrap: wrap;">
-      <label>{{ 'Language' | translate }}
-        <select [attr.aria-label]="'Language' | translate" [ngModel]="translate.getCurrentLang()" (ngModelChange)="translate.use($event)">
-          <option value="es">Español</option><option value="en">English</option>
-          <option value="fr">Français</option><option value="it">Italiano</option>
-        </select>
-      </label>
       <strong>{{ 'Prueba de estado · Personas' | translate }}</strong>
       <label><input type="checkbox" [(ngModel)]="settings.persistence.enabled" /> {{ 'Conservar filtros al volver del detalle' | translate }}</label>
-      <a routerLink="/other">{{ 'Ir a otra sección (salir del ámbito)' | translate }}</a>
     </section>
     <router-outlet />
   `
 })
 export class NavigationDemoScope {
-  readonly translate = inject(TranslateService);
   readonly settings = inject(NavigationDemoSettings);
 }
 

@@ -1,5 +1,20 @@
 @if (value !== null && value !== undefined) {
-  @if (col.filterPredefinedValuesName && col.filterPredefinedValuesName.length > 0) {
+  @if (col.dataType === DataType.Numeric && col.cellDisplay === CellDisplay.ProgressBar) {
+    @if (hasProgressValue) {
+      <div class="ecs-progress-cell"
+        [pTooltip]="progressTooltip"
+        [tooltipDisabled]="!col.dataTooltipShow"
+        [showDelay]="200" tooltipPosition="top">
+        <div class="ecs-progress-bar" role="progressbar"
+          [attr.aria-label]="col.header"
+          aria-valuemin="0" aria-valuemax="100"
+          [attr.aria-valuenow]="progressValue"
+          [attr.aria-valuetext]="value + ' %'">
+          <div class="ecs-progress-bar-fill" [style.width.%]="progressValue"></div>
+        </div>
+      </div>
+    }
+  } @else if (col.filterPredefinedValuesName && col.filterPredefinedValuesName.length > 0) {
     <div [ngStyle]="{
             'justify-content': getDataAlignHorizontalAsText(col.dataAlignHorizontal),
             'align-items': getDataAlignVerticalAsText(col.dataAlignVertical)

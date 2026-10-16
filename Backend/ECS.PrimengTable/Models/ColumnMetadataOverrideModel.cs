@@ -14,6 +14,9 @@ namespace ECS.PrimengTable.Models {
         /// </summary>
         public string? Header { get; set; }
 
+        /// <summary>Overrides cell presentation without changing numeric filtering or export.</summary>
+        public CellDisplay? CellDisplay { get; set; }
+
         /// <summary>
         /// Overrides the horizontal alignment of the column data.
         /// </summary>

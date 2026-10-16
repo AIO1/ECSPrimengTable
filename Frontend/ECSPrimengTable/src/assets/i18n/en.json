@@ -287,5 +287,13 @@
   "A predefined filter that shows the employment status of the user": "A predefined filter that shows the employment status of the user",
   "A list of employment statuses separated by ; in the database": "A list of employment statuses separated by ; in the database",
   "When was the user born": "When was the user born",
-  "If the user has payed his taxes or not. You've got to pay your taxes :)": "If the user has payed his taxes or not. You've got to pay your taxes :)"
+  "If the user has payed his taxes or not. You've got to pay your taxes :)": "If the user has payed his taxes or not. You've got to pay your taxes :)",
+  "Ejemplo completo": "Full example",
+  "Barras de progreso": "Progress bars",
+  "Compara el porcentaje, el tooltip personalizado y el tooltip desactivado. Los filtros y Excel usan el valor numérico.": "Compare the percentage, custom tooltip and disabled tooltip. Filters and Excel use the numeric value.",
+  "Progreso (%)": "Progress (%)",
+  "Tooltip personalizado": "Custom tooltip",
+  "Sin tooltip (desactivado)": "No tooltip (disabled)",
+  "Valor numérico": "Numeric value",
+  "Ejemplo": "Example"
 }

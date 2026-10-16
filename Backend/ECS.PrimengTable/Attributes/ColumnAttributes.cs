@@ -19,6 +19,9 @@ namespace ECS.PrimengTable.Attributes {
         /// </summary>
         public DataType DataType { get; set; }
 
+        /// <summary>Optional cell presentation. ProgressBar applies to numeric columns.</summary>
+        public CellDisplay CellDisplay { get; set; }
+
         /// <summary>
         /// Horizontal alignment of the data in the column.
         /// </summary>
@@ -175,6 +178,7 @@ namespace ECS.PrimengTable.Attributes {
         /// <param name="dateTimezone">Optional date timezone.</param>
         /// <param name="dateCulture">Optional date culture.</param>
         /// <param name="exportDateFormat">Optional date format for this column in exports.</param>
+        /// <param name="cellDisplay">Cell presentation; ProgressBar applies to numeric columns.</param>
         /// <exception cref="ArgumentException">Thrown if an invalid dataAlign or dataType value is provided.</exception>
         public ColumnAttributes(
             string header = "",
@@ -202,10 +206,12 @@ namespace ECS.PrimengTable.Attributes {
             string? dateFormat = null,
             string? dateTimezone = null,
             string? dateCulture = null,
-            string? exportDateFormat = null
+            string? exportDateFormat = null,
+            CellDisplay cellDisplay = CellDisplay.Default
         ) {
             Header = header;
             DataType = dataType;
+            CellDisplay = cellDisplay;
             DataAlignHorizontal = dataAlignHorizontal;
             DataAlignHorizontalAllowUserEdit = dataAlignHorizontalAllowUserEdit;
             DataAlignVertical = dataAlignVertical;

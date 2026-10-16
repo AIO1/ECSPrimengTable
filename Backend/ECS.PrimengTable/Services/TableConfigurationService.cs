@@ -62,6 +62,7 @@ internal static class TableConfigurationService {
                 Field = propertyName,
                 Header = colAtt.Header,
                 DataType = colAtt.DataType,
+                CellDisplay = colAtt.CellDisplay,
                 DataAlignHorizontal = colAtt.DataAlignHorizontal,
                 DataAlignHorizontalAllowUserEdit = colAtt.DataAlignHorizontalAllowUserEdit,
                 DataAlignVertical = colAtt.DataAlignVertical,

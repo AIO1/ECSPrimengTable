@@ -22,6 +22,9 @@ namespace ECS.PrimengTable.Models {
         /// </summary>
         public DataType DataType { get; set; }
 
+        /// <summary>Cell presentation, independent of the data type.</summary>
+        public CellDisplay CellDisplay { get; set; }
+
         /// <summary>
         /// Horizontal alignment of the data in the column.
         /// </summary>

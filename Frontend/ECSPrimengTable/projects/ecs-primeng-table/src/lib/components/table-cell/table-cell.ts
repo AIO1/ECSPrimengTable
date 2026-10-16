@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { DataAlignHorizontal, DataAlignVertical, DataType } from '../../enums';
+import { CellDisplay, DataAlignHorizontal, DataAlignVertical, DataType } from '../../enums';
 import { CommonModule, DatePipe } from '@angular/common';
 import { TooltipModule } from 'primeng/tooltip';
 import { dataAlignHorizontalAsText, dataAlignVerticalAsText, highlightText } from '../../utils';
@@ -14,7 +14,8 @@ import { TablePredefinedFilters } from "../table-predefined-filters/table-predef
     TablePredefinedFilters
 ],
   standalone: true,
-  templateUrl: './table-cell.html'
+  templateUrl: './table-cell.html',
+  styleUrl: './table-cell.scss'
 })
 export class TableCell {
   constructor(
@@ -30,6 +31,20 @@ export class TableCell {
   @Input() dateCulture: string = "en-US";
 
   DataType = DataType;
+  CellDisplay = CellDisplay;
+
+  /** Only finite numbers are valid; do not turn empty strings or booleans into progress. */
+  get hasProgressValue(): boolean {
+    return typeof this.value === 'number' && Number.isFinite(this.value);
+  }
+
+  get progressValue(): number {
+    return Math.min(100, Math.max(0, this.value));
+  }
+
+  get progressTooltip() {
+    return this.col.dataTooltipCustomColumnSource ? this.tooltipText : `${this.value} %`;
+  }
 
   get value() {
     return this.rowData[this.col.field];

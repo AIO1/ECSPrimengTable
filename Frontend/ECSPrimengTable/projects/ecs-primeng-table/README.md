@@ -153,3 +153,22 @@ ESList_tooltip           = "Independent work;Military service;In education"
 Set `dataTooltipCustomColumnSource: "ESList_tooltip"` on the `EmploymentStatusNameList` attribute. The auxiliary property can be `string?`, with `dataType: DataType.Text` and `sendColumnAttributes: false`; it needs neither a visible column nor list metadata. The backend includes properties marked `sendColumnAttributes: false` in the returned row data.
 
 This applies to predefined-filter tags and plain text lists. Positions are preserved, including duplicate items and empty entries. Missing properties or positions fall back to the item itself; an empty position suppresses its tooltip. Extra tooltips are ignored. `dataTooltipShow: false` still disables tooltips. Tooltip text remains untranslated data.
+
+
+### Progress bars
+
+Keep `DataType.Numeric` and set `cellDisplay: CellDisplay.ProgressBar` to display a bar on a 0–100 scale:
+
+```csharp
+[ColumnAttributes("Progress", dataType: DataType.Numeric,
+    cellDisplay: CellDisplay.ProgressBar, initialWidth: 160)]
+public decimal? Progress { get; set; }
+```
+
+The backend sends `cellDisplay: 1` in column metadata and a number in row data, for example `"progress": 15.5`. For TypeScript configurations, import `CellDisplay` from the package and use `cellDisplay: CellDisplay.ProgressBar` with `dataType: DataType.Numeric`.
+
+The bar has no inner label; the default tooltip shows `15.5 %`. Both `dataTooltipShow` and `dataTooltipCustomColumnSource` are respected. Zero displays an empty bar; null or nonnumeric values leave the cell empty. Only the visual fill is clamped to 0–100: filtering, sorting and Excel preserve the original number (15.5 exports as 15.5, not 0.155). Decimal values and dynamic metadata via `ColumnMetadataOverrideModel.CellDisplay` are supported.
+
+`CellDisplay.Default` (0), or omitted frontend metadata, preserves existing presentation. `ProgressBar` applies only to numeric columns and takes precedence over predefined-filter tags. Update both the npm and NuGet packages to use this option.
+
+The demo navigation switches between the full people example (`/home`) and progress bars (`/progress`). Each table has separate endpoints and views. The progress demo uses in-memory data in `ProgressDemoController`, independent of the people database.

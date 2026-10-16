@@ -287,5 +287,13 @@
   "A predefined filter that shows the employment status of the user": "Un filtre prédéfini affichant la situation professionnelle de l'utilisateur",
   "A list of employment statuses separated by ; in the database": "Une liste de situations professionnelles séparées par ; dans la base de données",
   "When was the user born": "Date de naissance de l'utilisateur",
-  "If the user has payed his taxes or not. You've got to pay your taxes :)": "Indique si l'utilisateur a payé ses impôts. Il faut les payer ! :)"
+  "If the user has payed his taxes or not. You've got to pay your taxes :)": "Indique si l'utilisateur a payé ses impôts. Il faut les payer ! :)",
+  "Ejemplo completo": "Exemple complet",
+  "Barras de progreso": "Barres de progression",
+  "Compara el porcentaje, el tooltip personalizado y el tooltip desactivado. Los filtros y Excel usan el valor numérico.": "Comparez le pourcentage, l’infobulle personnalisée et l’infobulle désactivée. Les filtres et Excel utilisent la valeur numérique.",
+  "Progreso (%)": "Progression (%)",
+  "Tooltip personalizado": "Infobulle personnalisée",
+  "Sin tooltip (desactivado)": "Sans infobulle (désactivée)",
+  "Valor numérico": "Valeur numérique",
+  "Ejemplo": "Exemple"
 }

@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { Home } from './pages/home/home';
+import { ProgressDemo } from './pages/home/progress-demo';
 import { NavigationDemoScope, NavigationDemoDetail, NavigationDemoOther } from './pages/home/navigation-demo';
 
 export const routes: Routes = [
@@ -8,6 +9,7 @@ export const routes: Routes = [
         { path: ':id/edit', component: NavigationDemoDetail }
     ] },
     { path: 'other', component: NavigationDemoOther },
+    { path: 'progress', component: ProgressDemo },
 
     // FALLBACK
     { path: '', redirectTo: 'home', pathMatch: 'full' },

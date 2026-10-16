@@ -1,3 +1,14 @@
+<nav aria-label="Ejemplos" style="display: flex; gap: 12px; padding: 12px; flex-wrap: wrap; border-bottom: 1px solid var(--p-content-border-color, #ddd);">
+  <label>{{ 'Language' | translate }}
+    <select [attr.aria-label]="'Language' | translate" [ngModel]="translate.getCurrentLang()" (ngModelChange)="translate.use($event)">
+      <option value="es">Español</option><option value="en">English</option>
+      <option value="fr">Français</option><option value="it">Italiano</option>
+    </select>
+  </label>
+  <a routerLink="/home" routerLinkActive="demo-active" [attr.aria-current]="homeLink.isActive ? 'page' : null" #homeLink="routerLinkActive">{{ 'Ejemplo completo' | translate }}</a>
+  <a routerLink="/progress" routerLinkActive="demo-active" [attr.aria-current]="progressLink.isActive ? 'page' : null" #progressLink="routerLinkActive">{{ 'Barras de progreso' | translate }}</a>
+  <a routerLink="/other" routerLinkActive="demo-active">{{ 'Otra sección' | translate }}</a>
+</nav>
 <router-outlet/>
 
 <!--LOADING INDICATOR-->

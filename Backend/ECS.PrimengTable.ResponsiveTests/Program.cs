@@ -25,6 +25,7 @@ var overridden = EcsPrimengTableService.GetTableConfiguration<Example>(dynamicAt
 Check(overridden.ColumnsInfo.Single(c => c.Field == "desktop").VisibleOnlyIn![0] == DeviceType.Mobile, "Dynamic override failed");
 Check(overridden.ColumnsInfo.Single(c => c.Field == "tablet").VisibleOnlyIn!.Length == 0, "Clearing override failed");
 Console.WriteLine("Responsive metadata: 9 assertions passed.");
+ProgressChecks.Run();
 
 class Example {
     [ColumnAttributes("Legacy")]

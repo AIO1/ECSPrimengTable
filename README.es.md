@@ -5729,3 +5729,22 @@ ESList_tooltip           = "Trabajo independiente;Servicio militar;En formación
 Configura `dataTooltipCustomColumnSource: "ESList_tooltip"` en el atributo de `EmploymentStatusNameList`. La propiedad auxiliar puede ser `string?`, con `dataType: DataType.Text` y `sendColumnAttributes: false`: no necesita una columna visible ni metadatos de lista. El backend incluye las propiedades con `sendColumnAttributes: false` en los datos enviados.
 
 Se aplica tanto a etiquetas de filtros predefinidos como a listas de texto. Se conserva el orden, incluidos elementos repetidos y posiciones vacías. Si falta la propiedad o una posición, se utiliza el propio elemento; una posición vacía suprime su tooltip. Los tooltips sobrantes se ignoran. `dataTooltipShow: false` sigue desactivándolos. Los textos se muestran como datos, sin traducirlos.
+
+
+### Barras de progreso
+
+Mantén `DataType.Numeric` y configura `cellDisplay: CellDisplay.ProgressBar` para mostrar una barra con valores de 0 a 100:
+
+```csharp
+[ColumnAttributes("Progreso", dataType: DataType.Numeric,
+    cellDisplay: CellDisplay.ProgressBar, initialWidth: 160)]
+public decimal? Progress { get; set; }
+```
+
+El backend envía `cellDisplay: 1` en los metadatos y un número en los datos, por ejemplo `"progress": 15.5`. En configuraciones TypeScript, importa `CellDisplay` del paquete y usa `cellDisplay: CellDisplay.ProgressBar` junto a `dataType: DataType.Numeric`.
+
+La barra no muestra texto interior; el tooltip predeterminado muestra `15.5 %`. Se respetan `dataTooltipShow` y `dataTooltipCustomColumnSource`. Cero muestra una barra vacía; los valores nulos o no numéricos dejan la celda vacía. Solo el relleno visual se limita a 0–100: los filtros, la ordenación y Excel conservan el número original (15.5 se exporta como 15.5, no como 0.155). Admite decimales y metadatos dinámicos mediante `ColumnMetadataOverrideModel.CellDisplay`.
+
+`CellDisplay.Default` (0), o la ausencia de la opción en el frontend, conserva la presentación existente. `ProgressBar` solo se aplica a columnas numéricas y tiene prioridad sobre las etiquetas de filtros predefinidos. Requiere actualizar tanto el paquete npm como el NuGet.
+
+La aplicación de ejemplo permite elegir arriba entre el ejemplo completo de personas (`/home`) y las barras de progreso (`/progress`). Cada tabla usa sus propios endpoints y vistas. La demo de progreso usa datos en memoria en `ProgressDemoController`, sin depender de la base de datos de personas.

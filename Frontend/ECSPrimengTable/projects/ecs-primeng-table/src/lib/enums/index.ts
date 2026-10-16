@@ -5,3 +5,4 @@ export * from "./data-type.enum.enum";
 export * from "./frozen-column-align.enum";
 export * from "./table-view-save-mode.enum";
 export * from "./device-type.enum";
+export * from "./cell-display.enum";

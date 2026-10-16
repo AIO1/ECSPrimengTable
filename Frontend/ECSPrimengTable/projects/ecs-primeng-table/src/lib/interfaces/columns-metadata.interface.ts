@@ -1,4 +1,4 @@
-import { DeviceType, CellOverflowBehaviour, DataAlignHorizontal, DataAlignVertical, DataType, FrozenColumnAlign } from "../enums";
+import { CellDisplay, DeviceType, CellOverflowBehaviour, DataAlignHorizontal, DataAlignVertical, DataType, FrozenColumnAlign } from "../enums";
 
 /**
  * Represents the metadata for a column in a table.
@@ -16,6 +16,9 @@ export interface IColumnMetadata {
 
     /** The type of data contained in the column. */
     dataType: DataType;
+
+    /** Optional presentation; ProgressBar renders numeric values on a 0–100 scale. */
+    cellDisplay?: CellDisplay;
 
     /** The horizontal alignment of the column content. */
     dataAlignHorizontal: DataAlignHorizontal;
