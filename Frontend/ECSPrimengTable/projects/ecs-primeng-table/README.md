@@ -1,3 +1,76 @@
+# Optional Tree Grid
+
+Omit `tree` to keep the flat grid unchanged. Opt in with ordinary flat records:
+
+```ts
+import { createTableOptions } from '@eternalcodestudio/primeng-table';
+
+readonly tableOptions = createTableOptions({
+  tree: {
+    keyExpr: 'id', parentIdExpr: 'parentId', rootValue: 0,
+    hasItemsExpr: 'hasChildren', column: 'text', loadMode: 'onDemand'
+  },
+  urlTableConfiguration: 'TreeDemo/GetTableConfiguration',
+  urlTableData: 'TreeDemo/GetTableData',
+  excelReport: { url: 'TreeDemo/GenerateExcel' }
+});
+```
+
+Add `ECSPrimengTable` from the same package to your standalone component's
+`imports`, then bind the options in its template:
+
+```html
+<ecs-primeng-table [tableOptions]="tableOptions" />
+```
+
+The API returns ordinary records, not nested `children` arrays. For example,
+the following records describe a root, a child and a grandchild:
+
+```json
+[
+  { "id": 1, "parentId": 0, "hasChildren": true, "text": "Project", "rowID": 1 },
+  { "id": 2, "parentId": 1, "hasChildren": true, "text": "Task", "rowID": 2 },
+  { "id": 3, "parentId": 2, "hasChildren": false, "text": "Subtask", "rowID": 3 }
+]
+```
+
+`keyExpr` and `parentIdExpr` identify the relationship, `rootValue` marks root
+parents, `hasItemsExpr` indicates whether a node can expand in remote modes,
+and `column` selects the field containing the indentation and expand control.
+These records are the response's `data`, not the complete response envelope;
+remote modes return only the requested siblings. Keep the existing table
+configuration endpoint for column metadata, filtering and display options.
+
+`loadMode` accepts `all`, `onDemand` (default) or `pagedChildren`.
+`rootValue` defaults to `0`; use `null` explicitly for nullable root parents.
+Remote modes require a boolean `hasItemsExpr`. Keys are unique finite numbers
+or nonempty strings. Preserve structural fields and the independent selection
+alias `rowID`, even when hidden. Use a distinct state-persistence key per mode,
+provide `ECSPrimengTableStateService` on the parent route component, and remount
+the table when changing mode. The `/tree` demo illustrates this pattern.
+
+Root queries send `roots`, `parentId`, `loadMode`, `page` and `pageSize` alongside
+the existing filters/sorts. Responses remain flat and add `ancestorKeys` to open
+matching paths. Page counts describe roots; expanded children are not a second
+root page. Paged children expose a load-more row. Expansion caches are invalidated
+by a fresh query. Views/navigation persist `treeExpandedKeys` and `treeChildPages`;
+selection is independent and does not cascade. Saved views restore into the
+currently configured mode; the demo's mode choice lives in its parent settings.
+
+Tree Excel endpoints must export the complete retained hierarchy, independent
+of expansion/loading. The demo backend uses in-memory validation/querying rather
+than a SQL recursive query. See the repository's `Backend/ECS.PrimengTable/TREE.md`
+for the full API contract, authorization constraints and memory limits.
+
+Translate `Expand node`, `Collapse node`, `Load more children` and
+`Showing {{count}} root nodes of {{total}} available root nodes` in the consuming
+application's dictionaries. Without ngx-translate providers they remain English.
+
+For a step-by-step walkthrough and a screenshot of the running example, see
+[Try the tree demo](https://github.com/AIO1/ECSPrimengTable#try-the-tree-demo).
+The example shows the three load modes, deep filtering, saved views and returning
+from a detail route without losing the expanded branches.
+
 # Group Headers
 
 Set `HeaderGroup` on backend column attributes:

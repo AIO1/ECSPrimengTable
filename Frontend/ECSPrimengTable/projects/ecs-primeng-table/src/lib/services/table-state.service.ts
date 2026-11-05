@@ -10,6 +10,9 @@ export interface ITableNavigationState {
   globalSearchText: string | null;
   currentPage: number;
   currentRowsPerPage: number;
+  treeMode?: 'all' | 'onDemand' | 'pagedChildren';
+  treeExpandedKeys?: (string | number)[];
+  treeChildPages?: Record<string, number>;
 }
 
 /**

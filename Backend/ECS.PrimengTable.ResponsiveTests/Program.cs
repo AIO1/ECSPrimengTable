@@ -37,6 +37,7 @@ Check(grouped.ColumnsInfo.Single(c => c.Field == "desktop").HeaderGroup == "Grou
 Check(grouped.ColumnsInfo.Single(c => c.Field == "tablet").HeaderGroup == "", "Clearing group override failed");
 Console.WriteLine("Header group metadata: 6 assertions passed.");
 ProgressChecks.Run();
+TreeChecks.Run();
 
 class Example {
     [ColumnAttributes("Legacy")]

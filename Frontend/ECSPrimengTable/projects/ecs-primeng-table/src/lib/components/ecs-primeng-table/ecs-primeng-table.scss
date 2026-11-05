@@ -54,6 +54,13 @@
 .ecs-responsive-menu { max-width: calc(100vw - 16px); max-height: calc(100dvh - 32px); overflow-y: auto; }
 .ecs-responsive-menu .p-menu-item-link { min-height: 44px; white-space: normal; }
 
+.ecs-tree-cell { display: flex; align-items: center; gap: 4px; min-width: 0; }
+.ecs-tree-cell > ecs-table-cell { flex: 1; min-width: 0; }
+.ecs-tree-toggle { width: 32px; height: 32px; flex: 0 0 32px; border: 0; background: transparent; color: inherit; cursor: pointer; }
+.ecs-tree-toggle:focus-visible { outline: 2px solid var(--p-primary-color); outline-offset: 1px; }
+.ecs-tree-leaf { visibility: hidden; }
+.ecs-tree-paginator { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+
 .p-datatable-thead > .ecs-column-groups > td {
   padding: var(--p-datatable-header-cell-padding);
   background: var(--p-datatable-header-cell-background);

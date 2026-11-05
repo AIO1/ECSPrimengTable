@@ -1,8 +1,11 @@
 import { DataAlignHorizontal, DataAlignVertical, TableViewSaveMode } from "../enums";
 import { IColumnMetadata, IPredefinedFilter, ITableButton } from "../interfaces";
+import { ITreeTableOptions } from '../utils/tree-table-state';
 
 /** Configuration options for ECS Primeng table */
 export interface ITableOptions {
+    tree?: ITreeTableOptions;
+
     /** Optional responsive behavior. Existing applications keep their current buttons by default. */
     responsive?: {
         /** CSS viewport width where Tablet starts. Default: 768. */

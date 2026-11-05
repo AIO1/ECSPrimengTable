@@ -7,6 +7,83 @@
 [![npm downloads](https://img.shields.io/npm/dm/@eternalcodestudio/primeng-table.svg)](https://www.npmjs.com/package/@eternalcodestudio/primeng-table)
 <a id="ecs-primeng-table"></a>
 # ECS PrimeNG Table
+## Demo Jerárquica Opcional
+
+La ruta `/tree` utiliza la misma tabla con una configuración `tree` opcional.
+La demo plana `/home` conserva sus filtros, ordenación, columnas, selección,
+vistas, menús adaptables y controles de Excel.
+
+El selector ofrece **Todos los nodos**, **Bajo demanda** e **Hijos paginados**.
+El primer modo recibe la jerarquía completa y expande localmente; el segundo
+carga los hijos directos una vez por consulta; el tercero añade una fila
+**Cargar más hijos**. La paginación cuenta raíces, no filas expandidas. Los filtros
+conservan y expanden los ancestros de los descendientes coincidentes. La selección
+por casilla o por fila es independiente, sin propagación a padres o hijos.
+Excel exporta toda la jerarquía filtrada, aunque haya nodos sin cargar o contraídos;
+la exportación de seleccionados utiliza los alias independientes `rowID`.
+
+La acción de edición abre `/tree/:id/edit`. Al volver se conservan el modo,
+los filtros, la página de raíces, las expansiones y las páginas de hijos cargadas.
+Cada combinación de modo y almacenamiento dispone de una clave temporal propia
+en el ámbito padre; salir de `/tree` descarta ese estado de navegación. Las vistas
+guardadas incluyen expansiones y páginas de hijos. Las vistas de base de datos
+usan `TreeDemo/GetViews` y `TreeDemo/SaveViews` con la clave fija `TreeDemo`;
+**Este navegador** utiliza almacenamiento local separado por modo.
+
+Los datos deterministas contienen 317 filas, 36 raíces, seis niveles y una rama
+con 32 hijos directos. Configuración, datos y Excel no necesitan scripts SQL.
+Las vistas de base de datos requieren la conexión y el esquema `TableViews`
+existentes; sin SQL, selecciona almacenamiento en el navegador. Consulta el
+[contrato del backend](Backend/ECS.PrimengTable/TREE.md) y las
+[opciones del frontend](Frontend/ECSPrimengTable/projects/ecs-primeng-table/README.es.md).
+El backend valida y materializa en memoria la jerarquía autorizada: la carga
+remota limita la respuesta, no las lecturas de base de datos.
+
+### Probar la demo del árbol
+
+Con la API y el frontend de ejemplo en ejecución, abre `/tree` (normalmente
+`http://localhost:4200/tree`). El selector de idioma permite ver la demo en
+español, inglés, francés e italiano.
+
+1. Selecciona **Bajo demanda** para cargar los hijos directos al expandir un nodo,
+  **Todos los nodos** para recibir la jerarquía completa o **Hijos paginados**
+  para cargar los hijos por bloques.
+2. Expande **Project 01** con su flecha. En el modo de hijos paginados, pulsa
+  **Cargar más hijos** para mostrar el resto de sus 32 hijos directos. Expande
+  la primera tarea para recorrer los niveles anidados; plegar un padre conserva
+  el estado de expansión de sus descendientes.
+3. Busca `Project 01 / Level 6` para mostrar una hoja coincidente junto a sus
+  ancestros. Borra la búsqueda para volver al conjunto completo. El paginador
+  siempre cuenta raíces, no las filas adicionales mostradas al expandir.
+4. Elige **Este navegador** en **Almacenamiento de vistas** para probar las vistas
+  sin SQL. Abre el selector de vistas en escritorio o la opción del marcador
+  en **Acciones de la tabla** en móvil; crea una vista, cambia los nodos abiertos
+  y restaura la vista. Utiliza **Base de datos** solo cuando estén configurados
+  la conexión SQL y el esquema `TableViews`.
+5. Usa la acción de edición de una fila y **Volver al árbol** para comprobar la
+  restauración al navegar. Seleccionar un padre solo selecciona esa fila;
+  la exportación Excel utiliza la jerarquía filtrada, independientemente de
+  las ramas abiertas.
+
+Para integrar este comportamiento en otra aplicación, consulta la
+[configuración del árbol y los registros de ejemplo](Frontend/ECSPrimengTable/projects/ecs-primeng-table/README.es.md#tabla-jerárquica-opcional)
+y el [contrato del backend](Backend/ECS.PrimengTable/TREE.md).
+
+### Captura de la demo
+
+El ejemplo real en español, con una rama desplegada hasta el sexto nivel,
+casillas independientes, acciones de fila y celdas de progreso:
+
+![Demo del árbol en español con seis niveles anidados](docs/images/tree-demo-es.png)
+
+Desde `Frontend/ECSPrimengTable`, ejecuta `npm run test:tree` o
+`npm run test:tree:browser`. Ambos compilan primero biblioteca y demo. Las pruebas
+de navegador interceptan la API con datos deterministas y vistas de base de datos
+simuladas; no certifican SQL real ni el contenido de Excel. Admiten
+`PLAYWRIGHT_MODULE`, `PLAYWRIGHT_BROWSERS_PATH`, `BROWSER_EXECUTABLE` y
+`TREE_SCREENSHOT_DIR`; las capturas de escritorio y móvil se guardan por defecto
+en el directorio temporal. API, SQL y Excel reales tienen validaciones separadas.
+
 Una solución creada por Alex Ibrahim Ojea que mejora la tabla PrimeNG con filtros avanzados y funcionalidad ampliada, delegando toda lógica de consulta y filtrado al motor de base de datos. El frontend está construido con componentes Angular 21 y PrimeNG 21, mientras que el backend es una API .NET 10 (ASP.NET) conectada a Microsoft SQL Server, fácilmente adaptable a otras bases de datos. Este enfoque evita la sobrecarga de servidor y frontend manipulando el filtrado y paging dinámicamente en la base de datos, e incluye características tales como visibilidad de la columna, filtros de columna, vistas personalizadas y más.
 
 <br><br><br>

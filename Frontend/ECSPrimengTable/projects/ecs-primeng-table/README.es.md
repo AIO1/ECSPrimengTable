@@ -1,3 +1,78 @@
+# Tabla Jerárquica Opcional
+
+Sin `tree`, la tabla plana no cambia. Activa la jerarquía sobre registros planos:
+
+```ts
+import { createTableOptions } from '@eternalcodestudio/primeng-table';
+
+readonly tableOptions = createTableOptions({
+  tree: {
+    keyExpr: 'id', parentIdExpr: 'parentId', rootValue: 0,
+    hasItemsExpr: 'hasChildren', column: 'text', loadMode: 'onDemand'
+  },
+  urlTableConfiguration: 'TreeDemo/GetTableConfiguration',
+  urlTableData: 'TreeDemo/GetTableData',
+  excelReport: { url: 'TreeDemo/GenerateExcel' }
+});
+```
+
+Añade `ECSPrimengTable` del mismo paquete a los `imports` del componente
+standalone y enlaza las opciones en su plantilla:
+
+```html
+<ecs-primeng-table [tableOptions]="tableOptions" />
+```
+
+La API devuelve registros planos, no arrays `children` anidados. Por ejemplo,
+estos registros describen una raíz, un hijo y un nieto:
+
+```json
+[
+  { "id": 1, "parentId": 0, "hasChildren": true, "text": "Project", "rowID": 1 },
+  { "id": 2, "parentId": 1, "hasChildren": true, "text": "Task", "rowID": 2 },
+  { "id": 3, "parentId": 2, "hasChildren": false, "text": "Subtask", "rowID": 3 }
+]
+```
+
+`keyExpr` y `parentIdExpr` identifican la relación; `rootValue` identifica al
+padre de las raíces; `hasItemsExpr` indica si un nodo puede expandirse en los
+modos remotos, y `column` elige el campo donde aparecen la sangría y el control
+de expansión. Los registros forman el campo `data`, no la respuesta completa;
+los modos remotos solo devuelven los hermanos solicitados. Conserva el endpoint
+de configuración de la tabla para los metadatos de columnas, filtros y formato.
+
+`loadMode` admite `all`, `onDemand` (predeterminado) y `pagedChildren`.
+`rootValue` vale `0` por defecto; indica `null` explícitamente para raíces con
+padre nulo. Los modos remotos requieren `hasItemsExpr` booleano. Las claves
+deben ser números finitos o cadenas no vacías, sin duplicados. Conserva los
+campos estructurales y el alias de selección independiente `rowID`, aunque
+estén ocultos. Usa una clave de persistencia por modo, proporciona
+`ECSPrimengTableStateService` en el componente padre de ruta y recrea la tabla
+al cambiar de modo. La demo `/tree` muestra este patrón.
+
+Las consultas envían `roots`, `parentId`, `loadMode`, `page` y `pageSize` junto
+a los filtros y órdenes existentes. La respuesta plana añade `ancestorKeys`
+para abrir las rutas coincidentes. La paginación cuenta raíces; los hijos
+expandidos no ocupan otra página de raíces. Los hijos paginados incorporan
+una fila de carga adicional. Una consulta nueva invalida la caché de expansión.
+Vistas y navegación guardan `treeExpandedKeys` y `treeChildPages`; la selección
+no se propaga. Las vistas se restauran en el modo configurado actualmente;
+el modo de la demo permanece en los ajustes del ámbito padre.
+
+El endpoint Excel debe exportar toda la jerarquía retenida sin depender de las
+expansiones o páginas cargadas. El backend de demo valida y consulta en memoria,
+no mediante SQL recursivo. El archivo `Backend/ECS.PrimengTable/TREE.md` del
+repositorio detalla contrato, autorización y límites de memoria.
+
+Traduce `Expand node`, `Collapse node`, `Load more children` y
+`Showing {{count}} root nodes of {{total}} available root nodes` en los diccionarios
+de la aplicación. Sin proveedores ngx-translate se utilizan etiquetas en inglés.
+
+Consulta la guía paso a paso y una captura del ejemplo en ejecución en
+[Probar la demo del árbol](https://github.com/AIO1/ECSPrimengTable/blob/HEAD/README.es.md#probar-la-demo-del-árbol).
+El ejemplo muestra los tres modos de carga, los filtros profundos, las vistas
+guardadas y la vuelta desde un detalle conservando las ramas abiertas.
+
 # Cabeceras de grupo
 
 Asigna `HeaderGroup` a los atributos de las columnas del backend:

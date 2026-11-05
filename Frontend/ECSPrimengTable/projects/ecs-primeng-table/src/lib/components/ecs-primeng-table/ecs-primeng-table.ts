@@ -32,8 +32,9 @@ import { TablePredefinedFilters } from '../table-predefined-filters/table-predef
 import { TableButton } from '../table-button/table-button';
 import { ColumnSelector } from "../column-selector/column-selector";
 import { ExportExcel } from '../export-excel/export-excel';
-import { finalize, Observable } from 'rxjs';
+import { finalize, firstValueFrom, Observable } from 'rxjs';
 import { ViewsManagement } from "../views-management/views-management";
+import { ITreeRequest, ITreeResponse, TreeRow, TreeTableState } from '../../utils/tree-table-state';
 
 @Component({
   selector: 'ecs-primeng-table',
@@ -85,6 +86,9 @@ export class ECSPrimengTable implements OnInit, AfterViewInit, OnDestroy {
     });
   }
   @Input() tableOptions: ITableOptions = DEFAULT_TABLE_OPTIONS;
+  treeState?: TreeTableState;
+  private treeQuery?: ITableQueryRequest;
+  private treeStateRestored = false;
   @Output() onRowCheckboxChange = new EventEmitter<{
     rowID: any,
     selected: boolean
@@ -144,6 +148,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit, OnDestroy {
   private maxViews = 0;
   ngOnInit(): void {
     this.i18n.connectPrimeNG();
+    if (this.tableOptions.tree) this.treeState = new TreeTableState(this.tableOptions.tree);
     this.validateStatePersistence();
     this.updateResponsiveViewport();
     this.fetchTableConfiguration();
@@ -299,6 +304,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.destroyed = true;
+    this.treeState?.cancel();
     const options = this.tableOptions.statePersistence;
     const key = options?.key?.trim();
     if (!key || !this.stateScope) return;
@@ -317,7 +323,10 @@ export class ECSPrimengTable implements OnInit, AfterViewInit, OnDestroy {
       multiSortMeta: structuredClone(this.dt.multiSortMeta ?? []),
       globalSearchText: this.globalSearchText,
       currentPage: this.currentPage,
-      currentRowsPerPage: this.currentRowsPerPage
+      currentRowsPerPage: this.currentRowsPerPage,
+      treeMode: this.treeState?.mode,
+      treeExpandedKeys: this.treeState ? [...this.treeState.expanded] : undefined,
+      treeChildPages: this.treeState?.snapshotPages()
     });
   }
 
@@ -332,7 +341,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit, OnDestroy {
     const state = this.stateScope!.get(key!);
     if (!state) return false;
     if (state.configurationUrl !== this.tableOptions.urlTableConfiguration ||
-        state.dataUrl !== this.tableOptions.urlTableData) {
+      state.dataUrl !== this.tableOptions.urlTableData || state.treeMode !== this.treeState?.mode) {
       this.stateScope!.clear(key!);
       return false;
     }
@@ -346,6 +355,8 @@ export class ECSPrimengTable implements OnInit, AfterViewInit, OnDestroy {
     this.currentPage = this.currentRowsPerPage === state.currentRowsPerPage
       ? Math.max(0, state.currentPage) : 0;
     this.globalSearchText = state.globalSearchText;
+    this.treeState?.restore(state.treeExpandedKeys, state.treeChildPages);
+    this.treeStateRestored = !!this.treeState;
     if (this.globalSearchText) {
       filters['global'] = { value: this.globalSearchText, matchMode: 'contains' };
     }
@@ -571,6 +582,8 @@ export class ECSPrimengTable implements OnInit, AfterViewInit, OnDestroy {
     }
     this.columnSelectionCustomized = true;
     let viewData: ITableViewData = viewToLoad.viewData;
+    this.treeState?.restore(viewData.treeExpandedKeys, viewData.treeChildPages);
+    this.treeStateRestored = !!this.treeState;
     this.columnsSelected = viewData.columnsShown
         .map(data => this.columns.find((col: any) => col.field === data.field))
         .filter((col): col is IColumnMetadata => col !== undefined)
@@ -604,7 +617,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit, OnDestroy {
       this.notification.showToast("error", this.i18n.text("NO MORE VIEWS ALLOWED"), this.i18n.text("You have created the maximum number of allowed views for this table"));
       return;
     }
-    let viewData: ITableViewData = this.tableService.viewGenerateData(this.dt, this.globalSearchText, this.currentPage, this.currentRowsPerPage, this.modifyFiltersWithoutGlobalAndSelectedRows.bind(this))
+    let viewData: ITableViewData = this.generateViewData();
     let newView: ITableView = {
       lastActive: false,
       viewAlias: viewAlias,
@@ -652,7 +665,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit, OnDestroy {
       this.notification.showToast("error", this.i18n.text("Table view not found"), this.i18n.text("The table view to update data from was not found."));
       return;
     }
-    let viewData: ITableViewData = this.tableService.viewGenerateData(this.dt, this.globalSearchText, this.currentPage, this.currentRowsPerPage, this.modifyFiltersWithoutGlobalAndSelectedRows.bind(this))
+    let viewData: ITableViewData = this.generateViewData();
     this.tableViewsList[index].viewData = viewData;
     this.viewsSave(1);
   }
@@ -744,6 +757,27 @@ export class ECSPrimengTable implements OnInit, AfterViewInit, OnDestroy {
       dateCulture: this.dateCulture,
       exportDateFormat: this.exportDateFormat
     };
+    if (this.treeState) {
+      const tree = this.treeState;
+      if (!this.treeStateRestored) tree.restore([...tree.expanded], tree.snapshotPages());
+      this.treeStateRestored = false;
+      const structural = [tree.options.keyExpr, tree.options.parentIdExpr, tree.options.hasItemsExpr, 'rowID'];
+      requestData.columns = [...new Set([...requestData.columns!, ...structural.filter((field): field is string => !!field)])];
+      this.treeQuery = structuredClone(requestData);
+      const loading = tree.load(this.currentPage, this.currentRowsPerPage, this.treeFetcher(requestData));
+      this.tableOptions.data = [];
+      loading.then(updated => {
+        if (updated && !this.destroyed) this.syncTreeRows();
+      }).catch(error => {
+        if (!this.destroyed) this.tableService.handleTableError(error, 'Tree data error');
+      }).finally(() => {
+        if (!this.destroyed) {
+          this.changeDetector?.markForCheck();
+          this.onDataEndUpdate.emit();
+        }
+      });
+      return;
+    }
     this.tableService.fetchTableData(this.tableOptions.urlTableData!, requestData)
       .pipe(
         takeUntilDestroyed(this.destroyRef),
@@ -773,6 +807,8 @@ export class ECSPrimengTable implements OnInit, AfterViewInit, OnDestroy {
   resetTableView(): void {
     const key = this.tableOptions.statePersistence?.key?.trim();
     if (key) this.stateScope?.clear(key);
+    this.treeState?.restore();
+    this.treeStateRestored = !!this.treeState;
     this.initialStateApplied = false;
     this.tableViewCurrentSelectedAlias = '';
     this.fetchTableConfiguration(true);
@@ -841,6 +877,70 @@ export class ECSPrimengTable implements OnInit, AfterViewInit, OnDestroy {
     this.totalRecords = body.totalRecords; // Update the total number of records
     this.totalRecordsNotFiltered = body.totalRecordsNotFiltered; // Update the total records not filtered
     this.currentPage = body.page; // Update the current page
+  }
+
+  private generateViewData(): ITableViewData {
+    const view = this.tableService.viewGenerateData(this.dt, this.globalSearchText, this.currentPage,
+      this.currentRowsPerPage, this.modifyFiltersWithoutGlobalAndSelectedRows.bind(this));
+    if (this.treeState) {
+      view.treeExpandedKeys = [...this.treeState.expanded];
+      view.treeChildPages = this.treeState.snapshotPages();
+    }
+    return view;
+  }
+
+  private treeFetcher(query: ITableQueryRequest): (request: ITreeRequest) => Promise<ITreeResponse> {
+    return async request => {
+      const response = await firstValueFrom(this.tableService.fetchTableData(this.tableOptions.urlTableData!,
+        { ...structuredClone(query), ...request }).pipe(takeUntilDestroyed(this.destroyRef)));
+      if (!response.body) throw new Error('Empty tree response.');
+      return response.body as ITreeResponse;
+    };
+  }
+
+  private syncTreeRows(): void {
+    const tree = this.treeState!;
+    this.tableOptions.data = tree.visible;
+    this.totalRecords = tree.totalRecords;
+    this.totalRecordsNotFiltered = tree.totalRecordsNotFiltered;
+    this.currentPage = tree.page;
+    this.changeDetector?.markForCheck();
+  }
+
+  async toggleTreeRow(event: Event, row: TreeRow): Promise<void> {
+    event.stopPropagation();
+    if (!this.treeState || !this.treeQuery || this.treeState.loading) return;
+    try {
+      const update = this.treeState.toggle(row, this.treeFetcher(this.treeQuery));
+      this.changeDetector?.markForCheck();
+      await update;
+      if (!this.destroyed) this.syncTreeRows();
+    } catch (error) {
+      if (!this.destroyed) this.tableService.handleTableError(error, 'Tree data error');
+    } finally {
+      if (!this.destroyed) { this.changeDetector?.markForCheck(); this.onDataEndUpdate.emit(); }
+    }
+  }
+
+  async loadMoreTreeRows(event: Event, row: TreeRow): Promise<void> {
+    event.stopPropagation();
+    if (!this.treeState || !this.treeQuery || this.treeState.loading) return;
+    try {
+      await this.treeState.loadMore(row, this.treeFetcher(this.treeQuery));
+      if (!this.destroyed) this.syncTreeRows();
+    } catch (error) {
+      if (!this.destroyed) this.tableService.handleTableError(error, 'Tree data error');
+    }
+  }
+
+  get treeColumn(): string | undefined {
+    const columns = this.tableOptions.columns?.shown ?? [];
+    return columns.find(column => column.field === this.treeState?.options.column)?.field ?? columns[0]?.field;
+  }
+
+  treePageChange(event: { first?: number; rows?: number }): void {
+    this.fetchTableData({ ...this.tableLazyLoadEventInformation, first: event.first ?? 0,
+      rows: event.rows ?? this.currentRowsPerPage });
   }
 
   clearFilters(dt: Table, force: boolean = false, onlyGlobalFilter: boolean = false): void{
@@ -1160,6 +1260,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit, OnDestroy {
       filename: event.filename,
       useIconInBools: event.useIconInBools
     };
+    if (this.treeState) Object.assign(requestData, { expandedKeys: [...this.treeState.expanded] });
     this.tableService.fetchExcelReport(this.tableOptions.excelReport.url, requestData).subscribe({
       next: (response: HttpResponse<Blob>) => {
         this.tableService.downloadFile(response.body!, event.filename, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
