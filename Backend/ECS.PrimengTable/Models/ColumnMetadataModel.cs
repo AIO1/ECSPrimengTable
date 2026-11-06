@@ -1,4 +1,4 @@
-﻿using ECS.PrimengTable.Enums;
+using ECS.PrimengTable.Enums;
 namespace ECS.PrimengTable.Models {
     /// <summary>
     /// Represents the metadata of a table column.
@@ -17,10 +17,16 @@ namespace ECS.PrimengTable.Models {
         /// </summary>
         public string Header { get; set; } = null!;
 
+        [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+        public string? HeaderGroup { get; set; }
+
         /// <summary>
         /// Data type of the column.
         /// </summary>
         public DataType DataType { get; set; }
+
+        /// <summary>Cell presentation, independent of the data type.</summary>
+        public CellDisplay CellDisplay { get; set; }
 
         /// <summary>
         /// Horizontal alignment of the data in the column.
@@ -51,6 +57,14 @@ namespace ECS.PrimengTable.Models {
         /// Indicates whether the column starts hidden (if it can be hidden).
         /// </summary>
         public bool StartHidden { get; set; }
+
+        /// <summary>
+        /// Optional initial visibility by viewport. Null or empty preserves StartHidden.
+        /// CanBeHidden=false takes precedence. Users and saved views may override this default.
+        /// </summary>
+        [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+        public DeviceType[]? VisibleOnlyIn { get; set; }
+
 
         /// <summary>
         /// Indicates whether the column can be resized by the user.

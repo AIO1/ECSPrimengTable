@@ -1,3 +1,5 @@
+import { provideTranslateService } from '@ngx-translate/core';
+import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
 import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { routes } from './app.routes';
@@ -19,6 +21,14 @@ registerLocaleData(en);
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    provideTranslateService({
+      lang: 'es',
+      fallbackLang: 'en',
+      loader: provideTranslateHttpLoader({
+        prefix: './assets/i18n/',
+        suffix: '.json'
+      })
+    }),
     provideAnimationsAsync(),
     providePrimeNG({
         theme: {

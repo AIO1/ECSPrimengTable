@@ -12,6 +12,7 @@ export * from './lib/interfaces/table-options.interface';
 
 // UTILS
 export * from "./lib/utils/create-table-options";
+export * from './lib/utils/tree-table-state';
 
 // SERVICES
 export * from './lib/services';

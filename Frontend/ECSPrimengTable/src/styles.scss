@@ -11,3 +11,15 @@ body {
   color: #990000 !important;
   font-weight: bold !important;
 }
+
+nav[aria-label="Ejemplos"] a {
+  padding: 0.4rem 0.75rem;
+  border-radius: 0.375rem;
+  text-decoration: none;
+  color: var(--p-primary-color, #2563eb);
+}
+
+nav[aria-label="Ejemplos"] .demo-active {
+  background: var(--p-primary-color, #2563eb);
+  color: var(--p-primary-contrast-color, #fff);
+}

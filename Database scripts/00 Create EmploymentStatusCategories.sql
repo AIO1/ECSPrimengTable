@@ -10,6 +10,7 @@ CREATE TABLE dbo.EmploymentStatusCategories (
 	CONSTRAINT EmploymentStatusCategories_PK PRIMARY KEY (ID),
 	CONSTRAINT EmploymentStatusCategories_statusName_UNIQUE UNIQUE (statusName)
 );
+GO
 CREATE TRIGGER [EmploymentStatusCategories_tg_dateUpdated]
     ON [EmploymentStatusCategories]
     AFTER UPDATE 
@@ -19,6 +20,7 @@ CREATE TRIGGER [EmploymentStatusCategories_tg_dateUpdated]
        FROM INSERTED i
        WHERE i.ID = [EmploymentStatusCategories].ID
     END;
+GO
 
 
 -- Extended properties

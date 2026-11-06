@@ -1,4 +1,4 @@
-import { CellOverflowBehaviour, DataAlignHorizontal, DataAlignVertical, DataType, FrozenColumnAlign } from "../enums";
+import { CellDisplay, DeviceType, CellOverflowBehaviour, DataAlignHorizontal, DataAlignVertical, DataType, FrozenColumnAlign } from "../enums";
 
 /**
  * Represents the metadata for a column in a table.
@@ -11,11 +11,16 @@ export interface IColumnMetadata {
     /** The key or identifier for the column's data field. */
     field: string;
 
-    /** The display name of the column header. */
+    /** Display name or ngx-translate key. Translated only for display; field and metadata are preserved. */
     header: string;
+
+    headerGroup?: string | null;
 
     /** The type of data contained in the column. */
     dataType: DataType;
+
+    /** Optional presentation; ProgressBar renders numeric values on a 0–100 scale. */
+    cellDisplay?: CellDisplay;
 
     /** The horizontal alignment of the column content. */
     dataAlignHorizontal: DataAlignHorizontal;
@@ -34,6 +39,9 @@ export interface IColumnMetadata {
 
     /** Determines if the column should initially be hidden. */
     startHidden: boolean;
+
+    /** Optional initial visibility. Empty/omitted preserves startHidden; mandatory columns remain visible. */
+    visibleOnlyIn?: DeviceType[] | null;
 
     /** Determines if the column can be resized by the user. */
     canBeResized: boolean;

@@ -1,6 +1,7 @@
 ﻿using ECS.PrimengTable.Attributes;
 using ECS.PrimengTable.Models;
 using LinqKit;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace ECS.PrimengTable.Services {
@@ -13,7 +14,7 @@ namespace ECS.PrimengTable.Services {
         /// <param name="globalFilter">The text used for global filtering.</param>
         /// <param name="visibleColumns">The list of column names that are currently visible.</param>
         /// <returns>A filtered list based on the global filter and visible columns.</returns>
-        internal static IQueryable<T> ApplyGlobalFilter<T>(IQueryable<T> query, string? globalFilter, List<string> visibleColumns, string dateFormat, string dateTimezone, string dateCulture, MethodInfo? stringDateFormatMethod = null, Dictionary<string, ColumnMetadataOverrideModel>? dynamicAttributes = null) {
+        internal static IQueryable<T> ApplyGlobalFilter<T>(IQueryable<T> query, string? globalFilter, List<string> visibleColumns, string dateFormat, string dateTimezone, string dateCulture, MethodInfo? stringDateFormatMethod = null, Dictionary<string, ColumnMetadataOverrideModel>? dynamicAttributes = null, bool guardNullableDates = false) {
             if(string.IsNullOrEmpty(globalFilter) || string.IsNullOrWhiteSpace(globalFilter)) { // If the global filter is empty or whitespace, return the original list
                 return query;
             }
@@ -30,6 +31,7 @@ namespace ECS.PrimengTable.Services {
                         string effectiveDateCulture = attribute.DateCulture ?? dateCulture;
                         var filterPredicate = QueryPredicateService.GetGlobalFilterPredicate<T>(property.Name, globalFilter, attribute.DataType, effectiveDateFormat, effectiveDateTimezone, effectiveDateCulture, stringDateFormatMethod); // Get the filter predicate for the property
                         if(filterPredicate != null) { // If a valid filter predicate is obtained, combine it with the existing predicate using OR
+                            if (guardNullableDates) filterPredicate = GuardNullableDate(property, filterPredicate);
                             predicate = predicate.Or(filterPredicate);
                         }
                     }
@@ -47,7 +49,7 @@ namespace ECS.PrimengTable.Services {
         /// <param name="visibleColumns">The list of column names that are currently visible. Must not be null.</param>
         /// <returns>A filtered list based on the column filters and visible columns.</returns>
         /// <exception cref="ArgumentNullException">Thrown if sourceList, columnFilters, or visibleColumns is null.</exception>
-        internal static IQueryable<T> ApplyColumnFilters<T>(IQueryable<T> query, Dictionary<string, List<ColumnFilterModel>> columnFilters, List<string> visibleColumns, string dateFormat, string dateTimezone, string dateCulture, MethodInfo? stringDateFormatMethod = null, Dictionary<string, ColumnMetadataOverrideModel>? dynamicAttributes = null) {
+        internal static IQueryable<T> ApplyColumnFilters<T>(IQueryable<T> query, Dictionary<string, List<ColumnFilterModel>> columnFilters, List<string> visibleColumns, string dateFormat, string dateTimezone, string dateCulture, MethodInfo? stringDateFormatMethod = null, Dictionary<string, ColumnMetadataOverrideModel>? dynamicAttributes = null, bool guardNullableDates = false) {
             foreach(var entry in columnFilters) { // Iterate through the column filters
                 string key = entry.Key; // Get the key of the current column filter
                 if((!visibleColumns.Contains(key) && key != "RowID") || key == "Selector") {
@@ -80,9 +82,17 @@ namespace ECS.PrimengTable.Services {
                         }
                     }
                 }
-                query = query.Where(combinedPredicate); // Apply the combined predicate to filter the list   
+                Expression<Func<T, bool>> finalPredicate = combinedPredicate!;
+                if (guardNullableDates) finalPredicate = GuardNullableDate(typeof(T).GetProperty(key)!, finalPredicate);
+                query = query.Where(finalPredicate); // Apply the combined predicate to filter the list
             }
             return query;
+        }
+
+        private static Expression<Func<T, bool>> GuardNullableDate<T>(PropertyInfo property, Expression<Func<T, bool>> predicate) {
+            if (property.PropertyType != typeof(DateTime?)) return predicate;
+            var hasValue = Expression.Property(Expression.Property(predicate.Parameters[0], property), "HasValue");
+            return Expression.Lambda<Func<T, bool>>(Expression.AndAlso(hasValue, predicate.Body), predicate.Parameters);
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using ECS.PrimengTable.Enums;
+using ECS.PrimengTable.Enums;
 
 namespace ECS.PrimengTable.Attributes {
     /// <summary>
@@ -14,10 +14,15 @@ namespace ECS.PrimengTable.Attributes {
         /// </summary>
         public string Header { get; set; }
 
+        public string? HeaderGroup { get; set; }
+
         /// <summary>
         /// The type of data in the column, used for filtering and formatting.
         /// </summary>
         public DataType DataType { get; set; }
+
+        /// <summary>Optional cell presentation. ProgressBar applies to numeric columns.</summary>
+        public CellDisplay CellDisplay { get; set; }
 
         /// <summary>
         /// Horizontal alignment of the data in the column.
@@ -48,6 +53,13 @@ namespace ECS.PrimengTable.Attributes {
         /// If true, the column starts hidden (only applies if CanBeHidden is true).
         /// </summary>
         public bool StartHidden { get; set; }
+
+        /// <summary>
+        /// Optional initial visibility by viewport. Null or empty preserves StartHidden.
+        /// CanBeHidden=false takes precedence. Users and saved views may override this default.
+        /// </summary>
+        public DeviceType[]? VisibleOnlyIn { get; set; }
+
 
         /// <summary>
         /// If true, the column can be resized by the user.
@@ -168,6 +180,7 @@ namespace ECS.PrimengTable.Attributes {
         /// <param name="dateTimezone">Optional date timezone.</param>
         /// <param name="dateCulture">Optional date culture.</param>
         /// <param name="exportDateFormat">Optional date format for this column in exports.</param>
+        /// <param name="cellDisplay">Cell presentation; ProgressBar applies to numeric columns.</param>
         /// <exception cref="ArgumentException">Thrown if an invalid dataAlign or dataType value is provided.</exception>
         public ColumnAttributes(
             string header = "",
@@ -195,10 +208,12 @@ namespace ECS.PrimengTable.Attributes {
             string? dateFormat = null,
             string? dateTimezone = null,
             string? dateCulture = null,
-            string? exportDateFormat = null
+            string? exportDateFormat = null,
+            CellDisplay cellDisplay = CellDisplay.Default
         ) {
             Header = header;
             DataType = dataType;
+            CellDisplay = cellDisplay;
             DataAlignHorizontal = dataAlignHorizontal;
             DataAlignHorizontalAllowUserEdit = dataAlignHorizontalAllowUserEdit;
             DataAlignVertical = dataAlignVertical;

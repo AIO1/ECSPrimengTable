@@ -8,6 +8,8 @@ import { IColumnMetadata } from "./columns-metadata.interface";
  * Includes information about displayed columns, widths, sorting, filtering, and pagination.
  */
 export interface ITableViewData {
+    treeExpandedKeys?: (string | number)[];
+    treeChildPages?: Record<string, number>;
     
     /** Array of columns currently visible in the table. */
     columnsShown: IColumnMetadata[];

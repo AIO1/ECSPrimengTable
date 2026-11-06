@@ -11,6 +11,28 @@ namespace ECS.PrimengTable.Services {
     /// </summary>
     public static class EcsPrimengTableService {
 
+        public static TreePagedResponseModel PerformTreeQuery<T>(
+            TreeQueryRequestModel inputData, IQueryable<T> baseQuery, TreeQueryOptions options,
+            MethodInfo? stringDateFormatMethod = null, List<string>? defaultSortColumnName = null,
+            List<ColumnSort>? defaultSortOrder = null,
+            Dictionary<string, ColumnMetadataOverrideModel>? dynamicAttributes = null,
+            List<string>? excludedColumns = null
+        ) where T : class {
+            return TreeQueryProcessingService.Query(inputData, baseQuery, options, stringDateFormatMethod,
+                defaultSortColumnName, defaultSortOrder, dynamicAttributes, excludedColumns);
+        }
+
+        public static (bool success, byte[]? reportFile, string statusMessage) GenerateTreeExcelReport<T>(
+            ExcelExportRequestModel inputData, IQueryable<T> baseQuery, TreeQueryOptions options,
+            MethodInfo? stringDateFormatMethod = null, List<string>? defaultSortColumnName = null,
+            List<ColumnSort>? defaultSortOrder = null,
+            Dictionary<string, ColumnMetadataOverrideModel>? dynamicAttributes = null,
+            List<string>? excludedColumns = null, string sheetName = "MAIN", byte pageStack = 250
+        ) where T : class {
+            return TreeQueryProcessingService.Export(inputData, baseQuery, options, stringDateFormatMethod,
+                defaultSortColumnName, defaultSortOrder, dynamicAttributes, excludedColumns, sheetName, pageStack);
+        }
+
         /// <summary>
         /// Validates the provided pagination and column configuration for a table.
         /// Ensures that the specified number of items per page and visible columns

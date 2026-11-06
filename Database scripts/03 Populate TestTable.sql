@@ -1,3 +1,4 @@
+SET NOCOUNT ON;
 TRUNCATE TABLE dbo.TestTable;
 DECLARE @FirstNames TABLE (Name NVARCHAR(50))
 DECLARE @LastNames TABLE (Name NVARCHAR(50))
@@ -47,7 +48,8 @@ BEGIN
 		+ ' ' +
 		(SELECT TOP 1 Name FROM @LastNames ORDER BY NEWID())
 		+ ' ' +
-		(SELECT TOP 1 Name FROM @LastNames ORDER BY NEWID()),
+		(SELECT TOP 1 Name FROM @LastNames ORDER BY NEWID())
+		+ ' ' + CONVERT(NVARCHAR(10), @i + 1),
 		CASE
 			WHEN RAND() < 0.25 THEN NULL
 			ELSE CAST(RAND() * 100 AS TINYINT)

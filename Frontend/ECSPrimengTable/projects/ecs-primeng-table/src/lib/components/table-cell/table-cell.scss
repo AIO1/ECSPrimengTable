@@ -1,0 +1,23 @@
+:host:has(.ecs-progress-bar) {
+  display: block;
+  min-width: 0;
+}
+
+.ecs-progress-cell {
+  padding-block: 0.5rem;
+  margin-block: -0.5rem;
+}
+
+.ecs-progress-bar {
+  width: 100%;
+  height: 0.875rem;
+  overflow: hidden;
+  border: 1px solid var(--p-content-border-color, #d1d5db);
+  border-radius: 999px;
+  background: var(--p-content-background, #f8fafc);
+}
+
+.ecs-progress-bar-fill {
+  height: 100%;
+  background: var(--p-progressbar-value-background, #ffb547);
+}

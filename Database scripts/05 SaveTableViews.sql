@@ -10,6 +10,7 @@ CREATE TABLE dbo.TableViews (
 	CONSTRAINT TableSaveStates_PK PRIMARY KEY (ID),
 	CONSTRAINT TableSaveStates_data_UNIQUE UNIQUE (username,tableKey,viewAlias)
 );
+GO
 
 CREATE TRIGGER [TableViews_tg_dateUpdated]
     ON [TableViews]
@@ -20,3 +21,4 @@ CREATE TRIGGER [TableViews_tg_dateUpdated]
        FROM INSERTED i
        WHERE i.ID = [TableViews].ID
     END;
+GO

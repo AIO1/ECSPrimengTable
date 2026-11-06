@@ -169,7 +169,7 @@ namespace ECS.PrimengTable.Services {
         /// <returns>
         /// A list of dynamic objects containing only the selected columns.
         /// </returns>
-        internal static List<dynamic> GetDynamicSelect<T>(IQueryable<T> query, List<string> columns, List<string>? excludedColumns = null) {
+        internal static List<dynamic> GetDynamicSelect<T>(IQueryable<T> query, List<string> columns, List<string>? excludedColumns = null, bool qualifyProperties = false) {
             var excluded = excludedColumns != null
                 ? new HashSet<string>(excludedColumns, StringComparer.OrdinalIgnoreCase)
                 : []; // Prepare hash set for excluded columns (case-insensitive)
@@ -179,7 +179,7 @@ namespace ECS.PrimengTable.Services {
                 .Select(p => p.Name)]; // Select only the names of those filtered properties
             IEnumerable<PropertyInfo> selectedProperties = properties
                 .Where(p => (columns.Contains(p.Name) || additionalColumns.Contains(p.Name)) && !excluded.Contains(p.Name)); // Include requested columns and always-include columns, but skip any excluded ones
-            string select = string.Join(", ", selectedProperties.Select(p => p.Name)); // Build a comma-separated string with the property names to use in the dynamic query
+            string select = string.Join(", ", selectedProperties.Select(p => qualifyProperties ? $"it.{p.Name} as {p.Name}" : p.Name)); // Build a comma-separated string with the property names to use in the dynamic query
             return query.Select($"new ({select})").ToDynamicList(); // Execute the dynamic query using System.Linq.Dynamic.Core and return the resulting list
         }
     }

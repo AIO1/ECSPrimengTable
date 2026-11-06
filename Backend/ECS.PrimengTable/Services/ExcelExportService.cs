@@ -41,7 +41,7 @@ namespace ECS.PrimengTable.Services {
         /// <item><description><c>statusMessage</c> — status message or error description related to the export process.</description></item>
         /// </list>
         /// </returns>
-        internal static (bool success, byte[]? reportFile, string statusMessage) GenerateExcelReport<T>(ExcelExportRequestModel inputDataAll, IQueryable<T> baseQuery, MethodInfo? stringDateFormatMethod = null, List<string>? defaultSortColumnName = null, List<ColumnSort>? defaultSortOrder = null, Dictionary<string, ColumnMetadataOverrideModel>? dynamicAttributes = null, List<string>? excludedColumns = null, string sheetName = "MAIN", byte pageStack = 250) {
+        internal static (bool success, byte[]? reportFile, string statusMessage) GenerateExcelReport<T>(ExcelExportRequestModel inputDataAll, IQueryable<T> baseQuery, MethodInfo? stringDateFormatMethod = null, List<string>? defaultSortColumnName = null, List<ColumnSort>? defaultSortOrder = null, Dictionary<string, ColumnMetadataOverrideModel>? dynamicAttributes = null, List<string>? excludedColumns = null, string sheetName = "MAIN", byte pageStack = 250, bool preparedTreeQuery = false) {
             try {
                 TableQueryRequestModel inputData = new() {
                     Page = inputDataAll.Page,
@@ -77,7 +77,7 @@ namespace ECS.PrimengTable.Services {
                 long totalRecordsNotFiltered = 0; // Initialize counter of total available records
                 long totalRecords = 0; // Initialize counter of filtered record count
                 string fieldName; // Used to track the name of the current column
-                TableQueryProcessingService.GetDynamicQueryBase<T>(ref inputData, ref baseQuery, ref totalRecordsNotFiltered, ref totalRecords, stringDateFormatMethod, defaultSortColumnName, defaultSortOrder, dynamicAttributes, true, inputDataAll.ApplyFilters); // Execute dynamic query pipeline (filter, sort, etc.)
+                TableQueryProcessingService.GetDynamicQueryBase<T>(ref inputData, ref baseQuery, ref totalRecordsNotFiltered, ref totalRecords, stringDateFormatMethod, defaultSortColumnName, defaultSortOrder, dynamicAttributes, !preparedTreeQuery, !preparedTreeQuery && inputDataAll.ApplyFilters); // Execute dynamic query pipeline (filter, sort, etc.)
                 using(XLWorkbook workbook = new()) { // Create Excel workbook
                     IXLWorksheet worksheet = workbook.AddWorksheet(sheetName); // Add the new worksheet that will have the data
                     int numberOfColumns = inputData.Columns!.Count; // Get the number of columns
@@ -86,7 +86,7 @@ namespace ECS.PrimengTable.Services {
                         worksheet.Cell(2, col + 1).Value = columnsInfo.ColumnsInfo.First(c => c.Field == fieldName).Header.ToString(); // Write the name of the column
                     }
                     int currentRow = 3; // The row we must write the data to, strating on row 3
-                    WriteExportDataToWorksheet<T>(worksheet, baseQuery, inputData, columnsInfo, propertyAccessors, totalRecords, pageStack, ref currentRow, excludedColumns, inputDataAll.UseIconInBools); // Execute the logic to wirte all data to the Excel worksheet
+                    WriteExportDataToWorksheet<T>(worksheet, baseQuery, inputData, columnsInfo, propertyAccessors, totalRecords, pageStack, ref currentRow, excludedColumns, inputDataAll.UseIconInBools, preparedTreeQuery); // Execute the logic to wirte all data to the Excel worksheet
                     ApplyExportFormatting(worksheet, reportDateFormatted, numberOfColumns, currentRow); // Apply the export format
                     using(MemoryStream memoryStream = new()) {
                         workbook.SaveAs(memoryStream);
@@ -115,7 +115,7 @@ namespace ECS.PrimengTable.Services {
         /// <param name="currentRow">Reference to the current worksheet row index (used to continue writing).</param>
         /// <param name="excludedColumns">Optional list of column names to exclude from the select, even if they appear in the requested columns from <paramref name="inputData"/>.</param>
         /// <param name="useIconInBools">If the booleans must be shown as their underlying value or with an icon.</param>
-        private static void WriteExportDataToWorksheet<T>(IXLWorksheet worksheet, IQueryable<T> baseQuery, TableQueryRequestModel inputData, TableConfigurationModel columnsInfo, Dictionary<string, Func<object, object?>> propertyAccessors, long totalRecords, byte pageStack, ref int currentRow, List<string>? excludedColumns = null, bool useIconInBools = false) {
+        private static void WriteExportDataToWorksheet<T>(IXLWorksheet worksheet, IQueryable<T> baseQuery, TableQueryRequestModel inputData, TableConfigurationModel columnsInfo, Dictionary<string, Func<object, object?>> propertyAccessors, long totalRecords, byte pageStack, ref int currentRow, List<string>? excludedColumns = null, bool useIconInBools = false, bool preparedTreeQuery = false) {
             inputData.PageSize = pageStack; // Set how many records to process per page (chunk size)
             int currentPage = -1; // Track the current page index
             int loopStartPage = -1; // Used to detect when pagination is finished
@@ -151,7 +151,7 @@ namespace ECS.PrimengTable.Services {
                 if(currentPage == loopStartPage) { // Exit loop if there are no more records to process
                     break; 
                 }
-                List<dynamic> dataResult = TableQueryProcessingService.GetDynamicSelect(pagedItems, inputData.Columns!, excludedColumns); // Select dynamic data limited to the requested columns
+                List<dynamic> dataResult = TableQueryProcessingService.GetDynamicSelect(pagedItems, inputData.Columns!, excludedColumns, qualifyProperties: preparedTreeQuery); // Select dynamic data limited to the requested columns
                 for(int row = 0; row < dataResult.Count; row++) { // Loop through each record (row)
                     for(int col = 0; col < numberOfColumns; col++) { // Loop through each field (column)
                         string fieldName = inputData.Columns[col]; // Get field name

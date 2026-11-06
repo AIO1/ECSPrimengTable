@@ -1,5 +1,7 @@
+import { ECSPrimengTableI18nService } from '../../services/i18n.service';
+import { ECSTableTranslatePipe } from '../../pipes/ui-translate.pipe';
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { inject, Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
@@ -11,6 +13,7 @@ import { CheckboxModule } from 'primeng/checkbox';
 @Component({
   selector: 'ecs-views-management',
   imports: [
+    ECSTableTranslatePipe,
     DialogModule,
     TableModule,
     ButtonModule,
@@ -24,6 +27,7 @@ import { CheckboxModule } from 'primeng/checkbox';
   templateUrl: './views-management.html'
 })
 export class ViewsManagement {
+  private readonly i18n = inject(ECSPrimengTableI18nService);
   constructor(
     private notification: ECSPrimengTableNotificationService
   ) {}
@@ -54,7 +58,7 @@ export class ViewsManagement {
   createView(viewAlias: string){
     const exists = this.tableViews_menuItems.some(item => item.label === viewAlias);
     if (exists) {
-      this.notification.showToast("error","DUPLICATE VIEW NAME",`A view with alias "${viewAlias}" already exists`);
+      this.notification.showToast("error", this.i18n.text("DUPLICATE VIEW NAME"), this.i18n.text("A view with alias \"{{value0}}\" already exists", { value0: viewAlias }));
       return;
     }
     this.onViewCreate.emit(viewAlias);

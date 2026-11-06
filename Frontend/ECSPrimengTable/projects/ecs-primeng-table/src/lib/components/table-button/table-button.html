@@ -1,12 +1,13 @@
 @if(button.visibleCondition?.(rowData) ?? true){ <!--If 'visibleCondition' is true or not defined-->
   @if((button.enabledCondition?.(rowData) ?? true) || !button.conditionFailHide){ <!--Render button if 'enabledCondition' is true or undefined, OR if 'conditionFailHide' is false-->
     <p-button
+      [ariaLabel]="(button.label || button.tooltip || '') | ecsTranslate"
       [disabled]="!(button.enabledCondition?.(rowData) ?? true)"
       [rounded]="button.rounded || false"
       [iconPos]="button.iconPos || 'left'"
       [raised]="button.raised || false"
       [variant]="button.variant || null"
-      [pTooltip]="button.tooltip || ''"
+      [pTooltip]="(button.tooltip || '') | ecsTranslate"
       [tooltipDisabled]="!button.tooltip || button.tooltip.length === 0"
       [showDelay]="700"
       tooltipPosition="top"
@@ -15,7 +16,7 @@
         (button.class ? ' ' + button.class : '')
       "
       [icon]="button.icon || ''"
-      [label]="button.label || ''"
+      [label]="(button.label || '') | ecsTranslate"
       [size]="isActionButton ? 'small': undefined"
       [ngStyle]="getButtonStyle(button, isActionButton, isLastActionButton)"
       (onClick)="handleClick($event)"/>
