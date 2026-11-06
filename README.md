@@ -4,76 +4,6 @@
 [![npm version](https://img.shields.io/npm/v/@eternalcodestudio/primeng-table.svg)](https://www.npmjs.com/package/@eternalcodestudio/primeng-table)
 [![npm downloads](https://img.shields.io/npm/dm/@eternalcodestudio/primeng-table.svg)](https://www.npmjs.com/package/@eternalcodestudio/primeng-table)
 # ECS PrimeNG Table
-## Optional Tree Demo
-
-The `/tree` demo uses the same grid with an optional `tree` configuration. The
-existing `/home` flat demo and its filters, sorting, columns, selection, views,
-responsive menus and Excel controls remain available unchanged.
-
-Choose **All nodes**, **On demand** or **Paged children**. All mode receives the
-complete hierarchy and expands locally; on-demand mode fetches direct children
-once per query; paged-children mode adds a **Load more children** row. Pagination
-counts roots, not expanded rows. Matching descendants retain and automatically
-expand their ancestor paths. Checkbox and single-row selection do not cascade.
-Excel exports the complete filtered hierarchy, not just loaded or expanded rows;
-selected-only exports use independent `rowID` aliases.
-
-The row edit action opens `/tree/:id/edit`. Returning keeps the selected mode,
-filters, root page, expanded nodes and loaded child pages. Each mode and storage
-choice has a separate parent-scoped navigation key; leaving the tree route
-discards temporary navigation state. Saved views retain expanded keys and child
-pages. Database views use `TreeDemo/GetViews` and `TreeDemo/SaveViews` with the fixed
-`TreeDemo` key; **This browser** uses per-mode local storage instead.
-
-The deterministic tree data has 317 rows, 36 roots, six levels and a branch with
-32 direct children. Configuration, data and Excel need no SQL scripts. Database
-views require the existing SQL connection and `TableViews` schema; choose browser
-storage when SQL is unavailable. See the exact [backend tree contract](Backend/ECS.PrimengTable/TREE.md)
-and [frontend options](Frontend/ECSPrimengTable/projects/ecs-primeng-table/README.md).
-The backend validates/materializes the authorized hierarchy in memory; remote
-loading limits response size, not database reads.
-
-### Try the tree demo
-
-With the example API and frontend running, open `/tree` (normally
-`http://localhost:4200/tree`). The language selector switches the demo between
-English, Spanish, French and Italian.
-
-1. Select **On demand** to load direct children when expanding a node, **All nodes**
-  to load the complete hierarchy, or **Paged children** to load children in blocks.
-2. Expand **Project 01** using its arrow. In paged-children mode, use
-  **Load more children** to reveal the rest of its 32 direct children. Expand
-  the first task to follow its nested levels; collapsing a parent preserves
-  the expansion state of its descendants.
-3. Search for `Project 01 / Level 6` to see a matching leaf and its ancestor path.
-  Clear the search to return to the complete result set. The paginator always
-  counts root nodes, not the additional rows revealed by expansion.
-4. Choose **This browser** under **View storage** to try views without SQL.
-  Open the view selector on desktop, or the bookmark entry in **Table actions**
-  on mobile; create a view, change the expanded nodes, then restore the view.
-  Choose **Database** only when the SQL connection and `TableViews` are ready.
-5. Use a row's edit action and **Back to tree** to check navigation-state
-  restoration. Selecting a parent only selects that row; Excel export uses
-  the filtered hierarchy, independently of which branches are open.
-
-To integrate this behavior into another application, start with the
-[tree configuration and sample records](Frontend/ECSPrimengTable/projects/ecs-primeng-table/README.md#optional-tree-grid)
-and implement the [backend tree contract](Backend/ECS.PrimengTable/TREE.md).
-
-### Demo screenshot
-
-The live example in English, with a branch expanded to level six, independent
-checkboxes, row actions and progress cells:
-
-![Tree demo in English with six nested levels](docs/images/tree-demo-en.png)
-
-From `Frontend/ECSPrimengTable`, run `npm run test:tree` or
-`npm run test:tree:browser`. Both build the library and demo first. The browser
-suite intercepts API requests with deterministic fixtures and mocked database
-views; it does not certify real SQL persistence or workbook contents. It accepts
-`PLAYWRIGHT_MODULE`, `PLAYWRIGHT_BROWSERS_PATH`, `BROWSER_EXECUTABLE` and
-`TREE_SCREENSHOT_DIR`, and writes desktop/mobile screenshots to the system temp
-directory by default. Real API/SQL/Excel checks are separate integration gates.
 
 A solution created by Alex Ibrahim Ojea that enhances the PrimeNG table with advanced filters and extended functionality, delegating all query and filtering logic to the database engine. The frontend is built with Angular 21 and PrimeNG 21 components, while the backend is a .NET 10 (ASP.NET) API connected to Microsoft SQL Server, easily adaptable to other databases. This approach prevents server and frontend overload by handling filtering and paging dynamically in the database, and includes features such as column visibility, column filters, custom views, and more.
 
@@ -240,6 +170,79 @@ Take note of the **port number** in the API URL, as it will be needed later to c
 
 <br><br>
 
+<a id="optional-tree-demo"></a>
+#### 2.2.5 Optional Tree Demo
+
+The `/tree` demo uses the same grid with an optional `tree` configuration. The
+existing `/home` flat demo and its filters, sorting, columns, selection, views,
+responsive menus and Excel controls remain available unchanged.
+
+Choose **All nodes**, **On demand** or **Paged children**. All mode receives the
+complete hierarchy and expands locally; on-demand mode fetches direct children
+once per query; paged-children mode adds a **Load more children** row. Pagination
+counts roots, not expanded rows. Matching descendants retain and automatically
+expand their ancestor paths. Checkbox and single-row selection do not cascade.
+Excel exports the complete filtered hierarchy, not just loaded or expanded rows;
+selected-only exports use independent `rowID` aliases.
+
+The row edit action opens `/tree/:id/edit`. Returning keeps the selected mode,
+filters, root page, expanded nodes and loaded child pages. Each mode and storage
+choice has a separate parent-scoped navigation key; leaving the tree route
+discards temporary navigation state. Saved views retain expanded keys and child
+pages. Database views use `TreeDemo/GetViews` and `TreeDemo/SaveViews` with the fixed
+`TreeDemo` key; **This browser** uses per-mode local storage instead.
+
+The deterministic tree data has 317 rows, 36 roots, six levels and a branch with
+32 direct children. Configuration, data and Excel need no SQL scripts. Database
+views require the existing SQL connection and `TableViews` schema; choose browser
+storage when SQL is unavailable. See the exact [backend tree contract](Backend/ECS.PrimengTable/TREE.md)
+and [frontend options](Frontend/ECSPrimengTable/projects/ecs-primeng-table/README.md).
+The backend validates/materializes the authorized hierarchy in memory; remote
+loading limits response size, not database reads.
+
+##### Try the tree demo
+
+With the example API and frontend running, open `/tree` (normally
+`http://localhost:4200/tree`). The language selector switches the demo between
+English, Spanish, French and Italian.
+
+1. Select **On demand** to load direct children when expanding a node, **All nodes**
+  to load the complete hierarchy, or **Paged children** to load children in blocks.
+2. Expand **Project 01** using its arrow. In paged-children mode, use
+  **Load more children** to reveal the rest of its 32 direct children. Expand
+  the first task to follow its nested levels; collapsing a parent preserves
+  the expansion state of its descendants.
+3. Search for `Project 01 / Level 6` to see a matching leaf and its ancestor path.
+  Clear the search to return to the complete result set. The paginator always
+  counts root nodes, not the additional rows revealed by expansion.
+4. Choose **This browser** under **View storage** to try views without SQL.
+  Open the view selector on desktop, or the bookmark entry in **Table actions**
+  on mobile; create a view, change the expanded nodes, then restore the view.
+  Choose **Database** only when the SQL connection and `TableViews` are ready.
+5. Use a row's edit action and **Back to tree** to check navigation-state
+  restoration. Selecting a parent only selects that row; Excel export uses
+  the filtered hierarchy, independently of which branches are open.
+
+To integrate this behavior into another application, start with the
+[tree configuration and sample records](Frontend/ECSPrimengTable/projects/ecs-primeng-table/README.md#optional-tree-grid)
+and implement the [backend tree contract](Backend/ECS.PrimengTable/TREE.md).
+
+##### Demo screenshot
+
+The live example in English, with a branch expanded to level six, independent
+checkboxes, row actions and progress cells:
+
+![Tree demo in English with six nested levels](docs/images/tree-demo-en.png)
+
+From `Frontend/ECSPrimengTable`, run `npm run test:tree` or
+`npm run test:tree:browser`. Both build the library and demo first. The browser
+suite intercepts API requests with deterministic fixtures and mocked database
+views; it does not certify real SQL persistence or workbook contents. It accepts
+`PLAYWRIGHT_MODULE`, `PLAYWRIGHT_BROWSERS_PATH`, `BROWSER_EXECUTABLE` and
+`TREE_SCREENSHOT_DIR`, and writes desktop/mobile screenshots to the system temp
+directory by default. Real API/SQL/Excel checks are separate integration gates.
+
+<br><br>
 
 
 ### 2.3 Frontend (Angular project using PrimeNG components)
