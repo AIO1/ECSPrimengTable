@@ -106,6 +106,7 @@ try {
   await page.locator('ecs-tree-demo ecs-table-cell').first().waitFor();
   await page.locator('nav select').selectOption('en');
   await page.getByRole('heading', { name: 'Tree grid', exact: true }).waitFor();
+  assert.match(await page.getByTestId('row-retrieval-time').innerText(), /Last row retrieval: [\d,.]+ ms/);
   const rows = page.locator('ecs-tree-demo tbody tr[aria-level]');
   const node = text => rows.filter({ has: page.getByText(text, { exact: true }) });
   const viewsDialog = page.getByRole('dialog').filter({ has: page.getByText('Table views', { exact: true }) });

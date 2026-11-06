@@ -1,7 +1,7 @@
 import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { catchError, timeout  } from 'rxjs/operators';
 import { Observable, throwError, map, OperatorFunction } from 'rxjs';
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
@@ -11,6 +11,7 @@ import { Constants, log } from '../../../constants';
   providedIn: 'root'
 })
 export class SharedService {
+  readonly lastRowRetrievalMs = signal<number | null>(null);
   constructor(private readonly messageService: MessageService, private readonly http: HttpClient, private readonly router: Router, private readonly sanitizer: DomSanitizer) {}
   // #region showToast
     /**
