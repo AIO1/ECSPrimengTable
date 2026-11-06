@@ -70,6 +70,14 @@
                 id="rowSelector-header"  [attr.scope]="'col'" pResizableColumn [pResizableColumnDisabled]="!tableOptions.rows?.checkboxSelector?.resizable" pFrozenColumn 
                 [frozen]="tableOptions.rows?.checkboxSelector?.frozen ?? false" [alignFrozen]="getFrozenColumnAlignAsText(tableOptions.rows?.checkboxSelector?.positionRight ? FrozenColumnAlign.Right : FrozenColumnAlign.Left)">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
+                        @if (tableOptions.rows?.checkboxSelector?.selectAllEnabled) {
+                            <p-checkbox [binary]="true" [ngModel]="allMatchingRowsSelected"
+                                [indeterminate]="matchingRowsPartiallySelected"
+                                [disabled]="selectAllLoading || !tableOptions.rows?.checkboxSelector?.urlSelectAll"
+                                [ariaLabel]="'Select all filtered rows' | ecsTranslate"
+                                [pTooltip]="'Select all filtered rows' | ecsTranslate"
+                                (onChange)="toggleAllMatchingRows($event.checked)"/>
+                        }
                         {{ (tableOptions.rows?.checkboxSelector?.header ?? '') | ecsTranslate }}
                         <p-columnFilter type="boolean" field="selector" display="menu" [showButtons]="false"/>
                     </div>
@@ -105,8 +113,8 @@
                         <p-iconField iconPosition="left" class="ecs-responsive-search">
                             <p-inputIcon><i class="pi pi-search"></i></p-inputIcon>
                             <input pInputText type="text" [attr.aria-label]="'Search keyword' | ecsTranslate" [placeholder]="'Search keyword' | ecsTranslate" autocomplete="off"
-                                [maxlength]="tableOptions.globalFilter?.maxLength ?? null" [(ngModel)]="globalSearchText"
-                                (input)="dt.filterGlobal($any($event.target).value, 'contains')"/>
+                                [maxlength]="tableOptions.globalFilter?.maxLength ?? null" [ngModel]="globalSearchText"
+                                (ngModelChange)="onGlobalSearchInput($event)"/>
                             @if (globalSearchText) {
                                 <p-inputIcon position="right"><button type="button" class="ecs-clear-search" [attr.aria-label]="'Clear search' | ecsTranslate" (click)="clearFilters(dt, true, true)"><i class="pi pi-times"></i></button></p-inputIcon>
                             }
@@ -172,8 +180,8 @@
                                 <i class="pi pi-search"></i>
                             </p-inputIcon>
                             <input pInputText type="text" 
-                                (input)="dt.filterGlobal($any($event.target).value, 'contains')"  autocomplete="off" 
-                                [maxlength]="tableOptions.globalFilter?.maxLength ?? null" [placeholder]="'Search keyword' | ecsTranslate" [(ngModel)]="globalSearchText"
+                                (ngModelChange)="onGlobalSearchInput($event)" autocomplete="off"
+                                [maxlength]="tableOptions.globalFilter?.maxLength ?? null" [placeholder]="'Search keyword' | ecsTranslate" [ngModel]="globalSearchText"
                                 style="width: 220px;"/>
                             <!-- Right icon (only if there is text) -->
                             @if (globalSearchText) {
@@ -339,12 +347,12 @@
                                     (click)="toggleTreeRow($event, rowData)">
                                     <i [class]="treeState.isLoading(rowData) ? 'pi pi-spinner pi-spin' : treeState.isExpanded(rowData) ? 'pi pi-chevron-down' : 'pi pi-chevron-right'" aria-hidden="true"></i>
                                 </button>
-                                <ecs-table-cell [col]="col" [rowData]="rowData" [globalSearchText]="globalSearchText"
+                                <ecs-table-cell [col]="col" [rowData]="rowData" [globalSearchText]="effectiveGlobalSearchText"
                                     [dateFormat]="dateFormat" [dateTimezone]="dateTimezone" [dateCulture]="dateCulture"
                                     [predefinedFiltersCollection]="tableOptions.predefinedFilters" />
                             </div>
                         } @else {
-                        <ecs-table-cell [col]="col" [rowData]="rowData" [globalSearchText]="globalSearchText" 
+                        <ecs-table-cell [col]="col" [rowData]="rowData" [globalSearchText]="effectiveGlobalSearchText"
                             [dateFormat]="dateFormat" [dateTimezone]="dateTimezone" [dateCulture]="dateCulture"
                             [predefinedFiltersCollection]="tableOptions.predefinedFilters"/>
                         }

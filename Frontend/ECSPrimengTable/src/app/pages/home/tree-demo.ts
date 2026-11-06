@@ -74,13 +74,14 @@ export class TreeDemo {
           responsive: { headerMenu: true, rowMenu: true },
           urlTableConfiguration: 'TreeDemo/GetTableConfiguration',
           urlTableData: 'TreeDemo/GetTableData',
+          globalFilter: { minLength: 3, debounceTime: 400 },
           excelReport: { url: 'TreeDemo/GenerateExcel' },
           rows: {
             action: { width: 60, buttons: [{
               icon: 'pi pi-file-edit', tooltip: 'Edit record',
               action: row => { void this.router.navigate(['/tree', row.id, 'edit']); }
             }] },
-            checkboxSelector: { enabled: true, width: 80 },
+            checkboxSelector: { enabled: true, selectAllEnabled: true, urlSelectAll: 'TreeDemo/GetSelectionKeys', width: 100 },
             singleSelector: { enabled: true, metakey: false }
           },
           views: {

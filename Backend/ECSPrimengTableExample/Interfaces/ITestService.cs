@@ -3,6 +3,7 @@ using ECSPrimengTableExample.DTOs;
 namespace ECSPrimengTableExample.Interfaces {
     public interface ITestService {
         TableConfigurationModel GetTableConfiguration();
+        List<object> GetSelectionKeys(TableQueryRequestModel request);
         (bool success, TablePagedResponseModel data) GetTableData(TableQueryRequestModel inputData);
         Task<List<EmploymentStatusDto>> GetEmploymentStatusesCategories();
         Task<List<ViewDataModel>> GetViews(string username, ViewLoadRequestModel request);

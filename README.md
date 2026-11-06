@@ -3172,6 +3172,21 @@ With this setup:
 
 
 
+##### Optional select-all header
+
+Enable `rows.checkboxSelector.selectAllEnabled` (default: `false`) and set
+`rows.checkboxSelector.urlSelectAll` to a POST endpoint receiving
+`ITableQueryRequest` and returning a JSON array of selectable `rowID` values.
+Apply the same global/column filters and authorization as the data endpoint,
+without pagination. Mirror `enabledCondition` on the server for unloaded rows.
+
+The header selects matching rows across all pages, including unloaded tree
+children and ancestors retained by tree filters. Unchecking removes matching IDs
+while preserving selections outside the current filter. Existing selection events,
+selected-row filtering and Excel export continue to use `selectedRowsCheckbox`.
+The demos use `Test/GetSelectionKeys` and `TreeDemo/GetSelectionKeys`; the backend
+helpers are `EcsPrimengTableService.GetSelectionKeys` and `GetTreeSelectionKeys`.
+
 #### 6.4.3 Dynamic styling
 The **dynamic styling** feature allows you to customize the appearance of rows either by applying **inline styles** or by adding **CSS classes**.
 
@@ -3498,6 +3513,24 @@ And in your HTML:
 
 <br><br>
 
+
+#### Optional global search minimum and debounce
+
+```ts
+globalFilter: { enabled: true, minLength: 3, debounceTime: 400 }
+```
+
+Both options are independent and default to `0`, preserving existing behavior.
+`minLength` counts trimmed input characters; `debounceTime` is the number of idle
+milliseconds before searching, restarted on each input. Equivalent trimmed text
+does not query again. Negative or non-finite values are treated as zero.
+
+Applying a search resets the page. Clearing or dropping below the minimum removes
+an applied search immediately. Clearing filters, restoring a view and destroying
+the table cancel pending input. Paging, selection, saved views and Excel use the
+applied search while input is pending. Restoring a view applies its saved search
+and page immediately. Flat/tree and desktop/mobile inputs share this behavior.
+No backend changes are required. People/tree demos use 3 characters and 400 ms.
 
 #### Configuring global filter for date columns
 By default, date columns will not work with global filter, since they require a database function that converts dates into text using exactly the same format in which they are rendered in the frontend.

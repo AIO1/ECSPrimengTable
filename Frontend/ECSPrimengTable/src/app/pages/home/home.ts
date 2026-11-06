@@ -65,6 +65,7 @@ export class Home implements OnInit {
     },
     urlTableConfiguration: "Test/GetTableConfiguration",
     urlTableData: "Test/GetTableData",
+    globalFilter: { minLength: 3, debounceTime: 400 },
     excelReport: {
       url: "Test/GenerateExcel"
     },
@@ -94,6 +95,8 @@ export class Home implements OnInit {
       },
       checkboxSelector: {
         enabled: true,
+        selectAllEnabled: true,
+        urlSelectAll: 'Test/GetSelectionKeys',
         width: 125
       },
       singleSelector: {

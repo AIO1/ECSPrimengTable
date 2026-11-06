@@ -80,7 +80,7 @@ try {
   browser = await chromium.launch({ headless: true,
     ...(process.env.BROWSER_EXECUTABLE ? { executablePath: process.env.BROWSER_EXECUTABLE } : {}) });
   const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
-  const errors = []; const requests = []; let databaseViews = []; const savedRequests = [];
+  const errors = []; const requests = []; const flatRequests = []; let databaseViews = []; const savedRequests = [];
   page.on('pageerror', error => errors.push(error.message));
   await page.route('**/TreeDemo/**', async route => {
     const url = route.request().url(); const request = route.request().postDataJSON();
@@ -88,6 +88,7 @@ try {
     if (url.includes('GetTableConfiguration')) data = { columnsInfo, allowedItemsPerPage: [10, 25, 50], maxViews: 10,
       dateFormat: 'yyyy-MM-dd', dateTimezone: '+00:00', dateCulture: 'en-US', exportDateFormat: 'yyyy-MM-dd' };
     if (url.includes('GetTableData')) { requests.push(request); data = queryTree(request); }
+    if (url.includes('GetSelectionKeys')) data = queryTree({ ...request, loadMode: 'all', roots: true }).data.map(row => row.rowID);
     if (url.includes('GetViews')) { assert.equal(request.tableViewSaveKey, 'TreeDemo'); data = databaseViews; }
     if (url.includes('SaveViews')) { savedRequests.push(request); databaseViews = structuredClone(request.views); data = {}; }
     await route.fulfill({ json: data });
@@ -97,8 +98,11 @@ try {
     if (url.includes('GetEmploymentStatus')) data = fixture.statuses;
     if (url.includes('GetTableConfiguration')) data = { columnsInfo: fixture.columnsInfo,
       allowedItemsPerPage: [10, 25, 50], maxViews: 5, dateFormat: 'yyyy-MM-dd', dateTimezone: '+00:00', dateCulture: 'en-US', exportDateFormat: 'yyyy-MM-dd' };
-    if (url.includes('GetTableData')) data = queryFixture(fixture.data, route.request().postDataJSON(),
-      fixture.columnsInfo.filter(column => column.dataType === DataType.List).map(column => column.field));
+    if (url.includes('GetTableData')) {
+      const request = route.request().postDataJSON(); flatRequests.push(request);
+      data = queryFixture(fixture.data, request,
+        fixture.columnsInfo.filter(column => column.dataType === DataType.List).map(column => column.field));
+    }
     await route.fulfill({ json: data });
   });
   const base = 'http://localhost:' + server.address().port;
@@ -109,6 +113,20 @@ try {
   assert.match(await page.getByTestId('row-retrieval-time').innerText(), /Last row retrieval: [\d,.]+ ms/);
   const rows = page.locator('ecs-tree-demo tbody tr[aria-level]');
   const node = text => rows.filter({ has: page.getByText(text, { exact: true }) });
+  assert.equal(requests.filter(request => request.roots).length, 1, 'Initial route must load roots once');
+  const selectAll = page.getByRole('checkbox', { name: 'Select all filtered rows', exact: true });
+  await selectAll.check();
+  await page.waitForFunction(() => [...document.querySelectorAll('ecs-tree-demo tbody tr[aria-level] input[type=checkbox]')].every(input => input.checked));
+  assert.equal(await selectAll.isChecked(), true);
+  const nextPage = page.locator('ecs-tree-demo .p-paginator-next');
+  await nextPage.click();
+  await node('Root 11').waitFor();
+  assert.equal(await node('Root 11').getByRole('checkbox').isChecked(), true, 'Unloaded pages must be selected');
+  await selectAll.uncheck();
+  await page.waitForFunction(() => [...document.querySelectorAll('ecs-tree-demo tbody tr[aria-level] input[type=checkbox]')].every(input => !input.checked));
+  await page.locator('ecs-tree-demo .p-paginator-first').click();
+  await node('Root 01').waitFor();
+  assert.equal(await node('Root 01').getByRole('checkbox').isChecked(), false);
   const viewsDialog = page.getByRole('dialog').filter({ has: page.getByText('Table views', { exact: true }) });
   async function count(expected) { await page.waitForFunction(expected =>
     document.querySelectorAll('ecs-tree-demo tbody tr[aria-level]').length === expected, expected); }
@@ -146,7 +164,6 @@ try {
     await viewsDialog.waitFor({ state: 'hidden' });
   }
 
-  assert.equal(requests.filter(request => request.roots).length, 1, 'Initial route must load roots once');
   for (const [mode, label] of [['onDemand', 'On demand'], ['all', 'All nodes'], ['pagedChildren', 'Paged children']]) {
     if (mode !== 'onDemand') await choose('tree-mode', label);
     await count(10);
@@ -173,6 +190,13 @@ try {
     assert.equal(await page.locator('#tree-mode').innerText(), label, 'Mode must survive detail navigation');
     await collapse('Root 01'); await count(10);
     const search = page.getByPlaceholder('Search keyword', { exact: true });
+    const beforeSearch = requests.length;
+    await search.fill('N'); await page.waitForTimeout(450);
+    await search.fill('Ne'); await page.waitForTimeout(450);
+    assert.equal(requests.length, beforeSearch, 'Short input must not query in any tree mode');
+    await search.fill('Nee'); await page.waitForTimeout(200);
+    await search.fill('Needle'); await page.waitForTimeout(250);
+    assert.equal(requests.length, beforeSearch, 'Each keystroke must restart the configured delay');
     await search.fill('Needle deep leaf'); await node('Needle deep leaf').waitFor(); await count(6);
     assert.equal(await node('Needle deep leaf').getAttribute('aria-level'), '6');
     assert.equal(await rows.locator('button[aria-expanded=true]').count(), 5);
@@ -207,11 +231,26 @@ try {
     const bounds = element.getBoundingClientRect(); return { left: bounds.left, right: bounds.right, width: bounds.width }; }));
   assert.ok(controls.every(bounds => bounds.left >= 0 && bounds.right <= 391 && bounds.width > 0), 'Mode/storage controls must fit mobile');
   await page.screenshot({ path: join(screenshots, 'tree-mobile.png'), fullPage: true });
+  const mobileSearch = page.getByPlaceholder('Search keyword', { exact: true });
+  const mobileBefore = requests.length;
+  await mobileSearch.fill('Ne'); await page.waitForTimeout(450);
+  assert.equal(requests.length, mobileBefore, 'Mobile must enforce the same minimum');
+  await mobileSearch.fill('Needle deep leaf'); await node('Needle deep leaf').waitFor();
+  assert.equal(requests.at(-1).globalFilter, 'Needle deep leaf');
+  await mobileSearch.fill('N'); await node('Root 02').waitFor();
+  assert.equal(requests.at(-1).globalFilter, null, 'Below minimum must remove the applied query');
   await page.setViewportSize({ width: 1600, height: 1000 });
   await page.getByRole('link', { name: 'Full example', exact: true }).click();
   await page.locator('ecs-home ecs-table-cell').first().waitFor();
   assert.ok(await page.locator('ecs-home ecs-table-predefined-filters').count() > 0, 'Flat demo retains predefined filters');
   assert.equal(await page.locator('ecs-home .ecs-tree-toggle').count(), 0, 'Flat grid must remain opt-out');
+  const flatSearch = page.getByPlaceholder('Search keyword', { exact: true });
+  const flatBefore = flatRequests.length;
+  await flatSearch.fill('Da'); await page.waitForTimeout(450);
+  assert.equal(flatRequests.length, flatBefore, 'Flat grid must enforce the minimum');
+  const flatResponse = page.waitForResponse(response => response.url().includes('/Test/GetTableData') && response.request().postDataJSON()?.globalFilter === 'Daniel');
+  await flatSearch.fill('Daniel'); await flatResponse;
+  assert.equal(flatRequests.length, flatBefore + 1, 'Flat search must send only the final query');
   assert.deepEqual(errors, []);
   console.log('Tree browser passed: three modes, local/mocked database views, navigation, desktop/mobile controls and preserved flat demo.');
   console.log('Screenshots: ' + screenshots);

@@ -28,6 +28,17 @@ public class TreeDemoController(primengTableReusableComponentContext context) : 
         }
     }
 
+    [HttpPost("GetSelectionKeys")]
+    public IActionResult GetSelectionKeys([FromBody] TableQueryRequestModel request) {
+        if (!EcsPrimengTableService.ValidateItemsPerPageAndCols(request.PageSize, request.Columns))
+            return BadRequest("Invalid page size or columns.");
+        try {
+            return Ok(EcsPrimengTableService.GetTreeSelectionKeys(request, TreeDemoData.Create(), Options));
+        } catch (ArgumentException exception) {
+            return BadRequest(exception.Message);
+        }
+    }
+
     [HttpPost("GenerateExcel")]
     public IActionResult GenerateExcel([FromBody] TreeExcelExportRequestModel request) {
         if (!EcsPrimengTableService.ValidateItemsPerPageAndCols(request.PageSize, request.Columns))
@@ -57,7 +68,7 @@ public class TreeDemoController(primengTableReusableComponentContext context) : 
             return BadRequest("View aliases must be unique.");
         try {
             await EcsPrimengTableService.SaveViewsAsync<TableView, string>(context, DemoUsername, TableKey, request.Views);
-            return Ok("Views saved OK");
+            return new JsonResult("Views saved OK");
         } catch (Exception) {
             return Problem("The tree views could not be saved.");
         }

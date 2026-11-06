@@ -3239,6 +3239,38 @@ Con esta configuración:
 
 
 
+##### Selección de todas las filas filtradas
+
+La casilla de cabecera es opcional y está desactivada por defecto:
+
+```ts
+rows: {
+  checkboxSelector: {
+    enabled: true,
+    selectAllEnabled: true,
+    urlSelectAll: 'Test/GetSelectionKeys'
+  }
+}
+```
+
+`urlSelectAll` recibe por POST la consulta actual (`ITableQueryRequest`) y devuelve
+un array JSON de identificadores `rowID`. Debe aplicar los filtros globales y de
+columna y los permisos de la consulta habitual, sin paginación. Solo se transfieren
+identificadores. Si utilizas `enabledCondition`, el endpoint debe aplicar la misma
+regla de elegibilidad a las filas que no están cargadas en el navegador.
+
+Marcar selecciona todas las coincidencias de todas las páginas. Desmarcar quita
+esas coincidencias y conserva las selecciones ajenas al filtro actual. La casilla
+muestra estado parcial al desmarcar filas individuales. Se mantienen el array
+`selectedRowsCheckbox`, los eventos `onRowCheckboxChange` por fila modificada,
+los filtros de seleccionados y la exportación existentes.
+
+En árboles también incluye hijos no cargados y ancestros conservados por los
+filtros, independientemente de las expansiones. Las demos usan
+`Test/GetSelectionKeys` y `TreeDemo/GetSelectionKeys`. El backend ofrece
+`EcsPrimengTableService.GetSelectionKeys` y `GetTreeSelectionKeys` para reutilizar
+estos filtros; aplica la autorización al origen antes de llamar a estos métodos.
+
 <a id="643-dynamic-styling"></a>
 #### 6.4.3 Estilos dinámicos
 La función **dynamic styling** permite personalizar el aspecto de las filas ya sea aplicando estilos **inline** o añadiendo clases **CSS**.
@@ -3573,6 +3605,27 @@ Y en su HTML:
 
 <br><br>
 
+
+#### Búsqueda global con mínimo de caracteres y espera
+
+```ts
+globalFilter: { enabled: true, minLength: 3, debounceTime: 400 }
+```
+
+Ambas propiedades son opcionales e independientes y valen `0` por defecto para
+conservar el comportamiento existente. `minLength` cuenta el texto sin espacios
+al principio y al final. `debounceTime` indica milisegundos sin escribir; cada
+pulsación reinicia la espera. Con el ejemplo anterior, `D` y `Da` no consultan la
+API; `Daniel` busca cuando pasan 400 ms sin escribir. No se repite una consulta
+si el texto efectivo no cambia. Los valores negativos o no finitos se tratan como 0.
+
+Al aplicar la búsqueda se vuelve a la primera página. Vaciar el campo o bajar del
+mínimo quita inmediatamente la búsqueda anterior si la había. Limpiar filtros,
+restaurar una vista o salir cancela la espera pendiente. Durante la espera,
+paginación, selección global, vistas y exportación usan el filtro ya aplicado.
+La restauración de una vista conserva su búsqueda y página guardadas sin espera.
+Funciona en tablas planas y jerárquicas, tanto en escritorio como en móvil.
+Solo requiere configuración del frontend; las demos de personas y árbol usan 3 y 400.
 
 <a id="configuring-global-filter-for-date-columns"></a>
 #### Configuración del filtro global para columnas de fecha

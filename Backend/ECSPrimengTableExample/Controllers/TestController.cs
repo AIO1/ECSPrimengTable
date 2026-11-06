@@ -33,6 +33,13 @@ namespace ECSPrimengTableExample.Controllers {
         #endregion
 
         #region HttpPost - GetTableData
+        [HttpPost("GetSelectionKeys")]
+        public IActionResult GetSelectionKeys([FromBody] TableQueryRequestModel request) {
+            if (!ECS.PrimengTable.Services.EcsPrimengTableService.ValidateItemsPerPageAndCols(request.PageSize, request.Columns))
+                return BadRequest("Invalid page size or columns.");
+            return Ok(_service.GetSelectionKeys(request));
+        }
+
         [HttpPost("[action]")]
         [Consumes("application/json")]
         [Produces("application/json")]

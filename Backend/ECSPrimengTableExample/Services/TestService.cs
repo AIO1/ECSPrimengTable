@@ -24,6 +24,10 @@ namespace ECSPrimengTableExample.Services {
             return EcsPrimengTableService.GetTableConfiguration<TestDto>();
         }
 
+        public List<object> GetSelectionKeys(TableQueryRequestModel request) =>
+            EcsPrimengTableService.GetSelectionKeys(request, GetBaseQuery(), row => row.RowID, stringDateFormatMethod)
+                .Select(key => (object)key).ToList();
+
         public (bool success, TablePagedResponseModel data) GetTableData(TableQueryRequestModel inputData) {
             if(!EcsPrimengTableService.ValidateItemsPerPageAndCols(inputData.PageSize, inputData.Columns)) { // Validate the items per page size and columns
                 return (false, null!);

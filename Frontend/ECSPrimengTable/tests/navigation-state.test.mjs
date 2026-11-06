@@ -9,6 +9,57 @@ import {
   TableViewSaveMode
 } from '../dist/ecs-primeng-table/fesm2022/eternalcodestudio-primeng-table.mjs';
 
+test('optional select-all spans pages, preserves outside selections and emits only changed IDs', async () => {
+  const parent = scope(); const fixture = list(parent); fixture.start();
+  const c = fixture.component;
+  assert.equal(c.tableOptions.rows.checkboxSelector.selectAllEnabled, false);
+  c.tableOptions.rows.checkboxSelector = { enabled: true, selectAllEnabled: true, urlSelectAll: '/keys' };
+  const requests = [];
+  c.tableService.fetchSelectionKeys = (url, query) => {
+    requests.push({ url, query });
+    return of(new HttpResponse({ body: [1, 2, 3, 3] }));
+  };
+  c.selectedRowsCheckbox = [99, 1];
+  const events = []; c.onRowCheckboxChange.subscribe(event => events.push(event));
+  await c.toggleAllMatchingRows(true);
+  assert.deepEqual(c.selectedRowsCheckbox, [99, 1, 2, 3]);
+  assert.deepEqual(events.map(e => e.rowID), [2, 3]);
+  assert.equal(c.allMatchingRowsSelected, true);
+  c.fetchTableData({ first: 10, rows: 10, filters: {} });
+  assert.equal(c.allMatchingRowsSelected, true, 'Paging preserves header state');
+  c.onRowChekboxChange({ checked: false }, 2);
+  assert.equal(c.matchingRowsPartiallySelected, true);
+  await c.toggleAllMatchingRows(false);
+  assert.deepEqual(c.selectedRowsCheckbox, [99]);
+  assert.equal(c.allMatchingRowsSelected, false);
+  assert.equal(c.matchingRowsPartiallySelected, false);
+  assert.equal(requests[0].url, '/keys');
+  fixture.destroy(); parent.destroy();
+});
+
+test('select-all ignores stale filter responses, keeps selections on failure and skips disabled rows', async () => {
+  const parent = scope(); const fixture = list(parent); fixture.start(); const c = fixture.component;
+  c.tableOptions.rows.checkboxSelector = { enabled: true, selectAllEnabled: true, urlSelectAll: '/keys', enabledCondition: row => row.rowID !== 2 };
+  c.tableOptions.data = [{ rowID: 1 }, { rowID: 2 }];
+  c.selectedRowsCheckbox = [99];
+  let response = new Subject(); c.tableService.fetchSelectionKeys = () => response;
+  const pending = c.toggleAllMatchingRows(true);
+  c.globalSearchText = 'Ana';
+  c.fetchTableData({ first: 0, rows: 10, filters: {} });
+  response.next(new HttpResponse({ body: [1, 2] }));
+  await pending;
+  assert.deepEqual(c.selectedRowsCheckbox, [99]);
+  c.tableService.fetchSelectionKeys = () => throwError(() => new Error('offline'));
+  await c.toggleAllMatchingRows(true);
+  assert.deepEqual(c.selectedRowsCheckbox, [99]);
+  assert.equal(c.selectAllLoading, false);
+  c.tableOptions.data = [{ rowID: 1 }, { rowID: 2 }];
+  c.tableService.fetchSelectionKeys = () => of(new HttpResponse({ body: [1, 2, 3] }));
+  await c.toggleAllMatchingRows(true);
+  assert.deepEqual(c.selectedRowsCheckbox, [99, 1, 3]);
+  fixture.destroy(); parent.destroy();
+});
+
 function scope() {
   return createEnvironmentInjector([ECSPrimengTableStateService]);
 }
@@ -78,6 +129,78 @@ function filter(component) {
   component.currentPage = 2;
   component.currentRowsPerPage = 25;
 }
+
+test('global search requires trimmed minimum length and restarts its debounce after each letter', t => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const parent = scope(); const f = list(parent); f.start(); const c = f.component;
+  c.tableOptions.globalFilter = { enabled: true, minLength: 3, debounceTime: 400 };
+  f.requests.length = 0;
+  c.onGlobalSearchInput(' D '); t.mock.timers.tick(1000);
+  c.onGlobalSearchInput('Da'); t.mock.timers.tick(1000);
+  assert.equal(f.requests.length, 0);
+  c.onGlobalSearchInput('Dan'); t.mock.timers.tick(399);
+  c.onGlobalSearchInput('Dani'); t.mock.timers.tick(399);
+  assert.equal(f.requests.length, 0);
+  c.onGlobalSearchInput('Daniel');
+  c.fetchTableData({ first: 20, rows: 10, filters: {} });
+  assert.equal(f.requests.at(-1).globalFilter, null, 'Other actions must not leak pending input');
+  f.requests.length = 0;
+  t.mock.timers.tick(400);
+  assert.equal(f.requests.length, 1);
+  assert.equal(f.requests[0].globalFilter, 'Daniel');
+  assert.equal(f.requests[0].page, 0);
+  c.onGlobalSearchInput(' Daniel '); t.mock.timers.tick(1000);
+  assert.equal(f.requests.length, 1, 'Equivalent trimmed text must not query again');
+  c.onGlobalSearchInput('Da');
+  assert.equal(f.requests.length, 2, 'Dropping below minimum removes the old query immediately');
+  assert.equal(f.requests.at(-1).globalFilter, null);
+  c.onGlobalSearchInput('D'); c.onGlobalSearchInput(''); t.mock.timers.tick(1000);
+  assert.equal(f.requests.length, 2);
+  f.destroy(); parent.destroy();
+});
+
+test('global search properties can be used independently and defaults retain PrimeNG filtering', t => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const parent = scope(); const f = list(parent); f.start(); const c = f.component;
+  assert.equal(c.tableOptions.globalFilter.minLength, 0);
+  assert.equal(c.tableOptions.globalFilter.debounceTime, 0);
+  const nativeCalls = []; c.dt.filterGlobal = (...args) => nativeCalls.push(args);
+  c.onGlobalSearchInput('D');
+  assert.deepEqual(nativeCalls, [['D', 'contains']]);
+  c.tableOptions.globalFilter = { minLength: 3 };
+  c.onGlobalSearchInput('Dan');
+  assert.equal(f.requests.at(-1).globalFilter, 'Dan');
+  c.tableOptions.globalFilter = { debounceTime: 400 };
+  const count = f.requests.length; c.onGlobalSearchInput('A');
+  t.mock.timers.tick(399); assert.equal(f.requests.length, count);
+  t.mock.timers.tick(1); assert.equal(f.requests.at(-1).globalFilter, 'A');
+  c.onGlobalSearchInput('');
+  assert.equal(f.requests.at(-1).globalFilter, null);
+  f.destroy(); parent.destroy();
+});
+
+test('clear, view restore and destruction cancel pending global searches', t => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const parent = scope(); const f = list(parent); f.start(); const c = f.component;
+  c.tableOptions.globalFilter = { minLength: 3, debounceTime: 400 };
+  c.onGlobalSearchInput('Daniel'); c.clearFilters(c.dt, true, true);
+  let count = f.requests.length; t.mock.timers.tick(1000);
+  assert.equal(f.requests.length, count); assert.equal(c.globalSearchText, null);
+  c.tableViewsList = [{ viewAlias: 'saved', viewData: {
+    columnsShown: c.columns, currentPage: 2, currentRowsPerPage: 10,
+    globalSearchText: 'saved search', multiSortMeta: [], filters: {}, tableWidth: '', columnsWidth: ''
+  } }];
+  c.onGlobalSearchInput('Daniel'); c.viewLoad('saved');
+  count = f.requests.length; t.mock.timers.tick(1000);
+  assert.equal(f.requests.length, count);
+  assert.equal(f.requests.at(-1).globalFilter, 'saved search');
+  assert.equal(f.requests.at(-1).page, 2, 'Restoring a view preserves its page');
+  c.onGlobalSearchInput('Daniel'); f.destroy();
+  count = f.requests.length; t.mock.timers.tick(1000);
+  assert.equal(f.requests.length, count);
+  assert.equal(parent.get(ECSPrimengTableStateService).get('people').globalSearchText, 'saved search');
+  parent.destroy();
+});
 
 test('A -> detail -> A restores before its first fresh query, including dates and predefined values', () => {
   const parent = scope();

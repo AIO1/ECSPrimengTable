@@ -60,6 +60,16 @@ static class TreeChecks {
     }
 
     public static void Run() {
+        var selectionRows = Enumerable.Range(1, 30).Select(id => Row(id, id == 1 ? 0 : 1, id == 30 ? "Target" : "Other")).AsQueryable();
+        var selectionRequest = Request();
+        Check(EcsPrimengTableService.GetSelectionKeys(selectionRequest, selectionRows, row => row.RowID).Count == 30,
+            "Flat selection must span all pages.");
+        selectionRequest = Request(); selectionRequest.GlobalFilter = "Target";
+        Check(EcsPrimengTableService.GetSelectionKeys(selectionRequest, selectionRows, row => row.RowID).SequenceEqual([1030]),
+            "Flat selection must apply global search.");
+        selectionRequest = Request(); selectionRequest.GlobalFilter = "Target";
+        Check(EcsPrimengTableService.GetTreeSelectionKeys(selectionRequest, selectionRows, Options).Cast<int>().SequenceEqual([1001, 1030]),
+            "Tree selection must include matching unloaded descendants and retained ancestors, using rowID aliases.");
         var rows = new[] { Row(1, 0, "Root A"), Row(2, 1, "Branch"), Row(3, 2, "Needle"),
             Row(4, 1, "Unrelated"), Row(5, 0, "Root B"), Row(6, 5, "Other") }.AsQueryable();
         var request = Request();

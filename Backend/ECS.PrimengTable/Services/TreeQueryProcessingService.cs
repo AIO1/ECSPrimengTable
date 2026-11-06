@@ -71,6 +71,14 @@ internal static class TreeQueryProcessingService {
         }
     }
 
+    internal static List<object> SelectionKeys<T>(TableQueryRequestModel request, IQueryable<T> source,
+        TreeQueryOptions options) where T : class {
+        var tree = new Tree<T>(source, options);
+        var query = Prepare<T>(request, tree, null);
+        var retained = Retain(tree, query, null, NormalizeAttributes<T>(null), out _);
+        return DepthFirst(tree.Roots, retained).Select(node => tree.RowId.GetValue(node.Row)!).ToList();
+    }
+
     internal static TreePagedResponseModel Query<T>(TreeQueryRequestModel request, IQueryable<T> source,
         TreeQueryOptions options, MethodInfo? dateMethod, List<string>? defaultSortColumns,
         List<ColumnSort>? defaultSortOrders, Dictionary<string, ColumnMetadataOverrideModel>? attributes,

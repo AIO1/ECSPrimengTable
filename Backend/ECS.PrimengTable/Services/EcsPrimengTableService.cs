@@ -11,6 +11,21 @@ namespace ECS.PrimengTable.Services {
     /// </summary>
     public static class EcsPrimengTableService {
 
+        /// <summary>Returns all filtered row identifiers, without pagination. Apply authorization and selection eligibility to the source query first.</summary>
+        public static List<TKey> GetSelectionKeys<T, TKey>(TableQueryRequestModel request,
+            IQueryable<T> source, System.Linq.Expressions.Expression<Func<T, TKey>> keySelector,
+            MethodInfo? stringDateFormatMethod = null) {
+            long total = 0, filtered = 0;
+            TableQueryProcessingService.GetDynamicQueryBase(ref request, ref source, ref total, ref filtered,
+                stringDateFormatMethod, performSort: false);
+            return source.Select(keySelector).Distinct().ToList();
+        }
+
+        /// <summary>Returns identifiers throughout the filtered hierarchy, including retained ancestors and unloaded children.</summary>
+        public static List<object> GetTreeSelectionKeys<T>(TableQueryRequestModel request,
+            IQueryable<T> source, TreeQueryOptions options) where T : class =>
+            TreeQueryProcessingService.SelectionKeys(request, source, options);
+
         public static TreePagedResponseModel PerformTreeQuery<T>(
             TreeQueryRequestModel inputData, IQueryable<T> baseQuery, TreeQueryOptions options,
             MethodInfo? stringDateFormatMethod = null, List<string>? defaultSortColumnName = null,

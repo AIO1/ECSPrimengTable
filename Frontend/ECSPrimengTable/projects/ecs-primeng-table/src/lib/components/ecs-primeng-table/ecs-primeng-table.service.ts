@@ -197,6 +197,9 @@ export class ECSPrimengTableService {
         };
         return this.http.handleHttpPostRequest<any>(setListEndpoint,postData);
     }
+  fetchSelectionKeys(endpoint: string, request: ITableQueryRequest): Observable<HttpResponse<any[]>> {
+    return this.http.handleHttpPostRequest<any[]>(endpoint, request);
+  }
   viewGenerateData(dt: Table, globalSearchText: string | null, currentPage: number, currentRowsPerPage: number, modifyFiltersFn: (filters: any) => any): ITableViewData{
         let colsWidth = this.computeColumnWidths(dt);
         let tableWidth = this.computeTableWidth(dt);
