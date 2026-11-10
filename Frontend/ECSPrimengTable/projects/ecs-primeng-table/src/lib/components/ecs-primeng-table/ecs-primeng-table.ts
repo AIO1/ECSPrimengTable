@@ -62,7 +62,8 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
     private tableService: ECSPrimengTableService,
     private notification: ECSPrimengTableNotificationService
   ) {}
-
+  readonly tableData = signal<any[]>([]);
+  readonly shownColumns = signal<IColumnMetadata[]>([]);
   readonly tableOptions = input<ITableOptions>(DEFAULT_TABLE_OPTIONS);
   @Output() onRowCheckboxChange = new EventEmitter<{
     rowID: any,
@@ -202,6 +203,8 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
     this.columnsCantBeHidden.set(this.columns().filter((col: any) => !col.canBeHidden));
     this.columnsSelected.set(this.columns().filter((col: any) => !col.startHidden && col.canBeHidden));
     this.tableOptions().columns!.shown = this.tableService.orderColumnsWithFrozens(this.columnsCantBeHidden().concat(this.columnsSelected()));
+    const initialColumns = this.tableService.orderColumnsWithFrozens(this.columnsCantBeHidden().concat(this.columnsSelected()));
+    this.shownColumns.set(initialColumns);
     this.dateFormat.set(body.dateFormat);
     this.dateTimezone.set(body.dateTimezone);
     this.dateCulture.set(body.dateCulture);
@@ -578,6 +581,7 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
 
   handleTableDataResponse(body: ITablePagedResponse): void{
     this.tableOptions().data = body.data;
+    this.tableData.set(body.data);
     this.totalRecords.set(body.totalRecords);
     this.totalRecordsNotFiltered.set(body.totalRecordsNotFiltered);
     this.currentPage.set(body.page);
@@ -817,6 +821,8 @@ export class ECSPrimengTable implements OnInit, AfterViewInit {
 
     let prevColsToShow = this.tableOptions().columns!.shown;
     this.tableOptions().columns!.shown = this.tableService.orderColumnsWithFrozens(finalColumns);
+    const newShownColumns = this.tableService.orderColumnsWithFrozens(finalColumns);
+    this.shownColumns.set(newShownColumns);
 
     let sameColumnsAsBefore =
       prevColsToShow!.length === this.tableOptions().columns!.shown!.length &&

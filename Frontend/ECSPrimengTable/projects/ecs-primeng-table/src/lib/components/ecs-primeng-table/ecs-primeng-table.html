@@ -5,7 +5,7 @@
         [resizableColumns]="true" columnResizeMode="expand"
         [reorderableColumns]="true"
         [scrollable]="true" [scrollHeight]="scrollHeightValue"
-        [columns]="tableOptions().columns?.shown ?? []" [value]="tableOptions().data ?? []" dataKey="rowID" 
+        [columns]="shownColumns()" [value]="tableData()" dataKey="rowID" 
         [paginator]="true" paginatorDropdownAppendTo="body" [first]="currentPage() * currentRowsPerPage()" [rows]="currentRowsPerPage()" [totalRecords]="totalRecords()"
         [rowsPerPageOptions]="allowedRowsPerPage()" [showCurrentPageReport]="false" (onPage)="pageChange($event)"
         [metaKeySelection]="true" [selectionMode]="tableOptions().rows?.singleSelector?.enabled ? 'single' : null" [selection]="rowSelection()" (selectionChange)="rowSelection.set($event)" (onRowSelect)="rowSelect($event)" (onRowUnselect)="rowUnselect($event)"

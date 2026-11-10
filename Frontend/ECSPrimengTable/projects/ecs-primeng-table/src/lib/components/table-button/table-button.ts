@@ -23,8 +23,6 @@ export class TableButton {
   readonly isActionButton = input<boolean>(false);
   readonly isLastActionButton = input<boolean>(false);
   readonly overrideAction = input<((event: Event) => void) | undefined>();
-
-  // Signals computadas para optimizar evaluaciones
   readonly isVisible = computed(() => this.button().visibleCondition?.(this.rowData()) ?? true);
   readonly isEnabled = computed(() => this.button().enabledCondition?.(this.rowData()) ?? true);
   
