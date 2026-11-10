@@ -33,6 +33,7 @@ export class TableButton {
     return [
       'p-button',
       'p-component',
+      (!btn.label && btn.icon) ? 'p-button-icon-only' : '',
       btn.rounded ? 'p-button-rounded' : '',
       btn.raised ? 'p-button-raised' : '',
       btn.variant ? `p-button-${btn.variant}` : '',

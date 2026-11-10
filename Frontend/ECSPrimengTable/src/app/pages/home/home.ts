@@ -14,19 +14,6 @@ import { IEmploymentStatus } from './employment-status.interface';
 export class Home implements OnInit {
   constructor(private readonly sharedService: SharedService){}
   @ViewChild('dt') dt!: ECSPrimengTable; // Get the reference to the object table
-
-  headerActionButtons: ITableButton[] = [
-    {
-      icon: 'pi pi-plus',
-      class: 'p-button-success',
-      action: () => {
-        this.sharedService.clearToasts();
-        this.sharedService.showToast("info","Clicked on create a new record","Here you will for example show a modal to create a new record. Upon creating the record, you can do 'this.dt.updateDataExternal()' to refresh the table data and show the newly created record.");
-      },
-      tooltip: "Create new record"
-    }
-  ];
-  /*
   headerActionButtons: ITableButton[] = [
     {
       icon: 'pi pi-plus',
@@ -38,7 +25,7 @@ export class Home implements OnInit {
       label: "CREATE",
       tooltip: "Create new record"
     }
-  ];*/
+  ];
   rowActionButtons: ITableButton[] = [
     {
       icon: 'pi pi-trash',
